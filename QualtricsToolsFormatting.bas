@@ -784,6 +784,8 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
    
     With ActiveDocument
 
+
+
         With .Tables(i)
             .Style = "Matrix_table_style"
             .LeftPadding = InchesToPoints(0)
@@ -804,64 +806,9 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
         End With
         
 
-        
-                
-        'Format percentage columns
-          
-       Dim PerColumns As Long
-       PerColumns = .Tables(i).Columns.Count
-          
-       Dim PerColWidth As Double
-       
-       PerColWidth = (3.53 / (PerColumns - 2))
-          
-       Debug.Print (PerColWidth & " WIDTH SHOULD BE .87")
-                   
-       For k = 1 To PerColumns
-    
-        .Tables(i).Columns(k).Select
-        
-        Selection.Paragraphs.LeftIndent = InchesToPoints(0.08)
-        Selection.Paragraphs.RightIndent = InchesToPoints(0.08)
-        
-        Selection.Find.ClearFormatting
-        With Selection.Find
-            .Text = "%"
-            .MatchWholeWord = False
-        End With
-        
-        Selection.Find.Execute
-        
-        
-        If Selection.Find.Found = True Then
-            .Tables(i).Columns(k).Select
-            With Selection.Cells
-                '.PreferredWidthType = wdPreferredWidthPercent
-                '.PreferredWidth = InchesToPoints(
-                '.SetWidth _
-                'ColumnWidth:=InchesToPoints(PerColWidth), _
-                'RulerStyle:=wdAdjustNone
-                .PreferredWidth = None
-            End With
-                
-            With Selection.Font
-                .Bold = True
-                .Italic = False
-                .Color = wdColorAutomatic
-            End With
-             
-            With Selection.ParagraphFormat
-                .Alignment = wdAlignParagraphCenter
-            End With
-            
-            Selection.Cells.VerticalAlignment = wdCellAlignVerticalCenter
-        End If
-  
-        Next
-                            
         .Tables(i).PreferredWidthType = wdPreferredWidthPercent
         .Tables(i).PreferredWidth = 100
-        
+
         
         .Tables(i).Columns(1).Select
         With Selection.Cells
@@ -870,8 +817,11 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
             RulerStyle:=wdAdjustNone
             '.PreferredWidthType = wdPreferredWidthPoints
             '.PreferredWidth = InchesToPoints(3.5)
+            '.PreferredWidth = InchesToPercent(3.5)
         End With
         
+        '.Tables(i).Width
+                
         'Format N columns
 
         Dim nColumns As Long
@@ -915,6 +865,72 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
                  
              End If
         Next
+
+        
+        '.Tables(i).PreferredWidthType = wdPreferredWidthPercent
+        '.Tables(i).PreferredWidth = 100
+        
+                
+        'Format percentage columns
+          
+       Dim PerColumns As Long
+       PerColumns = .Tables(i).Columns.Count
+          
+       Dim PerColWidth As Double
+       
+       PerColWidth = (3.53 / (PerColumns - 2))
+          
+       Debug.Print (PerColWidth & " WIDTH SHOULD BE .87")
+                   
+       For k = 1 To PerColumns
+    
+        .Tables(i).Columns(k).Select
+        
+        Selection.Paragraphs.LeftIndent = InchesToPoints(0.08)
+        Selection.Paragraphs.RightIndent = InchesToPoints(0.08)
+        
+        Selection.Find.ClearFormatting
+        With Selection.Find
+            .Text = "%"
+            .MatchWholeWord = False
+        End With
+        
+        Selection.Find.Execute
+        
+        
+        If Selection.Find.Found = True Then
+            .Tables(i).Columns(k).Select
+            With Selection.Cells
+                '.PreferredWidthType = wdPreferredWidthPercent
+                '.PreferredWidth = InchesToPoints(
+                '.SetWidth _
+                'ColumnWidth:=InchesToPoints(PerColWidth), _
+                'RulerStyle:=wdAdjustNone
+                .PreferredWidth = None
+                '.AutoFit
+                '.PreferredWidthType = wdPreferredWidthAuto
+                '.PreferredWidth = 0
+                
+            End With
+                
+            With Selection.Font
+                .Bold = True
+                .Italic = False
+                .Color = wdColorAutomatic
+            End With
+             
+            With Selection.ParagraphFormat
+                .Alignment = wdAlignParagraphCenter
+            End With
+            
+            Selection.Cells.VerticalAlignment = wdCellAlignVerticalCenter
+        End If
+  
+        Next
+        
+        
+        '.Tables(i).PreferredWidthType = wdPreferredWidthPercent
+        '.Tables(i).PreferredWidth = 100
         
         
        'Center align test horizontal and vertical
@@ -964,7 +980,9 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
         '    End If
         'End With
                              
-               
+        '.Tables(i).PreferredWidthType = wdPreferredWidthPercent
+        '.Tables(i).PreferredWidth = 100
+        
         
         'Format header
         .Tables(i).Rows(1).Select
@@ -986,9 +1004,10 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
         End With
 
     End With
-
+    
 
 End Sub
+
 
 
 Sub Replace_zeros(i As Integer)

@@ -30,7 +30,8 @@ Sub format_survey_preview()
     Call Preview_Style_Change
     
     Call replace_newline
-    Call remove_extra_carraigeReturn
+    Call RemoveEmptyParagraphs
+    
     
     Call number_of_respondents
     Call Insert_OIRE
@@ -273,7 +274,7 @@ Sub Preview_Style_Change()
         .Paragraphs.SpaceBeforeAuto = False
         .Paragraphs.SpaceBefore = 0
         .Paragraphs.SpaceAfter = 0
-        .Paragraphs.format.Alignment = wdAlignParagraphLeft
+        .Paragraphs.Format.Alignment = wdAlignParagraphLeft
         
                 
         'Change style of title (Heading 4), Block names (Header 5), and regular text (Compact)
@@ -329,15 +330,15 @@ Sub number_of_respondents()
 
     With ActiveDocument
     
-        With Selection.find
+        With Selection.Find
             .Text = "Number of Respondents: "
             .Forward = True
             .Wrap = wdFindContinue
-            .format = False
+            .Format = False
             .MatchCase = True
         End With
         
-        Selection.find.Execute
+        Selection.Find.Execute
         
         Selection.Expand wdLine
         Selection.Font.Size = 10
@@ -550,7 +551,7 @@ Sub Insert_footer()
         .Cell(1, 3).PreferredWidthType = wdPreferredWidthPercent
         .Cell(1, 3).PreferredWidth = 44
         
-        .Rows.leftindent = InchesToPoints(0)
+        .Rows.LeftIndent = InchesToPoints(0)
     End With
 
     
@@ -711,10 +712,8 @@ Sub Define_Matrix_Style()
     
     With ActiveDocument.Styles("Matrix_table_style")
         With .Table
-
             .RowStripe = 1
             .ColumnStripe = 0
-            
             .AllowPageBreaks = False
             .AllowBreakAcrossPage = False
             
@@ -787,13 +786,12 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
 
         With .Tables(i)
             .Style = "Matrix_table_style"
-        
-            .LeftPadding = InchesToPoints(0.08)
-            .RightPadding = InchesToPoints(0.08)
+            .LeftPadding = InchesToPoints(0)
+            .RightPadding = InchesToPoints(0)
             .TopPadding = InchesToPoints(0.01)
             .BottomPadding = InchesToPoints(0.01)
             .Spacing = InchesToPoints(0)
-        
+            
         End With
                     
         With .Tables(i).Cell(1, 1)
@@ -804,61 +802,48 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
                 .LineStyle = wdLineStyleNone
             End With
         End With
+        
+
+        
                 
-                
-        'Format N columns
-
-        Dim nColumns As Long
-        nColumns = .Tables(i).Columns.Count
-
-        For j = 1 To nColumns
-    
-            .Tables(i).Columns(j).Select
-            
-            Selection.find.ClearFormatting
-            
-            With Selection.find
-                .Text = "N"
-                .MatchWholeWord = True
-            End With
-            Selection.find.Execute
-            
-            If Selection.find.Found = True Then
-                .Tables(i).Columns(j).Select
-                With Selection.Font
-                     .Bold = True
-                     .Italic = True
-                     .Color = wdColorGray40
-                 End With
-                 
-                 With Selection.ParagraphFormat
-                     .Alignment = wdAlignParagraphCenter
-                 End With
-                 
-                 Selection.Cells.VerticalAlignment = wdCellAlignVerticalCenter
-                 
-             End If
-        Next
-
-       'Format percentage columns
+        'Format percentage columns
           
        Dim PerColumns As Long
        PerColumns = .Tables(i).Columns.Count
           
+       Dim PerColWidth As Double
+       
+       PerColWidth = (3.53 / (PerColumns - 2))
+          
+       Debug.Print (PerColWidth & " WIDTH SHOULD BE .87")
+                   
        For k = 1 To PerColumns
     
         .Tables(i).Columns(k).Select
         
-        Selection.find.ClearFormatting
-        With Selection.find
+        Selection.Paragraphs.LeftIndent = InchesToPoints(0.08)
+        Selection.Paragraphs.RightIndent = InchesToPoints(0.08)
+        
+        Selection.Find.ClearFormatting
+        With Selection.Find
             .Text = "%"
             .MatchWholeWord = False
         End With
         
-        Selection.find.Execute
+        Selection.Find.Execute
         
-        If Selection.find.Found = True Then
+        
+        If Selection.Find.Found = True Then
             .Tables(i).Columns(k).Select
+            With Selection.Cells
+                '.PreferredWidthType = wdPreferredWidthPercent
+                '.PreferredWidth = InchesToPoints(
+                '.SetWidth _
+                'ColumnWidth:=InchesToPoints(PerColWidth), _
+                'RulerStyle:=wdAdjustNone
+                .PreferredWidth = None
+            End With
+                
             With Selection.Font
                 .Bold = True
                 .Italic = False
@@ -871,11 +856,116 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
             
             Selection.Cells.VerticalAlignment = wdCellAlignVerticalCenter
         End If
+  
+        Next
+                            
+        .Tables(i).PreferredWidthType = wdPreferredWidthPercent
+        .Tables(i).PreferredWidth = 100
+        
+        
+        .Tables(i).Columns(1).Select
+        With Selection.Cells
+            .SetWidth _
+            ColumnWidth:=InchesToPoints(3.5), _
+            RulerStyle:=wdAdjustNone
+            '.PreferredWidthType = wdPreferredWidthPoints
+            '.PreferredWidth = InchesToPoints(3.5)
+        End With
+        
+        'Format N columns
 
-       Next
-          
+        Dim nColumns As Long
+        nColumns = .Tables(i).Columns.Count
+
+        For j = 1 To nColumns
+    
+            .Tables(i).Columns(j).Select
+            
+            Selection.Find.ClearFormatting
+            
+            With Selection.Find
+                .Text = "N"
+                .MatchWholeWord = True
+            End With
+            Selection.Find.Execute
+            
+            If Selection.Find.Found = True Then
+                .Tables(i).Columns(j).Select
+                With Selection.Cells
+                    '.PreferredWidthType = wdPreferredWidthPoints
+                    '.PreferredWidth = InchesToPoints(0.47)
+                    .SetWidth _
+                    ColumnWidth:=InchesToPoints(0.47), _
+                    RulerStyle:=wdAdjustNone
+                End With
+                                 
+                With Selection.Font
+                     .Bold = True
+                     .Italic = True
+                     .Color = wdColorGray40
+                 End With
+                 
+                 With Selection.ParagraphFormat
+                     .Alignment = wdAlignParagraphCenter
+                 End With
+                 
+                 Selection.Cells.VerticalAlignment = wdCellAlignVerticalCenter
+                 'Selection.Cells.SetWidth = 3.5
+                 
+                 
+             End If
+        Next
+        
+        
        'Center align test horizontal and vertical
-          
+        
+        
+        'Adjusting the width of the other cells to keep the 100% table width
+        
+        Dim ncols As Integer
+        Dim tableWidth As Double
+        Dim totalWidth As Double
+        
+        ncols = .Tables(i).Columns.Count
+        
+        Dim iCount As Integer
+        
+        With .Tables(i)
+            For iCount = 1 To .Columns.Count
+                tableWidth = tableWidth + .Cell(1, iCount).Width
+            Next iCount
+        End With
+        
+        totalWidth = tableWidth
+        
+        Debug.Print (ncols & " Cols")
+        Debug.Print (totalWidth & " Total Width")
+        Debug.Print (InchesToPoints(7.5) & " Should be")
+        
+        Dim temp As Double
+         
+         
+        'With .Tables(i)
+        '    If totalWidth > 540 Then
+        '        For nCount = 3 To ncols
+        '            temp = totalWidth - 551.52
+        '            temp = temp / (ncols - 2)
+        '            .Columns(nCount).Cells.SetWidth _
+        '            ColumnWidth:=.Columns(nCount).Cells.Width - temp, _
+        '            RulerStyle:=wdAdjustNone
+        '        Next nCount
+        '    Else
+        '        If totalWidth < 540 Then
+        '            totalWidth = 551.52 - totalWidth
+        '           .Columns(ncols).Cells.SetWidth _
+        '           ColumnWidth:=.Columns(ncols).Cells.Width + totalWidth, _
+        '            RulerStyle:=wdAdjustNone
+        '        End If
+        '    End If
+        'End With
+                             
+               
+        
         'Format header
         .Tables(i).Rows(1).Select
         
@@ -916,14 +1006,14 @@ Sub Replace_zeros(i As Integer)
 '    For i = 1 To nTables
     
     ActiveDocument.Tables(i).Range.Select
-    Selection.find.ClearFormatting
-    Selection.find.Replacement.ClearFormatting
-    With Selection.find
+    Selection.Find.ClearFormatting
+    Selection.Find.Replacement.ClearFormatting
+    With Selection.Find
         .Text = "0.0%"
         .Replacement.Text = "--"
         .Forward = True
         .Wrap = wdFindStop
-        .format = False
+        .Format = False
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -932,7 +1022,7 @@ Sub Replace_zeros(i As Integer)
         .MatchPrefix = True
     End With
     
-    Selection.find.Execute Replace:=wdReplaceAll
+    Selection.Find.Execute Replace:=wdReplaceAll
 
 '    Next
 
@@ -955,14 +1045,14 @@ Sub Replace_NaN(i As Integer)
 '    For i = 3 To nTables
     
     ActiveDocument.Tables(i).Range.Select
-    Selection.find.ClearFormatting
-    Selection.find.Replacement.ClearFormatting
-    With Selection.find
+    Selection.Find.ClearFormatting
+    Selection.Find.Replacement.ClearFormatting
+    With Selection.Find
         .Text = "NaN%"
         .Replacement.Text = "--"
         .Forward = True
         .Wrap = wdFindStop
-        .format = False
+        .Format = False
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -971,7 +1061,7 @@ Sub Replace_NaN(i As Integer)
         .MatchPrefix = False
     End With
     
-    Selection.find.Execute Replace:=wdReplaceAll
+    Selection.Find.Execute Replace:=wdReplaceAll
     
 '    Next
 
@@ -1006,19 +1096,19 @@ Sub number_questions()
         Selection.Delete
         .Tables(i).Cell(2, 1).Range.Text = Left(qTextNum, Len(qTextNum) - 2)
         .Tables(i).Cell(2, 1).Range.Select
-        With Selection.find
+        With Selection.Find
             .Text = "^p"
             .Replacement.Text = ""
             .Forward = True
             .Wrap = wdFindStop
-            .format = False
+            .Format = False
             .MatchCase = False
             .MatchWholeWord = False
             .MatchWildcards = False
             .MatchSoundsLike = False
             .MatchAllWordForms = False
         End With
-        Selection.find.Execute
+        Selection.Find.Execute
 
     Q = Q + 1
      
@@ -1040,15 +1130,15 @@ Sub remove_denominatorRow()
 
     For i = 1 To nTables
         .Tables(i).Select
-        Selection.find.ClearFormatting
-        Selection.find.Replacement.ClearFormatting
+        Selection.Find.ClearFormatting
+        Selection.Find.Replacement.ClearFormatting
         
-        With Selection.find
+        With Selection.Find
             .Text = "Denominator Used:"
             .Replacement.Text = ""
             .Forward = True
             .Wrap = wdFindStop
-            .format = False
+            .Format = False
             .MatchCase = True
             .MatchWholeWord = False
             .MatchWildcards = False
@@ -1056,7 +1146,7 @@ Sub remove_denominatorRow()
             .MatchAllWordForms = False
         End With
 '        Selection.find.Execute
-        If Selection.find.Execute Then Selection.Rows.Delete
+        If Selection.Find.Execute Then Selection.Rows.Delete
 
 '        Selection.Rows.Delete
     Next
@@ -1112,7 +1202,7 @@ Sub define_appendix_table_style()
         With .ParagraphFormat
             .Alignment = wdAlignParagraphLeft
             .RightIndent = InchesToPoints(0.1)
-            .leftindent = InchesToPoints(0.1)
+            .LeftIndent = InchesToPoints(0.1)
         End With
         
         With .Table
@@ -1127,7 +1217,7 @@ Sub define_appendix_table_style()
             
             .LeftPadding = InchesToPoints(0)
             .RightPadding = InchesToPoints(0)
-            .Spacing = InchesToPoints(0)
+            '.Spacing = InchesToPoints(0)
     
             With .Condition(wdOddRowBanding)
                 With .Shading
@@ -1485,14 +1575,14 @@ Sub fix_page_breaks()
         Dim nTables As Long
         nTables = .Tables.Count
         
-        Selection.find.ClearFormatting
-        Selection.find.Replacement.ClearFormatting
+        Selection.Find.ClearFormatting
+        Selection.Find.Replacement.ClearFormatting
         
-        With Selection.find
+        With Selection.Find
             .Text = "Responses: "
             .Forward = True
             .Wrap = wdFindStop
-            .format = False
+            .Format = False
             .MatchCase = True
             .MatchWholeWord = False
             .MatchWildcards = False
@@ -1515,7 +1605,7 @@ Sub fix_page_breaks()
         
         .Tables(i).Select
         
-        If Selection.find.Execute Then
+        If Selection.Find.Execute Then
             ResponseRow = Selection.Information(wdEndOfRangeRowNumber)
             ResponseRowPage = Selection.Information(wdActiveEndPageNumber)
             
@@ -1715,14 +1805,14 @@ For i = 1 To nsection
 
     ActiveDocument.Sections(i).Range.Select
 
-    Selection.find.ClearFormatting
-    Selection.find.Replacement.ClearFormatting
-    With Selection.find
+    Selection.Find.ClearFormatting
+    Selection.Find.Replacement.ClearFormatting
+    With Selection.Find
         .Text = "^p^m"
         .Replacement.Text = ""
         .Forward = True
         .Wrap = wdFindStop
-        .format = False
+        .Format = False
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -1731,7 +1821,7 @@ For i = 1 To nsection
         .MatchPrefix = False
     End With
     
-    Selection.find.Execute Replace:=wdReplaceAll
+    Selection.Find.Execute Replace:=wdReplaceAll
 Next
 
 End Sub
@@ -1742,7 +1832,7 @@ Sub preview_remove_block_titles()
 'They are currently input into the document as heading 5
 'We want to delete the row of text with heading 5 and the next row
 
-With Selection.find
+With Selection.Find
     .ClearFormatting
     .Style = ActiveDocument.Styles("Heading 5")
     .Replacement.ClearFormatting
@@ -1750,7 +1840,7 @@ With Selection.find
     .Replacement.Text = ""
     .Forward = True
     .Wrap = wdFindStop
-    .format = True
+    .Format = True
     .MatchCase = True
     .MatchWholeWord = False
     .MatchWildcards = False
@@ -1765,11 +1855,11 @@ For i = 1 To npar
     Debug.Print "Paragraph" + Str(i)
     ActiveDocument.Paragraphs(i).Range.Select
     Selection.HomeKey Unit:=wdLine
-    Selection.find.Execute
+    Selection.Find.Execute
 
-    If Selection.find.Found = True Then
-        Selection.find.Parent.MoveDown Unit:=wdLine, Count:=2, Extend:=wdExtend
-        Selection.find.Parent.Delete
+    If Selection.Find.Found = True Then
+        Selection.Find.Parent.MoveDown Unit:=wdLine, Count:=2, Extend:=wdExtend
+        Selection.Find.Parent.Delete
     Else: Exit For
     End If
 
@@ -1829,14 +1919,14 @@ Sub remove_blockHeaders_HTML()
     loopCount = 1
     
     
-    Selection.find.ClearFormatting
-    Selection.find.Style = .Styles("Heading 5")
-    With Selection.find
+    Selection.Find.ClearFormatting
+    Selection.Find.Style = .Styles("Heading 5")
+    With Selection.Find
      .Text = ""
         .Replacement.Text = ""
         .Forward = True
         .Wrap = wdFindAsk
-        .format = True
+        .Format = True
         .MatchCase = False
         .MatchWholeWord = False
         .MatchByte = False
@@ -1845,16 +1935,16 @@ Sub remove_blockHeaders_HTML()
         .MatchAllWordForms = False
     End With
     Selection.HomeKey Unit:=wdStory
-    Selection.find.Execute
+    Selection.Find.Execute
     
-    Do While Selection.find.Found = True And loopCount < 1000
+    Do While Selection.Find.Found = True And loopCount < 1000
     
         Debug.Print iCount
         Selection.Expand wdParagraph
         Selection.Delete
         Selection.EndOf
         Selection.HomeKey Unit:=wdStory
-        Selection.find.Execute
+        Selection.Find.Execute
     Loop
     
     
@@ -1879,14 +1969,14 @@ With ActiveDocument
         
         nrow = ActiveDocument.Tables(i).Rows.Count
     
-    Selection.find.ClearFormatting
-    Selection.find.Style = .Styles("Heading 5")
-    With Selection.find
+    Selection.Find.ClearFormatting
+    Selection.Find.Style = .Styles("Heading 5")
+    With Selection.Find
      .Text = ""
         .Replacement.Text = ""
         .Forward = True
         .Wrap = wdFindAsk
-        .format = True
+        .Format = True
         .MatchCase = False
         .MatchWholeWord = False
         .MatchByte = False
@@ -1895,16 +1985,16 @@ With ActiveDocument
         .MatchAllWordForms = False
     End With
     Selection.HomeKey Unit:=wdStory
-    Selection.find.Execute
+    Selection.Find.Execute
     
-    Do While Selection.find.Found = True And loopCount < 1000
+    Do While Selection.Find.Found = True And loopCount < 1000
     
         Debug.Print iCount
         Selection.Expand wdParagraph
         Selection.Delete
         Selection.EndOf
         Selection.HomeKey Unit:=wdStory
-        Selection.find.Execute
+        Selection.Find.Execute
     Loop
     
     
@@ -1953,10 +2043,10 @@ Sub replace_newline()
     wrdDoc.Content.Select
 
 'Replace new line character (^l) with carraige return (^p)
-    Selection.find.ClearFormatting
-    Selection.find.Replacement.ClearFormatting
+    Selection.Find.ClearFormatting
+    Selection.Find.Replacement.ClearFormatting
 
-    With Selection.find
+    With Selection.Find
         'oryginal
         .Text = "^l"
         .Replacement.Text = "^p"
@@ -1965,9 +2055,9 @@ Sub replace_newline()
     End With
 
 GoHere:
-    Selection.find.Execute Replace:=wdReplaceAll
+    Selection.Find.Execute Replace:=wdReplaceAll
 
-    If Selection.find.Execute = True Then
+    If Selection.Find.Execute = True Then
         GoTo GoHere
     End If
 
@@ -2033,15 +2123,15 @@ Sub format_See_Appendix(i)
 
     With ActiveDocument
     
-    Selection.find.ClearFormatting
-    Selection.find.Replacement.ClearFormatting
+    Selection.Find.ClearFormatting
+    Selection.Find.Replacement.ClearFormatting
         
-    With Selection.find
+    With Selection.Find
         .Text = "See Appendix."
         .Replacement.Text = ""
         .Forward = True
         .Wrap = wdFindStop
-        .format = False
+        .Format = False
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -2053,7 +2143,7 @@ Sub format_See_Appendix(i)
         
         .Tables(i).Select
         
-        If Selection.find.Execute Then
+        If Selection.Find.Execute Then
             Selection.Paragraphs.Indent
             Selection.InsertRowsAbove
         End If
@@ -2062,4 +2152,120 @@ Sub format_See_Appendix(i)
     
     End With
 
+End Sub
+
+Sub trials()
+    Dim i As Integer
+    Dim nrow As Integer
+    Dim ncol As Integer
+    
+    i = 7
+    nrow = 12
+    ncol = 6
+
+    With ActiveDocument
+       Debug.Print (.Tables.Count & " Tables")
+       Debug.Print (.Tables(7).Rows.Count & " Rows")
+       Debug.Print (.Tables(7).Columns.Count & " Cols")
+       Call format_matrix_table(i, nrow, ncol)
+    End With
+        
+    
+    
+End Sub
+
+Sub RemoveEmptyParagraphs()
+
+    Selection.Find.ClearFormatting
+    Selection.Find.Replacement.ClearFormatting
+    Selection.Find.Replacement.Font.Underline = wdUnderlineSingle
+    With Selection.Find
+        .Text = "^p^$"
+        .Replacement.Text = "^&"
+        .Forward = True
+        .Wrap = wdFindContinue
+        .Format = True
+        .MatchCase = True
+        .MatchWholeWord = False
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+    End With
+    Selection.Find.Execute Replace:=wdReplaceAll
+    
+    Selection.Find.ClearFormatting
+    Selection.Find.Font.Italic = True
+    Selection.Find.Replacement.ClearFormatting
+    Selection.Find.Replacement.Font.Underline = wdUnderlineSingle
+    With Selection.Find
+        .Text = "^p"
+        .Replacement.Text = "^&"
+        .Forward = True
+        .Wrap = wdFindContinue
+        .Format = True
+        .MatchCase = True
+        .MatchWholeWord = False
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+    End With
+    Selection.Find.Execute Replace:=wdReplaceAll
+    
+    Selection.Find.ClearFormatting
+    Selection.Find.Font.Underline = wdUnderlineSingle
+    Selection.Find.Replacement.ClearFormatting
+    With Selection.Find.Replacement.Font
+        .Bold = True
+        .Underline = wdUnderlineSingle
+    End With
+    With Selection.Find
+        .Text = "^p"
+        .Replacement.Text = "^&"
+        .Forward = True
+        .Wrap = wdFindContinue
+        .Format = True
+        .MatchCase = True
+        .MatchWholeWord = False
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+    End With
+    Selection.Find.Execute Replace:=wdReplaceAll
+    
+    Selection.Find.ClearFormatting
+    Selection.Find.Font.Bold = False
+    Selection.Find.Replacement.ClearFormatting
+    With Selection.Find
+        .Text = "^p"
+        .Replacement.Text = ""
+        .Forward = True
+        .Wrap = wdFindContinue
+        .Format = True
+        .MatchCase = True
+        .MatchWholeWord = False
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+    End With
+    Selection.Find.Execute Replace:=wdReplaceAll
+    
+    Selection.Find.ClearFormatting
+    Selection.Find.Font.Underline = wdUnderlineSingle
+    Selection.Find.Replacement.ClearFormatting
+    Selection.Find.Replacement.Font.Underline = wdUnderlineNone
+    With Selection.Find
+        .Text = "^p^$"
+        .Replacement.Text = "^&"
+        .Forward = True
+        .Wrap = wdFindContinue
+        .Format = True
+        .MatchCase = True
+        .MatchWholeWord = False
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+    End With
+    Selection.Find.Execute Replace:=wdReplaceAll
+        
+ 
 End Sub
