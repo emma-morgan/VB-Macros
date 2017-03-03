@@ -839,12 +839,10 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
             End With
             Selection.Find.Execute
             
-            
             If Selection.Find.Found = True Then
                 .Tables(i).Columns(j).Select
                 With Selection.Cells
-                    '.PreferredWidthType = wdPreferredWidthPoints
-                    '.PreferredWidth = InchesToPoints(0.47)
+
                     .SetWidth _
                     ColumnWidth:=InchesToPoints(0.47), _
                     RulerStyle:=wdAdjustNone
