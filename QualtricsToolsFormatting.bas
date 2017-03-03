@@ -1,4 +1,4 @@
-Attribute VB_Name = "NewMacros"
+Attribute VB_Name = "NewMacros3"
 Sub define_table_styles()
 
     'After defining table styles, you MUST  edit table style
@@ -80,7 +80,7 @@ Sub finish_clean_preview()
         
     Call number_questions
     Call remove_denominatorRow
-    Call remove_questionInfo_row
+    Call Remove_Export_Tag
 
 End Sub
 
@@ -2287,4 +2287,26 @@ Sub RemoveEmptyParagraphs()
     Selection.Find.Execute Replace:=wdReplaceAll
         
  
+End Sub
+
+Sub Remove_Export_Tag()
+
+    Selection.Find.ClearFormatting
+    With Selection.Find
+        .Text = "Export Tag: "
+        .Replacement.Text = ""
+        .Forward = True
+        .Wrap = wdFindAsk
+        .Format = False
+        .MatchCase = False
+        .MatchWholeWord = False
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+    End With
+    
+    Do While Selection.Find.Execute
+        Selection.Rows.Delete
+    Loop
+    
 End Sub
