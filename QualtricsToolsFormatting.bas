@@ -860,8 +860,6 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
                  End With
                  
                  Selection.Cells.VerticalAlignment = wdCellAlignVerticalCenter
-                 'Selection.Cells.SetWidth = 3.5
-                 
                  
              End If
         Next
@@ -895,15 +893,7 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
         If Selection.Find.Found = True Then
             .Tables(i).Columns(k).Select
             With Selection.Cells
-                '.PreferredWidthType = wdPreferredWidthPercent
-                '.PreferredWidth = InchesToPoints(
-                '.SetWidth _
-                'ColumnWidth:=InchesToPoints(PerColWidth), _
-                'RulerStyle:=wdAdjustNone
                 .PreferredWidth = None
-                '.AutoFit
-                '.PreferredWidthType = wdPreferredWidthAuto
-                '.PreferredWidth = 0
                 
             End With
                 
@@ -923,13 +913,8 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
         Next
         
         
-        '.Tables(i).PreferredWidthType = wdPreferredWidthPercent
-        '.Tables(i).PreferredWidth = 100
-        
-        
        'Center align test horizontal and vertical
         
-       
         
         'Format header
         .Tables(i).Rows(1).Select
