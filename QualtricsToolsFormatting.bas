@@ -876,12 +876,6 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
        Dim PerColumns As Long
        PerColumns = .Tables(i).Columns.Count
           
-       Dim PerColWidth As Double
-       
-       PerColWidth = (3.53 / (PerColumns - 2))
-          
-       Debug.Print (PerColWidth & " WIDTH SHOULD BE .87")
-                   
        For k = 1 To PerColumns
     
         .Tables(i).Columns(k).Select
@@ -935,54 +929,7 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
         
        'Center align test horizontal and vertical
         
-        
-        'Adjusting the width of the other cells to keep the 100% table width
-        
-        Dim ncols As Integer
-        Dim tableWidth As Double
-        Dim totalWidth As Double
-        
-        ncols = .Tables(i).Columns.Count
-        
-        Dim iCount As Integer
-        
-        With .Tables(i)
-            For iCount = 1 To .Columns.Count
-                tableWidth = tableWidth + .Cell(1, iCount).Width
-            Next iCount
-        End With
-        
-        totalWidth = tableWidth
-        
-        Debug.Print (ncols & " Cols")
-        Debug.Print (totalWidth & " Total Width")
-        Debug.Print (InchesToPoints(7.5) & " Should be")
-        
-        Dim temp As Double
-         
-         
-        'With .Tables(i)
-        '    If totalWidth > 540 Then
-        '        For nCount = 3 To ncols
-        '            temp = totalWidth - 551.52
-        '            temp = temp / (ncols - 2)
-        '            .Columns(nCount).Cells.SetWidth _
-        '            ColumnWidth:=.Columns(nCount).Cells.Width - temp, _
-        '            RulerStyle:=wdAdjustNone
-        '        Next nCount
-        '    Else
-        '        If totalWidth < 540 Then
-        '            totalWidth = 551.52 - totalWidth
-        '           .Columns(ncols).Cells.SetWidth _
-        '           ColumnWidth:=.Columns(ncols).Cells.Width + totalWidth, _
-        '            RulerStyle:=wdAdjustNone
-        '        End If
-        '    End If
-        'End With
-                             
-        '.Tables(i).PreferredWidthType = wdPreferredWidthPercent
-        '.Tables(i).PreferredWidth = 100
-        
+       
         
         'Format header
         .Tables(i).Rows(1).Select
