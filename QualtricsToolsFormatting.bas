@@ -1,4 +1,4 @@
-Attribute VB_Name = "NewMacros3"
+Attribute VB_Name = "NewMacros31"
 Sub define_table_styles()
 
     'After defining table styles, you MUST  edit table style
@@ -95,24 +95,19 @@ Sub format_appendix()
        
     Dim nTables As Long
     nTables = .Tables.Count
-'   MsgBox ("Number of Tables: " & nTables)
     Debug.Print nTables
     
     Dim i As Integer
-'    i = 1
     For i = 1 To nTables
         
         Dim celltxt As String
         celltxt = .Tables(i).Cell(4, 1).Range.Text
-'        Debug.Print celltxt
         If InStr(1, celltxt, "Coded Comments") Then
             isCodedComment = True
         Else
             isCodedComment = False
         End If
-        
- '       Debug.Print isCodedComment
-        
+                
     
         .Tables(i).Select
         Selection.ClearParagraphAllFormatting
@@ -120,7 +115,6 @@ Sub format_appendix()
         
         nrow = .Tables(i).Rows.Count
         ncol = .Tables(i).Columns.Count
-'        Debug.Print nrow
         
         'Remove text from second column of coded comment table header
         Call duplicateHeaderText(i)
@@ -365,11 +359,6 @@ Sub Insert_OIRE()
         'Insert text
         oireName = "Office of Institutional" + Chr(10) + "Research & Evaluation" + Chr(10)
         Selection.TypeText Text:=oireName
-        'Break into two lines
-        'Selection.MoveLeft Unit:=wdCharacter, Count:=21
-        'Selection.TypeParagraph
-        'Selection.MoveRight Unit:=wdCharacter, Count:=21
-        'Selection.TypeParagraph
     End With
 
 End Sub
@@ -449,22 +438,7 @@ Sub Insert_footer()
         Set footerTable = .Sections(1).Footers(wdHeaderFooterPrimary).Range.Tables(1)
                         
         With footerTable
-        
-'            .Rows.leftindent = InchesToPoints(0)
-'
-'            .Columns.PreferredWidthType = wdPreferredWidthPercent
-'
-'            .Columns(2).PreferredWidth = 13
-            
- '           .Columns(1).PreferredWidth = 40
-
- '           .Columns(1).SetWidth ColumnWidth:=InchesToPoints(2.9), RulerStyle:=wdAdjustNone
- '           .Columns(2).SetWidth ColumnWidth:=InchesToPoints(0.7), RulerStyle:=wdAdjustProportional
- '           .Columns(3).SetWidth ColumnWidth:=InchesToPoints(2.9), RulerStyle:=wdAdjustNone
-                
-'            .PreferredWidthType = wdPreferredWidthPercent
- '           .PreferredWidth = 100
-                
+                        
             .TopPadding = InchesToPoints(0.08)
             .BottomPadding = InchesToPoints(0)
             .LeftPadding = InchesToPoints(0)
@@ -518,14 +492,6 @@ Sub Insert_footer()
         Selection.ParagraphFormat.Alignment = wdAlignParagraphCenter
         Selection.Font.Italic = True
     
-'        footerTable.Range.ParagraphFormat.LeftIndent = 0
-'        footerTable.Range.ParagraphFormat.RightIndent = 0
-        
-'        footerTable.AutoFitBehavior (wdAutoFitWindow)
-    'Return to print layout view
-
-'    ActiveDocument.Sections(1).Footers.tabl ables(i).PreferredWidthType = wdPreferredWidthPercent
-'         .Tables(i).PreferredWidth = 100
 
     If ActiveWindow.View.SplitSpecial <> wdPaneNone Then
         ActiveWindow.Panes(2).Close
@@ -636,19 +602,7 @@ End With
 End Sub
 
 Sub format_mc_singleQ(i As Integer, nrow As Integer, ncol As Integer)
-'
-'Sub format_mc_singleQ_testing()
-'
-'Dim i As Integer
-'Dim nrow As Integer
-'Dim ncol As Integer
-'
-'i = 16
-'ncol = 3
-'nrow = 3
-
-' format_mc_checkall_singleQ Macro
-'
+    
     With ActiveDocument
     
         .Tables(i).Style = "basic_table_style"
@@ -819,9 +773,7 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
             '.PreferredWidth = InchesToPoints(3.5)
             '.PreferredWidth = InchesToPercent(3.5)
         End With
-        
-        '.Tables(i).Width
-                
+                        
         'Format N columns
 
         Dim nColumns As Long
@@ -862,11 +814,7 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
                  
              End If
         Next
-
-        
-        '.Tables(i).PreferredWidthType = wdPreferredWidthPercent
-        '.Tables(i).PreferredWidth = 100
-        
+     
                 
         'Format percentage columns
           
@@ -949,11 +897,6 @@ Sub Replace_zeros(i As Integer)
 
     Application.DisplayAlerts = False
     
-'     Dim i As Integer
-'     Dim nTables As Integer
-'     nTables = ActiveDocument.Tables.Count
-'
-'    For i = 1 To nTables
     
     ActiveDocument.Tables(i).Range.Select
     Selection.Find.ClearFormatting
@@ -988,12 +931,7 @@ Sub Replace_NaN(i As Integer)
 
     Application.DisplayAlerts = False
     
-'     Dim i As Integer
-'     Dim nTables As Integer
-'     nTables = ActiveDocument.Tables.Count
-    
-'    For i = 3 To nTables
-    
+  
     ActiveDocument.Tables(i).Range.Select
     Selection.Find.ClearFormatting
     Selection.Find.Replacement.ClearFormatting
@@ -1013,7 +951,6 @@ Sub Replace_NaN(i As Integer)
     
     Selection.Find.Execute Replace:=wdReplaceAll
     
-'    Next
 
     
 End Sub
@@ -1040,9 +977,6 @@ Sub number_questions()
         qNum = CStr(Q)
         qTextNum = qNum + ". " + qText
         .Tables(i).Cell(2, 1).Range.Select
-        'MsgBox qText
-        'MsgBox Right(qText, 2)
-        ' MsgBox qTextNum
         Selection.Delete
         .Tables(i).Cell(2, 1).Range.Text = Left(qTextNum, Len(qTextNum) - 2)
         .Tables(i).Cell(2, 1).Range.Select
@@ -1095,10 +1029,8 @@ Sub remove_denominatorRow()
             .MatchSoundsLike = False
             .MatchAllWordForms = False
         End With
-'        Selection.find.Execute
         If Selection.Find.Execute Then Selection.Rows.Delete
 
-'        Selection.Rows.Delete
     Next
     
     End With
@@ -1167,7 +1099,6 @@ Sub define_appendix_table_style()
             
             .LeftPadding = InchesToPoints(0)
             .RightPadding = InchesToPoints(0)
-            '.Spacing = InchesToPoints(0)
     
             With .Condition(wdOddRowBanding)
                 With .Shading
@@ -1259,9 +1190,6 @@ Attribute alphabetize_table.VB_ProcData.VB_Invoke_Func = "Normal.NewMacros.alpha
         Dim nTables As Long
         nTables = .Tables.Count
     
-'        Dim i As Long
-'        For i = 1 To nTables
-'        i = 1
             nrow = .Tables(i).Rows.Count
             ncol = .Tables(i).Columns.Count
             
@@ -1294,7 +1222,6 @@ Attribute alphabetize_table.VB_ProcData.VB_Invoke_Func = "Normal.NewMacros.alpha
                 End If
             
             End If
-'        Next
     End With
 End Sub
 
@@ -1305,11 +1232,6 @@ Attribute Appendix_Merge_Header.VB_ProcData.VB_Invoke_Func = "Normal.NewMacros.A
 '
 '
 With ActiveDocument
-
-'Dim nTables As Long
-'nTables = .Tables.Count
-'Dim i As Long
-'For i = 1 To nTables
 
 ncol = .Tables(i).Columns.Count
 
@@ -1343,10 +1265,6 @@ Sub duplicateHeaderText(i As Integer)
 
 With ActiveDocument
 
-'Dim nTables As Long
-'nTables = .Tables.Count
-'Dim i As Long
-'For i = 1 To nTables
 
     ncol = .Tables(i).Columns.Count
 
@@ -1369,9 +1287,6 @@ Sub appendix_table_formatting_CBB()
 
 'Created by CB;
 
-'Dim i As Long
-'i = 1
-
     With ActiveDocument
     
     
@@ -1385,7 +1300,6 @@ Sub appendix_table_formatting_CBB()
     
     Dim nTables As Long
     nTables = .Tables.Count
-'   MsgBox ("Number of Tables: " & nTables)
     Debug.Print nTables
     
     For i = 1 To nTables
@@ -1454,9 +1368,6 @@ Sub BorderAtBreak()
 
 Dim nTables As Long
     nTables = ActiveDocument.Tables.Count
-'    MsgBox ("Number of Tables: " & nTables)
-    
-'    For i = 1 To nTables
 For t = 1 To nTables
 
     Dim r As Range
@@ -1481,18 +1392,13 @@ For t = 1 To nTables
        oTableRange.Collapse 1
        tblStartPage = _
           oTableRange.Information(wdActiveEndPageNumber)
-'        MsgBox ("Start Page: " & tblStartPage)
-    '    Set refPage = tblStartPage
     ' loop through each row checking if it is the same page
     For Each oRow In oTable.Rows
        Set r = oRow.Range
        r.Collapse 1
-'       MsgBox ("Investigate row " & oRow.Index)
        If r.Information(wdActiveEndPageNumber) <> _
           tblStartPage Then
-'          MsgBox ("Row " & oRow.Index & " is AFTER the page break.")
           b = oRow.Index - 1
-'          MsgBox (b)
           Set bottomCell = ActiveDocument.Range(Start:=oTable.Cell(b, 1).Range.Start, _
                 End:=oTable.Cell(b + 1, 1).Range.End)
     
@@ -1504,7 +1410,6 @@ For t = 1 To nTables
           i = i + 1
           
           tblStartPage = tblStartPage + 1
-'          MsgBox ("New Table Start Page: " & tblStartPage)
        
        End If
     Next
@@ -1848,10 +1753,8 @@ End Sub
 Sub DefaultParagraphSpacing()
 
 With ActiveDocument
-    
-'    .Paragraphs.LineUnitAfter = 0
-'    .Paragraphs.LineUnitBefore = 0
-    
+   
+ 
     .Paragraphs.SpaceAfterAuto = False
     .Paragraphs.SpaceAfter = 0
     .Paragraphs.SpaceBeforeAuto = False
@@ -2104,25 +2007,6 @@ Sub format_See_Appendix(i)
 
 End Sub
 
-Sub trials()
-    Dim i As Integer
-    Dim nrow As Integer
-    Dim ncol As Integer
-    
-    i = 7
-    nrow = 12
-    ncol = 6
-
-    With ActiveDocument
-       Debug.Print (.Tables.Count & " Tables")
-       Debug.Print (.Tables(7).Rows.Count & " Rows")
-       Debug.Print (.Tables(7).Columns.Count & " Cols")
-       Call format_matrix_table(i, nrow, ncol)
-    End With
-        
-    
-    
-End Sub
 
 Sub RemoveEmptyParagraphs()
 
