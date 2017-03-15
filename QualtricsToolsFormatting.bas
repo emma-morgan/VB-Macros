@@ -2256,3 +2256,32 @@ Sub format_NA_table()
     Next
     
 End Sub
+
+Sub Macro2()
+' Working on numbering the appendices
+' Macro2 Macro
+'
+'
+    Selection.TypeBackspace
+    Selection.TypeText Text:=" "
+    Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
+        "AUTONUM  \* ALPHABETIC ", PreserveFormatting:=False
+    Selection.MoveLeft Unit:=wdCharacter, Count:=1, Extend:=wdExtend
+    Selection.Copy
+    Selection.Find.ClearFormatting
+    Selection.Find.Replacement.ClearFormatting
+    With Selection.Find
+        .Text = "See Appendix"
+        .Replacement.Text = "See Appendix ^c"
+        .Forward = True
+        .Wrap = wdFindAsk
+        .Format = False
+        .MatchCase = True
+        .MatchWholeWord = False
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+    End With
+    Selection.Find.Execute Replace:=wdReplaceAll
+End Sub
+
