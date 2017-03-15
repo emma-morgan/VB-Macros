@@ -355,7 +355,11 @@ Sub Insert_OIRE()
         Selection.HomeKey Unit:=wdStory
         Selection.TypeParagraph
         Selection.HomeKey Unit:=wdStory
+        Selection.Style = ActiveDocument.Styles("Heading 4")
+        Selection.Font.Bold = True
+        Selection.Font.Italic = False
         Selection.ParagraphFormat.Alignment = wdAlignParagraphRight
+
         'Insert text
         oireName = "Office of Institutional" + Chr(10) + "Research & Evaluation" + Chr(10)
         Selection.TypeText Text:=oireName
