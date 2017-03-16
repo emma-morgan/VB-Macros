@@ -1,4 +1,6 @@
-Attribute VB_Name = "NewMacros31"
+Attribute VB_Name = "QualtricsTools"
+''Updated 3/16/17
+
 Sub define_table_styles()
 
     'After defining table styles, you MUST  edit table style
@@ -2257,10 +2259,9 @@ Sub format_NA_table()
     
 End Sub
 
-Sub Macro2()
+Sub NumberingAppendices()
 ' Working on numbering the appendices
-' Macro2 Macro
-'
+' Currently Double Prints A. should fix that/one possible method is just go back and look for it and delete it
 '
     Selection.TypeBackspace
     Selection.TypeText Text:=" "
