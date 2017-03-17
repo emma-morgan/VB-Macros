@@ -1,4 +1,6 @@
-Attribute VB_Name = "NewMacros31"
+Attribute VB_Name = "QualtricsTools"
+''Updated 3/16/17
+
 Sub define_table_styles()
 
     'After defining table styles, you MUST  edit table style
@@ -2256,3 +2258,31 @@ Sub format_NA_table()
     Next
     
 End Sub
+
+Sub NumberingAppendices()
+' Working on numbering the appendices
+' Currently Double Prints A. should fix that/one possible method is just go back and look for it and delete it
+'
+    Selection.TypeBackspace
+    Selection.TypeText Text:=" "
+    Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
+        "AUTONUM  \* ALPHABETIC ", PreserveFormatting:=False
+    Selection.MoveLeft Unit:=wdCharacter, Count:=1, Extend:=wdExtend
+    Selection.Copy
+    Selection.Find.ClearFormatting
+    Selection.Find.Replacement.ClearFormatting
+    With Selection.Find
+        .Text = "See Appendix"
+        .Replacement.Text = "See Appendix ^c"
+        .Forward = True
+        .Wrap = wdFindAsk
+        .Format = False
+        .MatchCase = True
+        .MatchWholeWord = False
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+    End With
+    Selection.Find.Execute Replace:=wdReplaceAll
+End Sub
+
