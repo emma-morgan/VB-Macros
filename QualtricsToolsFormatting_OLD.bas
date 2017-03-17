@@ -2286,3 +2286,182 @@ Sub NumberingAppendices()
     Selection.Find.Execute Replace:=wdReplaceAll
 End Sub
 
+Sub UpdateDocuments()
+Application.ScreenUpdating = False
+Dim strFolder As String, strFile As String, wdDoc As Document
+strFolder = GetFolder
+If strFolder = "" Then Exit Sub
+strFile = Dir(strFolder & "\*.docx", vbNormal)
+While strFile <> ""
+  Set wdDoc = Documents.Open(FileName:=strFolder & "\" & strFile, AddToRecentFiles:=False, Visible:=False)
+  With wdDoc
+    'Call your other macro or insert its code here
+    Call define_table_styles
+    Call format_appendix
+    .Close SaveChanges:=True
+  End With
+  strFile = Dir()
+Wend
+Set wdDoc = Nothing
+Application.ScreenUpdating = True
+End Sub
+ 
+Function GetFolder() As String
+Dim oFolder As Object
+GetFolder = ""
+Set oFolder = CreateObject("Shell.Application").BrowseForFolder(0, "Choose a folder", 0)
+If (Not oFolder Is Nothing) Then GetFolder = oFolder.Items.Item.path
+Set oFolder = Nothing
+End Function
+
+Sub UpdateMultipleFiles()
+Dim file
+Dim path As String
+
+' Path to your folder. MY folder is listed below. I bet yours is different.
+' make SURE you include the terminating "\"
+'YOU MUST EDIT THIS.
+path = "Q:\Student Work\Emma's Student Work\Suneeth\Grad Exit 2015 Program-level Appendices\New folder\"
+
+'Change this file extension to the file you are opening. .htm is listed below. You may have rtf or docx.
+'YOU MUST EDIT THIS.
+file = Dir(path & "\" & "*.*")
+
+Application.DisplayAlerts = wdAlertsNone
+
+Do While file <> ""
+    Documents.Open FileName:=path & file
+    
+    ' This is the call to the macro you want to run on each file the folder
+    'YOU MUST EDIT THIS. lange01 is my macro name. You put yours here.
+    Call define_table_styles
+    Call format_appendix
+    Call remove_first_row
+    Call Remove_Responses_Tag
+    Call preview_remove_block_titles
+    Call delete_text_brackets
+    
+    ' Saves the file
+    ActiveDocument.Save
+    ActiveDocument.Close
+    ' set file to next in Dir
+    file = Dir()
+Loop
+End Sub
+
+Sub Remove_Responses_Tag()
+
+    Selection.Find.ClearFormatting
+    With Selection.Find
+        .Text = "Responses: (^?)"
+        .Replacement.Text = "Responses"
+        .Forward = True
+        .Wrap = wdFindAsk
+        .Format = False
+        .MatchCase = False
+        .MatchWholeWord = False
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+    End With
+    Selection.Find.Execute Replace:=wdReplaceAll
+    
+    Selection.Find.ClearFormatting
+    With Selection.Find
+        .Text = "Responses: (^?^?)"
+        .Replacement.Text = "Responses"
+        .Forward = True
+        .Wrap = wdFindAsk
+        .Format = False
+        .MatchCase = False
+        .MatchWholeWord = False
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+    End With
+    Selection.Find.Execute Replace:=wdReplaceAll
+    
+    
+    Selection.Find.ClearFormatting
+    With Selection.Find
+        .Text = "Responses: (^?^?^?)"
+        .Replacement.Text = "Responses"
+        .Forward = True
+        .Wrap = wdFindAsk
+        .Format = False
+        .MatchCase = False
+        .MatchWholeWord = False
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+    End With
+    Selection.Find.Execute Replace:=wdReplaceAll
+    
+        Selection.Find.ClearFormatting
+    With Selection.Find
+        .Text = "Responses: (^?^?^?^?)"
+        .Replacement.Text = "Responses"
+        .Forward = True
+        .Wrap = wdFindAsk
+        .Format = False
+        .MatchCase = False
+        .MatchWholeWord = False
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+    End With
+    Selection.Find.Execute Replace:=wdReplaceAll
+    
+    
+End Sub
+
+Sub delete_text_brackets()
+' Specifically for Rebecca's Grad Exit Project
+' remove_open_bracket Macro
+'
+'
+    Selection.Find.ClearFormatting
+    Selection.Find.Replacement.ClearFormatting
+    With Selection.Find
+        .Text = "(\[)*(\])"
+        .Replacement.Text = ""
+        .Forward = True
+        .Wrap = wdFindContinue
+        .Format = False
+        .MatchCase = False
+        .MatchWholeWord = False
+        .MatchWildcards = True
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+    End With
+    Selection.Find.Execute Replace:=wdReplaceAll
+End Sub
+
+Sub remove_first_row()
+'
+' Removes question data export tags from the question info tables in the survey preview
+' Called as part of the final cleaning up macro
+'
+    With ActiveDocument
+    
+    Dim nTables As Long
+    nTables = .Tables.Count
+    
+    For i = 1 To nTables
+        ncol = .Tables(i).Columns.Count
+        
+'        Delete first row of the question info (data export tag)
+'        This will only appear in question info in the preview; all others have 3+ columns
+'        This can be used for appendices to remove first row from coded and full text comments
+        
+        'delete data export tag
+        .Tables(i).Rows(1).Select
+        Selection.Rows.Delete
+                    
+
+    Next
+            
+    End With
+    
+End Sub
+

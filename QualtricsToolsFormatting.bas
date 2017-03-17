@@ -2318,13 +2318,9 @@ Sub UpdateMultipleFiles()
 Dim file
 Dim path As String
 
-' Path to your folder. MY folder is listed below. I bet yours is different.
-' make SURE you include the terminating "\"
-'YOU MUST EDIT THIS.
+'Change this to the folder with the files that you want to run macros on
 path = "Q:\Student Work\Emma's Student Work\Suneeth\Grad Exit 2015 Program-level Appendices\New folder\"
 
-'Change this file extension to the file you are opening. .htm is listed below. You may have rtf or docx.
-'YOU MUST EDIT THIS.
 file = Dir(path & "\" & "*.*")
 
 Application.DisplayAlerts = wdAlertsNone
@@ -2332,8 +2328,7 @@ Application.DisplayAlerts = wdAlertsNone
 Do While file <> ""
     Documents.Open FileName:=path & file
     
-    ' This is the call to the macro you want to run on each file the folder
-    'YOU MUST EDIT THIS. lange01 is my macro name. You put yours here.
+    ' Call all the macros that you want to run on the files in the folder
     Call define_table_styles
     Call format_appendix
     Call remove_first_row
