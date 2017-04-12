@@ -42,13 +42,13 @@ Sub format_survey_preview()
     
     With ActiveDocument
 
-    nTables = .Tables.Count
+    nTables = .Tables.count
         
 
         
     For i = 1 To nTables
-        ncol = .Tables(i).Columns.Count
-        nrow = .Tables(i).Rows.Count
+        ncol = .Tables(i).Columns.count
+        nrow = .Tables(i).Rows.count
         Debug.Print ncol
 
         .Tables(i).AllowPageBreaks = False
@@ -78,7 +78,7 @@ Sub finish_clean_preview()
     Dim nrow As Integer
     Dim nTables As Integer
     
-    nTables = ActiveDocument.Tables.Count
+    nTables = ActiveDocument.Tables.count
         
     Call number_questions
     Call remove_denominatorRow
@@ -96,7 +96,7 @@ Sub format_appendix()
     Call Preview_Style_Change
        
     Dim nTables As Long
-    nTables = .Tables.Count
+    nTables = .Tables.count
     Debug.Print nTables
     
     Dim i As Integer
@@ -115,8 +115,8 @@ Sub format_appendix()
         Selection.ClearParagraphAllFormatting
         Selection.EndOf
         
-        nrow = .Tables(i).Rows.Count
-        ncol = .Tables(i).Columns.Count
+        nrow = .Tables(i).Rows.count
+        ncol = .Tables(i).Columns.count
         
         'Remove text from second column of coded comment table header
         Call duplicateHeaderText(i)
@@ -615,12 +615,13 @@ Sub format_mc_singleQ(i As Integer, nrow As Integer, ncol As Integer)
         
         'Adjust cell padding for multiple choice
         With .Tables(i)
-            .LeftPadding = InchesToPoints(0.08)
-            .RightPadding = InchesToPoints(0.08)
+            .LeftPadding = InchesToPoints(0)
+            .RightPadding = InchesToPoints(0)
             .TopPadding = InchesToPoints(0.01)
             .BottomPadding = InchesToPoints(0.01)
             .Spacing = InchesToPoints(0)
-
+            .Range.Paragraphs
+            
         End With
     
         .Tables(i).Select
@@ -737,10 +738,17 @@ Sub Define_Matrix_Style()
         End With
         
     End With
+    
+    With ActiveDocument.Styles("basic_table_style").ParagraphFormat
+        .LeftIndent = InchesToPoints(0.08)
+        .RightIndent = InchesToPoints(0.08)
+    End With
 
 End Sub
 
 Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
+   
+   
    
     With ActiveDocument
 
@@ -783,7 +791,7 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
         'Format N columns
 
         Dim nColumns As Long
-        nColumns = .Tables(i).Columns.Count
+        nColumns = .Tables(i).Columns.count
 
         For j = 1 To nColumns
     
@@ -825,7 +833,7 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
         'Format percentage columns
           
        Dim PerColumns As Long
-       PerColumns = .Tables(i).Columns.Count
+       PerColumns = .Tables(i).Columns.count
           
        For k = 1 To PerColumns
     
@@ -972,10 +980,10 @@ Sub number_questions()
     Q = 1
     
     Dim nTables As Long
-    nTables = .Tables.Count
+    nTables = .Tables.count
 
     For i = 1 To nTables
-        ncol = .Tables(i).Columns.Count
+        ncol = .Tables(i).Columns.count
         
     If ncol = 1 Then
         'delete data export tag
@@ -1016,7 +1024,7 @@ Sub remove_denominatorRow()
     
     With ActiveDocument
     
-    nTables = .Tables.Count
+    nTables = .Tables.count
 
     For i = 1 To nTables
         .Tables(i).Select
@@ -1051,10 +1059,10 @@ Sub remove_questionInfo_row()
     With ActiveDocument
     
     Dim nTables As Long
-    nTables = .Tables.Count
+    nTables = .Tables.count
     
     For i = 1 To nTables
-        ncol = .Tables(i).Columns.Count
+        ncol = .Tables(i).Columns.count
         
 '        Delete first row of the question info (data export tag)
 '        This will only appear in question info in the preview; all others have 3+ columns
@@ -1194,10 +1202,10 @@ Attribute alphabetize_table.VB_ProcData.VB_Invoke_Func = "Normal.NewMacros.alpha
     With ActiveDocument
     
         Dim nTables As Long
-        nTables = .Tables.Count
+        nTables = .Tables.count
     
-            nrow = .Tables(i).Rows.Count
-            ncol = .Tables(i).Columns.Count
+            nrow = .Tables(i).Rows.count
+            ncol = .Tables(i).Columns.count
             
             If (nrow > 6) Then
                 With .Tables(i)
@@ -1239,7 +1247,7 @@ Attribute Appendix_Merge_Header.VB_ProcData.VB_Invoke_Func = "Normal.NewMacros.A
 '
 With ActiveDocument
 
-ncol = .Tables(i).Columns.Count
+ncol = .Tables(i).Columns.count
 
 If ncol = 2 Then
     .Tables(i).Rows(1).Select
@@ -1272,7 +1280,7 @@ Sub duplicateHeaderText(i As Integer)
 With ActiveDocument
 
 
-    ncol = .Tables(i).Columns.Count
+    ncol = .Tables(i).Columns.count
 
 'Clear text from coded comment tables; likely, this should be its own macro
     If ncol = 2 Then
@@ -1305,11 +1313,11 @@ Sub appendix_table_formatting_CBB()
     End With
     
     Dim nTables As Long
-    nTables = .Tables.Count
+    nTables = .Tables.count
     Debug.Print nTables
     
     For i = 1 To nTables
-        nrow = .Tables(i).Rows.Count
+        nrow = .Tables(i).Rows.count
         Debug.Print nrow
         'set widths for each table
         .Tables(i).PreferredWidthType = wdPreferredWidthPercent
@@ -1373,14 +1381,14 @@ End Sub
 Sub BorderAtBreak()
 
 Dim nTables As Long
-    nTables = ActiveDocument.Tables.Count
+    nTables = ActiveDocument.Tables.count
 For t = 1 To nTables
 
     Dim r As Range
     Dim tblStartPage As Long
     Dim oTable As Table
     Dim oTableRange As Range
-    Dim oRow As Row
+    Dim oRow As row
     Dim msg As String
     Dim bottomCell
 
@@ -1434,7 +1442,7 @@ Sub fix_page_breaks()
 
     With ActiveDocument
         Dim nTables As Long
-        nTables = .Tables.Count
+        nTables = .Tables.count
         
         Selection.Find.ClearFormatting
         Selection.Find.Replacement.ClearFormatting
@@ -1454,7 +1462,7 @@ Sub fix_page_breaks()
     
     For i = 1 To nTables
     
-        nrow = .Tables(i).Rows.Count
+        nrow = .Tables(i).Rows.count
         
         'Determine page of first row in table
 
@@ -1506,10 +1514,10 @@ Sub fix_page_breaks_CBB_orig()
 
     With ActiveDocument
         Dim nTables As Long
-        nTables = .Tables.Count
+        nTables = .Tables.count
     
     For i = 1 To nTables
-        nrow = .Tables(i).Rows.Count
+        nrow = .Tables(i).Rows.count
         
         'Determine page of first row in table
         .Tables(i).Rows(1).Select
@@ -1537,7 +1545,7 @@ Sub fix_page_breaks_CBB_orig()
             Next
             For k = 1 To (j - 1)
                 .Tables(i).Rows(1).Select
-                 Selection.MoveUp Unit:=wdLine, Count:=1
+                 Selection.MoveUp Unit:=wdLine, count:=1
                  Selection.TypeParagraph
             Next
         End If
@@ -1562,10 +1570,10 @@ End Sub
 Sub Add_Extra_Borders()
     With ActiveDocument
             Dim nTables As Long
-            nTables = .Tables.Count
+            nTables = .Tables.count
         
         For i = 1 To nTables
-            nrow = .Tables(i).Rows.Count
+            nrow = .Tables(i).Rows.count
             'Determine page of first row in table
             .Tables(i).Rows(1).Select
             FirstRowPage = Selection.Information(wdActiveEndPageNumber)
@@ -1607,12 +1615,12 @@ Sub preview_page_breaks()
 
     With ActiveDocument
     Dim nTables As Long
-    nTables = .Tables.Count
+    nTables = .Tables.count
         
     For i = 1 To nTables
     
-        nrow = .Tables(i).Rows.Count
-        ncol = .Tables(i).Columns.Count
+        nrow = .Tables(i).Rows.count
+        ncol = .Tables(i).Columns.count
                 
         'Question tables will have 1 row, others will have multiple
         
@@ -1629,11 +1637,11 @@ Sub preview_page_breaks()
             .Tables(i - 1).Rows(1).Select
             questionRow1 = Selection.Information(wdActiveEndPageNumber)
             
-            qRows = .Tables(i - 1).Rows.Count
+            qRows = .Tables(i - 1).Rows.count
             .Tables(i - 1).Rows(qRows).Select
             questionRowN = Selection.Information(wdActiveEndPageNumber)
             
-            If .Tables(i - 1).Columns.Count <> 1 Then
+            If .Tables(i - 1).Columns.count <> 1 Then
                 Debug.Print "Previous is not question; table " + Str(i - 1)
             
             Else
@@ -1660,7 +1668,7 @@ End Sub
 
 Sub clear_page_breaks()
 
-nsection = ActiveDocument.Sections.Count
+nsection = ActiveDocument.Sections.count
 Debug.Print (nsection)
 For i = 1 To nsection
 
@@ -1710,7 +1718,7 @@ With Selection.Find
 End With
 
 
-npar = ActiveDocument.Paragraphs.Count
+npar = ActiveDocument.Paragraphs.count
 Debug.Print (npar)
 For i = 1 To npar
     Debug.Print "Paragraph" + Str(i)
@@ -1719,7 +1727,7 @@ For i = 1 To npar
     Selection.Find.Execute
 
     If Selection.Find.Found = True Then
-        Selection.Find.Parent.MoveDown Unit:=wdLine, Count:=2, Extend:=wdExtend
+        Selection.Find.Parent.MoveDown Unit:=wdLine, count:=2, Extend:=wdExtend
         Selection.Find.Parent.Delete
     Else: Exit For
     End If
@@ -1735,10 +1743,10 @@ Sub TableCellPadding()
 'Need to add this to initial macro for others to run
 
 With ActiveDocument
-    nTables = .Tables.Count
+    nTables = .Tables.count
     For i = 1 To nTables
-        ncol = .Tables(i).Columns.Count
-        nrow = .Tables(i).Rows.Count
+        ncol = .Tables(i).Columns.count
+        nrow = .Tables(i).Rows.count
         
         If ncol > 1 Then
             With .Tables(i)
@@ -1822,11 +1830,11 @@ With ActiveDocument
     Dim nTables As Integer
     Dim nrow As Integer
         
-    nTables = ActiveDocument.Tables.Count
+    nTables = ActiveDocument.Tables.count
     
     For i = 1 To nTables
         
-        nrow = ActiveDocument.Tables(i).Rows.Count
+        nrow = ActiveDocument.Tables(i).Rows.count
     
     Selection.Find.ClearFormatting
     Selection.Find.Style = .Styles("Heading 5")
@@ -1872,10 +1880,10 @@ Sub left_right_padding_change()
     
     With ActiveDocument
     
-    nTables = .Tables.Count
+    nTables = .Tables.count
         
     For i = 1 To nTables
-        ncol = .Tables(i).Columns.Count
+        ncol = .Tables(i).Columns.count
     
         If ncol = 1 Then
         
@@ -1935,11 +1943,11 @@ Sub remove_extra_carraigeReturn()
     Dim j As Integer
     Dim loopCount As Integer
    
-    nParagraphs = .Paragraphs.Count
+    nParagraphs = .Paragraphs.count
     
     i = 1
     
-    Do While i < .Paragraphs.Count
+    Do While i < .Paragraphs.count
     
         Debug.Print ("Paragraph: " & i)
     
@@ -1950,13 +1958,13 @@ Sub remove_extra_carraigeReturn()
         If Selection.Text = Chr(13) Or Selection.Text = Chr(160) & Chr(13) Then
         
             Debug.Print ("True: " & i)
-            If i = .Paragraphs.Count Then End
+            If i = .Paragraphs.count Then End
             j = i + 1
             Set nextPar = .Paragraphs(j).Range
             nextPar_Text = nextPar.Text
             loopCount = 1
             
-            Do While (nextPar_Text = Chr(13) Or nextPar_Text = Chr(160) & Chr(13)) And loopCount < 10 And j <= .Paragraphs.Count
+            Do While (nextPar_Text = Chr(13) Or nextPar_Text = Chr(160) & Chr(13)) And loopCount < 10 And j <= .Paragraphs.count
             
                 nextPar.Select
                 Selection.Delete
@@ -1998,7 +2006,7 @@ Sub format_See_Appendix(i)
         .MatchAllWordForms = False
     End With
 
-    If .Tables(i).Columns.Count = 1 Then
+    If .Tables(i).Columns.count = 1 Then
         
         .Tables(i).Select
         
@@ -2137,7 +2145,7 @@ Sub format_NA_table()
     
     Dim i As Integer
     Dim tbl As Table
-    Dim rowHeadings As Row
+    Dim rowHeadings As row
     Dim cellHeading As Cell
     Dim isTableTypeNA As Boolean
     Dim iHeadingsRowIndex As Integer
@@ -2210,27 +2218,27 @@ Sub format_NA_table()
                 .Shading.BackgroundPatternColor = wdColorWhite
             End With
             
-            With tbl.Cell(Row:=1, Column:=1)
+            With tbl.Cell(row:=1, Column:=1)
                 .Borders(wdBorderTop).LineStyle = wdLineStyleNone
                 .Borders(wdBorderLeft).LineStyle = wdLineStyleNone
             End With
             tbl.Rows.Add BeforeRow:=tbl.Rows(1)
             
-            With tbl.Cell(Row:=1, Column:=2).Range
+            With tbl.Cell(row:=1, Column:=2).Range
                 .Text = "Of those NOT selecting ""Not Applicable"""
                 .Font.Bold = True
                 '.ParagraphFormat.Alignment = wdAlignParagraphCenter
             End With
             
-            With tbl.Cell(Row:=1, Column:=iNAColumnIndex - 1).Range
+            With tbl.Cell(row:=1, Column:=iNAColumnIndex - 1).Range
                 .Text = "Of all respondents"
                 .Font.Bold = True
             End With
             
-            tbl.Cell(Row:=1, Column:=iNAColumnIndex - 1).Merge MergeTo:=tbl.Cell(Row:=1, Column:=iNAColumnIndex)
-            tbl.Cell(Row:=1, Column:=2).Merge MergeTo:=tbl.Cell(Row:=1, Column:=iNAColumnIndex - 2)
+            tbl.Cell(row:=1, Column:=iNAColumnIndex - 1).Merge MergeTo:=tbl.Cell(row:=1, Column:=iNAColumnIndex)
+            tbl.Cell(row:=1, Column:=2).Merge MergeTo:=tbl.Cell(row:=1, Column:=iNAColumnIndex - 2)
                         
-            With tbl.Cell(Row:=1, Column:=tbl.Rows(1).Cells.Count)
+            With tbl.Cell(row:=1, Column:=tbl.Rows(1).Cells.count)
                 .Borders(wdBorderRight).LineStyle = wdLineStyleSingle
                 .Borders(wdBorderRight).LineWidth = wdLineWidth025pt
                 .Borders(wdBorderTop).LineStyle = wdLineStyleSingle
@@ -2240,16 +2248,16 @@ Sub format_NA_table()
                 .Range.ParagraphFormat.Alignment = wdAlignParagraphCenter
             End With
             
-            With tbl.Cell(Row:=1, Column:=tbl.Rows(1).Cells.Count - 1)
+            With tbl.Cell(row:=1, Column:=tbl.Rows(1).Cells.count - 1)
                 .Range.ParagraphFormat.Alignment = wdAlignParagraphCenter
             End With
             
-            With tbl.Cell(Row:=1, Column:=2)
+            With tbl.Cell(row:=1, Column:=2)
                 .Borders(wdBorderTop).LineStyle = wdLineStyleSingle
                 .Borders(wdBorderTop).LineWidth = wdLineWidth150pt
             End With
 
-            With tbl.Cell(Row:=1, Column:=1)
+            With tbl.Cell(row:=1, Column:=1)
                 .Borders(wdBorderBottom).LineStyle = wdLineStyleNone
             End With
             
@@ -2267,7 +2275,7 @@ Sub NumberingAppendices()
     Selection.TypeText Text:=" "
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
         "AUTONUM  \* ALPHABETIC ", PreserveFormatting:=False
-    Selection.MoveLeft Unit:=wdCharacter, Count:=1, Extend:=wdExtend
+    Selection.MoveLeft Unit:=wdCharacter, count:=1, Extend:=wdExtend
     Selection.Copy
     Selection.Find.ClearFormatting
     Selection.Find.Replacement.ClearFormatting
@@ -2318,13 +2326,9 @@ Sub UpdateMultipleFiles()
 Dim file
 Dim path As String
 
-' Path to your folder. MY folder is listed below. I bet yours is different.
-' make SURE you include the terminating "\"
-'YOU MUST EDIT THIS.
+'Change this to the folder with the files that you want to run macros on
 path = "Q:\Student Work\Emma's Student Work\Suneeth\Grad Exit 2015 Program-level Appendices\New folder\"
 
-'Change this file extension to the file you are opening. .htm is listed below. You may have rtf or docx.
-'YOU MUST EDIT THIS.
 file = Dir(path & "\" & "*.*")
 
 Application.DisplayAlerts = wdAlertsNone
@@ -2332,8 +2336,7 @@ Application.DisplayAlerts = wdAlertsNone
 Do While file <> ""
     Documents.Open FileName:=path & file
     
-    ' This is the call to the macro you want to run on each file the folder
-    'YOU MUST EDIT THIS. lange01 is my macro name. You put yours here.
+    ' Call all the macros that you want to run on the files in the folder
     Call define_table_styles
     Call format_appendix
     Call remove_first_row
@@ -2445,10 +2448,10 @@ Sub remove_first_row()
     With ActiveDocument
     
     Dim nTables As Long
-    nTables = .Tables.Count
+    nTables = .Tables.count
     
     For i = 1 To nTables
-        ncol = .Tables(i).Columns.Count
+        ncol = .Tables(i).Columns.count
         
 '        Delete first row of the question info (data export tag)
 '        This will only appear in question info in the preview; all others have 3+ columns
@@ -2464,4 +2467,172 @@ Sub remove_first_row()
     End With
     
 End Sub
+
+Sub renumber_lists()
+
+With ActiveDocument
+
+Dim nTables As Long
+Dim nCols As Integer
+Dim count As Integer
+
+nTables = .Tables.count
+count = 0
+
+For i = 1 To nTables
+    nCols = .Tables(i).Columns.count
+    .Tables(i).Select
+    
+    
+    If nCols = 1 Then
+        With Selection.Find
+        .Forward = True
+        .Wrap = wdFindStop
+        .Execute FindText:="^#. ", ReplaceWith:=count & ". ", Replace:=wdReplaceAll
+        .Format = False
+        .MatchCase = False
+        .MatchWholeWord = False
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+        End With
+         
+                        
+        With Selection.Find
+        .Forward = True
+        .Wrap = wdFindStop
+        .Execute FindText:="^#^#. ", ReplaceWith:=count & ". ", Replace:=wdReplaceAll
+        .Format = False
+        .MatchCase = False
+        .MatchWholeWord = False
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+        End With
+        
+        
+        With Selection.Find
+        .Forward = True
+        .Wrap = wdFindStop
+        .Execute FindText:="^#^#^#. ", ReplaceWith:=count & ". ", Replace:=wdReplaceAll
+        .Format = False
+        .MatchCase = False
+        .MatchWholeWord = False
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+        End With
+        
+        
+        With Selection.Find
+        .Forward = True
+        .Wrap = wdFindStop
+        .Execute FindText:="^#^#^#^#. ", ReplaceWith:=count & ". ", Replace:=wdReplaceAll
+        .Format = False
+        .MatchCase = False
+        .MatchWholeWord = False
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+        End With
+        
+        count = count + 1
+    End If
+Next
+
+End With
+End Sub
+
+Sub AppendicesNumbering()
+With ActiveDocument
+
+Dim nTables As Long
+Dim nCols As Integer
+Dim count As Integer
+
+nTables = .Tables.count
+count = 0
+
+For i = 1 To nTables
+    nRows = .Tables(i).Rows.count
+    For j = 1 To nRows
+        .Tables(i).Rows(j).Select
+        
+        With Selection.Find
+          .Text = "See Appendix"
+            .Replacement.Text = "See Appendix " + count
+            .Forward = True
+            .Wrap = wdFindAsk
+            .Format = False
+            .MatchCase = True
+            .MatchWholeWord = False
+            .MatchWildcards = False
+            .MatchSoundsLike = False
+            .MatchAllWordForms = False
+        End With
+        With Selection
+            If .Find.Forward = True Then
+                .Collapse Direction:=wdCollapseStart
+                count = count + 1
+            Else
+                .Collapse Direction:=wdCollapseEnd
+            End If
+            .Find.Execute Replace:=wdReplaceOne
+            If .Find.Forward = True Then
+                .Collapse Direction:=wdCollapseEnd
+            Else
+                .Collapse Direction:=wdCollapseStart
+            End If
+            .Find.Execute
+        End With
+    Next
+
+Next
+End With
+End Sub
+
+Sub Fix_tables()
+
+With ActiveDocument
+
+Dim nTables As Long
+nTables = .Tables.count
+'ActiveDocument.Styles.Add Name:="ResponseTables2", Type:=wdStyleTypeParagraph
+    With ActiveDocument.Styles("ResponseTables").ParagraphFormat
+        .LeftIndent = InchesToPoints(0.08)
+        .RightIndent = InchesToPoints(0.08)
+    End With
+
+For i = 1 To nTables
+    Dim nRows As Long
+    Dim nCols As Long
+    
+    nRows = .Tables(i).Rows.count
+    nCols = .Tables(i).Columns.count
+    
+    
+    For j = 1 To nRows
+        For k = 1 To nCols
+            .Tables(i).Cell(j, k).TopPadding = 0
+            .Tables(i).Cell(j, k).BottomPadding = 0
+            .Tables(i).Cell(j, k).LeftPadding = 0
+            .Tables(i).Cell(j, k).RightPadding = 0
+
+        Next
+    Next
+    
+    If nCols > 1 Then
+        .Tables(i).Rows.Select
+        Selection.Style = ActiveDocument.Styles("ResponseTables")
+    End If
+    '.Tables(i).Range.ParagraphStyle = "Heading 1"
+    '.Tables(i).Range.Paragraphs(i).Style = ResponseTables
+    
+Next
+
+End With
+End Sub
+
+
+
 
