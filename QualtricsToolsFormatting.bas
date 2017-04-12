@@ -1,5 +1,5 @@
 Attribute VB_Name = "QualtricsTools"
-''Updated 3/16/17
+''Updated 4/12/17
 
 Sub define_table_styles()
 
@@ -132,9 +132,6 @@ Sub format_appendix()
          Call alphabetize_table(i)
         
         .Tables(i).Style = "Appendix_style_table"
-'        .Tables(i).AllowAutoFit = False
-                'Fixed a problem with suddenly changing column width, but caused
-                'other issues with N column size
         
         'Align text vertically to be centered
             'Ideally this would be a part of the table style, but I couldn't find it....
@@ -355,9 +352,9 @@ Sub Insert_OIRE()
     
     With ActiveDocument
         'Move to the top right of the page
-        Selection.HomeKey Unit:=wdStory
+        Selection.HomeKey unit:=wdStory
         Selection.TypeParagraph
-        Selection.HomeKey Unit:=wdStory
+        Selection.HomeKey unit:=wdStory
         Selection.Style = ActiveDocument.Styles("Heading 4")
         Selection.Font.Bold = True
         Selection.Font.Italic = False
@@ -378,7 +375,7 @@ Sub Insert_logo()
 
     With ActiveDocument
         'Navigate to the top of the page
-        Selection.HomeKey Unit:=wdStory
+        Selection.HomeKey unit:=wdStory
         'Pick an image via its path and insert it
         Selection.InlineShapes.AddPicture FileName:= _
         "Q:\Student Work\Emma's Student Work\Report Generation\Report Macros_Adam\tufts_logo_black.png" _
@@ -662,8 +659,6 @@ Sub format_mc_singleQ(i As Integer, nrow As Integer, ncol As Integer)
             .TopPadding = InchesToPoints(0.01)
             .BottomPadding = InchesToPoints(0.01)
             .Spacing = InchesToPoints(0)
-            '.Range.Paragraphs
-            
         End With
     
         .Tables(i).Select
@@ -782,20 +777,12 @@ Sub Define_Matrix_Style()
         End With
         
     End With
-    
-        .LeftIndent = InchesToPoints(0.08)
-        .RightIndent = InchesToPoints(0.08)
-    End With
 
 End Sub
 
 Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
    
-   
-   
     With ActiveDocument
-
-
 
         With .Tables(i)
             .Style = "Matrix_table_style"
@@ -826,9 +813,6 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
             .SetWidth _
             ColumnWidth:=InchesToPoints(3.5), _
             RulerStyle:=wdAdjustNone
-            '.PreferredWidthType = wdPreferredWidthPoints
-            '.PreferredWidth = InchesToPoints(3.5)
-            '.PreferredWidth = InchesToPercent(3.5)
         End With
                         
         'Format N columns
@@ -1340,143 +1324,6 @@ End With
 End Sub
 
 
-Sub appendix_table_formatting_CBB()
-
-'Created by CB;
-
-    With ActiveDocument
-    
-    
-    Set entireDoc = .Range
-    With entireDoc
-        .Font.Name = "Arial"
-        .Font.Size = 10
-        .Font.Color = wdColorAutomatic
-        .ParagraphFormat.Alignment = wdAlignLeft
-    End With
-    
-    Dim nTables As Long
-    nTables = .Tables.count
-    Debug.Print nTables
-    
-    For i = 1 To nTables
-        nrow = .Tables(i).Rows.count
-        Debug.Print nrow
-        'set widths for each table
-        .Tables(i).PreferredWidthType = wdPreferredWidthPercent
-        .Tables(i).PreferredWidth = 100
-        
-        'format first 6 rows
-        For j = 1 To nrow
-            .Tables(i).Rows(j).Select
-            If j < 4 Then
-                With Selection
-                    .Font.Bold = True
-                    .ParagraphFormat.Alignment = wdAlignParagraphCenter
-                    .Borders(wdBorderLeft).LineStyle = wdLineStyleNone
-                    .Borders(wdBorderRight).LineStyle = wdLineStyleNone
-                    .Borders(wdBorderTop).LineStyle = wdLineStyleNone
-                    .Borders(wdBorderBottom).LineStyle = wdLineStyleNone
-                End With
-            ElseIf j = 4 Then
-                Selection.Font.Italic = True
-                Selection.ParagraphFormat.Alignment = wdAlignParagraphCenter
-            ElseIf j = 6 Then
-                With Selection
-                    .Font.Bold = True
-                    .ParagraphFormat.Alignment = wdAlignParagraphLeft
-                    .Borders(wdBorderLeft).LineStyle = wdLineStyleSingle
-                    .Borders(wdBorderRight).LineStyle = wdLineStyleSingle
-                    .Borders(wdBorderTop).LineStyle = wdLineStyleSingle
-                    .Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
-                End With
-            
-            ElseIf j > 6 Then
-                forShading = j Mod 2
-                With Selection
-                    .Borders(wdBorderLeft).LineStyle = wdLineStyleSingle
-                    .Borders(wdBorderRight).LineStyle = wdLineStyleSingle
-                    .Shading.BackgroundPatternColor = -738132173
-                End With
-                If forShading = 0 Then
-                    Selection.Shading.BackgroundPatternColor = wdColorAutomatic
-                End If
-                If j = nrow Then
-                    Selection.Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
-                End If
-            End If
-            
-        Next
-    
-    
-    Next
- 
-    
-    End With
-
-
-End Sub
-
-'This tells me the first row after the page break
-'I need to expand this to find a row after EACH page break
-'Which will provide the formatting I need
-
-Sub BorderAtBreak()
-
-Dim nTables As Long
-    nTables = ActiveDocument.Tables.count
-For t = 1 To nTables
-
-    Dim r As Range
-    Dim tblStartPage As Long
-    Dim oTable As Table
-    Dim oTableRange As Range
-    Dim oRow As row
-    Dim msg As String
-    Dim bottomCell
-
-    Dim i As Long
-    i = 0
-
-    Dim pbCellsArray() As Integer
-
-
-
-
-' get the page os the start of the table
-    Set oTable = ActiveDocument.Tables(t)
-    Set oTableRange = oTable.Range
-       oTableRange.Collapse 1
-       tblStartPage = _
-          oTableRange.Information(wdActiveEndPageNumber)
-    ' loop through each row checking if it is the same page
-    For Each oRow In oTable.Rows
-       Set r = oRow.Range
-       r.Collapse 1
-       If r.Information(wdActiveEndPageNumber) <> _
-          tblStartPage Then
-          b = oRow.Index - 1
-          Set bottomCell = ActiveDocument.Range(Start:=oTable.Cell(b, 1).Range.Start, _
-                End:=oTable.Cell(b + 1, 1).Range.End)
-    
-            With bottomCell.Borders(wdBorderHorizontal)
-                .LineStyle = wdLineStyleSingle
-                .Color = wdColorAutomatic
-            End With
-          
-          i = i + 1
-          
-          tblStartPage = tblStartPage + 1
-       
-       End If
-    Next
-    
-
-
-Next
-
-End Sub
-
 Sub fix_page_breaks()
 
 'Macro written by CBB to adjust page breaks in appendix tables
@@ -1550,193 +1397,6 @@ Sub fix_page_breaks()
 End Sub
 
 
-Sub fix_page_breaks_CBB_orig()
-
-'Macro written by CBB to adjust page breaks in appendix tables
-' Will need to adapt code to work with preview tables as well
-
-    With ActiveDocument
-        Dim nTables As Long
-        nTables = .Tables.count
-    
-    For i = 1 To nTables
-        nrow = .Tables(i).Rows.count
-        
-        'Determine page of first row in table
-        .Tables(i).Rows(1).Select
-        FirstRowPage = Selection.Information(wdActiveEndPageNumber)
-        
-        'Determine which page the first row of comments starts on
-        .Tables(i).Rows(6).Select
-        FirstCommentPage = Selection.Information(wdActiveEndPageNumber)
-        
-        'Determine page of last row in table
-        .Tables(i).Rows.Last.Select
-        LastRowPage = Selection.Information(wdActiveEndPageNumber)
-        
-        'If header is split between two pages
-        If FirstRowPage <> FirstCommentPage Then
-            'figure out which row has page break
-            For j = 1 To 5
-                .Tables(i).Rows(j).Select
-                CurRowPage = Selection.Information(wdActiveEndPageNumber)
-                Debug.Print CurRowPage
-
-                If CurRowPage = FirstCommentPage Then
-                    Exit For
-                End If
-            Next
-            For k = 1 To (j - 1)
-                .Tables(i).Rows(1).Select
-                 Selection.MoveUp Unit:=wdLine, count:=1
-                 Selection.TypeParagraph
-            Next
-        End If
-
-        'If table spans more than one page
-        If FirstRowPage <> LastRowPage Then
-            'The first 6 cells will be repeated on every page
-            Set rptHeadCells = .Range(Start:=.Tables(i).Cell(1, 1).Range.Start, _
-                End:=.Tables(i).Cell(5, 1).Range.End)
-            'Select the entire table
-            Set myTable = .Range(Start:=.Tables(i).Cell(1, 1).Range.Start, _
-                End:=.Tables(i).Cell(nrow, 1).Range.End)
-            'Make the first 6 rows into a header that will repeat across pages
-                rptHeadCells.Rows.HeadingFormat = True
-                myTable.Rows.AllowBreakAcrossPages = False
-         End If
-    Next
-    
-    End With
-End Sub
-
-Sub Add_Extra_Borders()
-    With ActiveDocument
-            Dim nTables As Long
-            nTables = .Tables.count
-        
-        For i = 1 To nTables
-            nrow = .Tables(i).Rows.count
-            'Determine page of first row in table
-            .Tables(i).Rows(1).Select
-            FirstRowPage = Selection.Information(wdActiveEndPageNumber)
-            
-            'Determine page of last row in table
-            .Tables(i).Rows.Last.Select
-            LastRowPage = Selection.Information(wdActiveEndPageNumber)
-            
-            'If table spans more than one page
-            If FirstRowPage <> LastRowPage Then
-                For j = 1 To nrow
-                   If j <> nrow Then
-                        .Tables(i).Rows(j).Select
-                        CurRowPage = Selection.Information(wdActiveEndPageNumber)
-                        .Tables(i).Rows(j + 1).Select
-                        NextRowPage = Selection.Information(wdActiveEndPageNumber)
-                        
-                        If CurRowPage <> NextRowPage Then
-                            .Tables(i).Rows(j).Select
-                            Selection.Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
-                        End If
-                   End If
-                Next
-            End If
-        Next
-    End With
-End Sub
-
-
-
-Sub preview_page_breaks()
-
-'This macro will iterate through and ensure that questions and tables are on the same page
-'The macro can be run multiple times
-'If running a second time, the macro will first iterate through and check for page breaks
-'Existing breaks will be removed, and additional breaks added to keep everything running
-'   smoothly and in order of what should be happenning.
-
-
-    With ActiveDocument
-    Dim nTables As Long
-    nTables = .Tables.count
-        
-    For i = 1 To nTables
-    
-        nrow = .Tables(i).Rows.count
-        ncol = .Tables(i).Columns.count
-                
-        'Question tables will have 1 row, others will have multiple
-        
-        Debug.Print "Table " + Str(i) + "(" + Str(nrow) + "x"; Str(ncol) + ")"
-        
-        If ncol > 1 Then
-            .Tables(i).Rows(1).Select
-        
-            answerRow1 = Selection.Information(wdActiveEndPageNumber)
-        
-            .Tables(i).Rows(nrow).Select
-            answerRowN = Selection.Information(wdActiveEndPageNumber)
-            
-            .Tables(i - 1).Rows(1).Select
-            questionRow1 = Selection.Information(wdActiveEndPageNumber)
-            
-            qRows = .Tables(i - 1).Rows.count
-            .Tables(i - 1).Rows(qRows).Select
-            questionRowN = Selection.Information(wdActiveEndPageNumber)
-            
-            If .Tables(i - 1).Columns.count <> 1 Then
-                Debug.Print "Previous is not question; table " + Str(i - 1)
-            
-            Else
-                If questionRow1 <> answerRowN Then
-                    Debug.Print "Table " + Str(i)
-                    Debug.Print "Question: " + Str(questionRowN) + "-" + Str(questionRowN)
-                    Debug.Print "Table: " + Str(answerRowN) + "-" + Str(answerRowN)
-                    
-                   .Tables(i - 1).Rows(1).Select
-                    Selection.InsertBreak (wdPageBreak)
-                End If
-            
-                
-            
-            End If
-        
-       End If
-    Next
-    
-    End With
-
-End Sub
-
-
-Sub clear_page_breaks()
-
-nsection = ActiveDocument.Sections.count
-Debug.Print (nsection)
-For i = 1 To nsection
-
-    ActiveDocument.Sections(i).Range.Select
-
-    Selection.Find.ClearFormatting
-    Selection.Find.Replacement.ClearFormatting
-    With Selection.Find
-        .Text = "^p^m"
-        .Replacement.Text = ""
-        .Forward = True
-        .Wrap = wdFindStop
-        .Format = False
-        .MatchCase = True
-        .MatchWholeWord = False
-        .MatchWildcards = False
-        .MatchSoundsLike = False
-        .MatchAllWordForms = False
-        .MatchPrefix = False
-    End With
-    
-    Selection.Find.Execute Replace:=wdReplaceAll
-Next
-
-End Sub
 
 Sub preview_remove_block_titles()
 
@@ -1766,11 +1426,11 @@ Debug.Print (npar)
 For i = 1 To npar
     Debug.Print "Paragraph" + Str(i)
     ActiveDocument.Paragraphs(i).Range.Select
-    Selection.HomeKey Unit:=wdLine
+    Selection.HomeKey unit:=wdLine
     Selection.Find.Execute
 
     If Selection.Find.Found = True Then
-        Selection.Find.Parent.MoveDown Unit:=wdLine, count:=2, Extend:=wdExtend
+        Selection.Find.Parent.MoveDown unit:=wdLine, count:=2, Extend:=wdExtend
         Selection.Find.Parent.Delete
     Else: Exit For
     End If
@@ -1807,20 +1467,6 @@ End With
 
 End Sub
 
-Sub DefaultParagraphSpacing()
-
-With ActiveDocument
-   
- 
-    .Paragraphs.SpaceAfterAuto = False
-    .Paragraphs.SpaceAfter = 0
-    .Paragraphs.SpaceBeforeAuto = False
-    .Paragraphs.SpaceBefore = 0
-    
-End With
-    
-End Sub
-
 Sub remove_blockHeaders_HTML()
 
     With ActiveDocument
@@ -1844,7 +1490,7 @@ Sub remove_blockHeaders_HTML()
         .MatchSoundsLike = False
         .MatchAllWordForms = False
     End With
-    Selection.HomeKey Unit:=wdStory
+    Selection.HomeKey unit:=wdStory
     Selection.Find.Execute
     
     Do While Selection.Find.Found = True And loopCount < 1000
@@ -1853,7 +1499,7 @@ Sub remove_blockHeaders_HTML()
         Selection.Expand wdParagraph
         Selection.Delete
         Selection.EndOf
-        Selection.HomeKey Unit:=wdStory
+        Selection.HomeKey unit:=wdStory
         Selection.Find.Execute
     Loop
     
@@ -1863,88 +1509,6 @@ Sub remove_blockHeaders_HTML()
 
 End Sub
 
-Sub removeTotalRowCoded()
-
-With ActiveDocument
-    
-    Dim loopCount As Integer
-    loopCount = 1
-    
-    Dim nTables As Integer
-    Dim nrow As Integer
-        
-    nTables = ActiveDocument.Tables.count
-    
-    For i = 1 To nTables
-        
-        nrow = ActiveDocument.Tables(i).Rows.count
-    
-    Selection.Find.ClearFormatting
-    Selection.Find.Style = .Styles("Heading 5")
-    With Selection.Find
-     .Text = ""
-        .Replacement.Text = ""
-        .Forward = True
-        .Wrap = wdFindAsk
-        .Format = True
-        .MatchCase = False
-        .MatchWholeWord = False
-        .MatchByte = False
-        .MatchWildcards = False
-        .MatchSoundsLike = False
-        .MatchAllWordForms = False
-    End With
-    Selection.HomeKey Unit:=wdStory
-    Selection.Find.Execute
-    
-    Do While Selection.Find.Found = True And loopCount < 1000
-    
-        Debug.Print iCount
-        Selection.Expand wdParagraph
-        Selection.Delete
-        Selection.EndOf
-        Selection.HomeKey Unit:=wdStory
-        Selection.Find.Execute
-    Loop
-    
-    
-    
-    End With
-
-
-End Sub
-
-
-Sub left_right_padding_change()
-
-    Dim i As Integer
-    Dim ncol As Integer
-    Dim nTables As Integer
-    
-    With ActiveDocument
-    
-    nTables = .Tables.count
-        
-    For i = 1 To nTables
-        ncol = .Tables(i).Columns.count
-    
-        If ncol = 1 Then
-        
-            With .Tables(i)
-                .Spacing = InchesToPoints(0)
-                .TopPadding = InchesToPoints(0)
-                .BottomPadding = InchesToPoints(0)
-                .LeftPadding = InchesToPoints(0)
-                .RightPadding = InchesToPoints(0)
-                
-            End With
-        End If
-        
-    Next
-    
-    End With
-
-End Sub
 
 Sub replace_newline()
 
@@ -1972,62 +1536,6 @@ GoHere:
     End If
 
 End Sub
-
-
-
-Sub remove_extra_carraigeReturn()
-
-    With ActiveDocument
-    
-    Dim para As Paragraph
-    Dim i As Integer
-    Dim rng As Range
-    Dim nextPar As Range
-    Dim j As Integer
-    Dim loopCount As Integer
-   
-    nParagraphs = .Paragraphs.count
-    
-    i = 1
-    
-    Do While i < .Paragraphs.count
-    
-        Debug.Print ("Paragraph: " & i)
-    
-        Set rng = .Paragraphs(i).Range
-        rng.Select
-        Debug.Print (rng)
-        
-        If Selection.Text = Chr(13) Or Selection.Text = Chr(160) & Chr(13) Then
-        
-            Debug.Print ("True: " & i)
-            If i = .Paragraphs.count Then End
-            j = i + 1
-            Set nextPar = .Paragraphs(j).Range
-            nextPar_Text = nextPar.Text
-            loopCount = 1
-            
-            Do While (nextPar_Text = Chr(13) Or nextPar_Text = Chr(160) & Chr(13)) And loopCount < 10 And j <= .Paragraphs.count
-            
-                nextPar.Select
-                Selection.Delete
-                Selection.EndOf
-                nextPar_Text = .Paragraphs(j).Range.Text
-                loopCount = loopCount + 1
-            Loop
-                            
-            Selection.EndOf
-                    
-        End If
-        
-        i = i + 1
-    
-    Loop
-   
-   End With
-    
-End Sub
-
 
 Sub format_See_Appendix(i)
 
@@ -2318,7 +1826,7 @@ Sub NumberingAppendices()
     Selection.TypeText Text:=" "
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
         "AUTONUM  \* ALPHABETIC ", PreserveFormatting:=False
-    Selection.MoveLeft Unit:=wdCharacter, count:=1, Extend:=wdExtend
+    Selection.MoveLeft unit:=wdCharacter, count:=1, Extend:=wdExtend
     Selection.Copy
     Selection.Find.ClearFormatting
     Selection.Find.Replacement.ClearFormatting
@@ -2337,33 +1845,7 @@ Sub NumberingAppendices()
     Selection.Find.Execute Replace:=wdReplaceAll
 End Sub
 
-Sub UpdateDocuments()
-Application.ScreenUpdating = False
-Dim strFolder As String, strFile As String, wdDoc As Document
-strFolder = GetFolder
-If strFolder = "" Then Exit Sub
-strFile = Dir(strFolder & "\*.docx", vbNormal)
-While strFile <> ""
-  Set wdDoc = Documents.Open(FileName:=strFolder & "\" & strFile, AddToRecentFiles:=False, Visible:=False)
-  With wdDoc
-    'Call your other macro or insert its code here
-    Call define_table_styles
-    Call format_appendix
-    .Close SaveChanges:=True
-  End With
-  strFile = Dir()
-Wend
-Set wdDoc = Nothing
-Application.ScreenUpdating = True
-End Sub
- 
-Function GetFolder() As String
-Dim oFolder As Object
-GetFolder = ""
-Set oFolder = CreateObject("Shell.Application").BrowseForFolder(0, "Choose a folder", 0)
-If (Not oFolder Is Nothing) Then GetFolder = oFolder.Items.Item.path
-Set oFolder = Nothing
-End Function
+
 
 Sub UpdateMultipleFiles()
 Dim file
@@ -2634,54 +2116,15 @@ Next
 End With
 End Sub
 
-Sub Fix_tables()
 
-With ActiveDocument
 
-Dim nTables As Long
-nTables = .Tables.count
-'ActiveDocument.Styles.Add Name:="ResponseTables2", Type:=wdStyleTypeParagraph
-    With ActiveDocument.Styles("ResponseTables").ParagraphFormat
-        .LeftIndent = InchesToPoints(0.08)
-        .RightIndent = InchesToPoints(0.08)
-    End With
-
-For i = 1 To nTables
-    Dim nRows As Long
-    Dim nCols As Long
-    
-    nRows = .Tables(i).Rows.count
-    nCols = .Tables(i).Columns.count
-    
-    
-    For j = 1 To nRows
-        For k = 1 To nCols
-            .Tables(i).Cell(j, k).TopPadding = 0
-            .Tables(i).Cell(j, k).BottomPadding = 0
-            .Tables(i).Cell(j, k).LeftPadding = 0
-            .Tables(i).Cell(j, k).RightPadding = 0
-
-        Next
-    Next
-    
-    If nCols > 1 Then
-        .Tables(i).Rows.Select
-        Selection.Style = ActiveDocument.Styles("ResponseTables")
-    End If
-    '.Tables(i).Range.ParagraphStyle = "Heading 1"
-    '.Tables(i).Range.Paragraphs(i).Style = ResponseTables
-    
-Next
-
-End With
-End Sub
-
-Sub insert_coloumn_breaks()
+Sub insert_page_breaks()
 
 With ActiveDocument
 Dim nTables As Long
 nTables = .Tables.count
 
+'If for your purpose you need to start in a later point in the document change i = 1 to i = x where x is the table number you want to start at
 For i = 1 To nTables
     Dim firstRow As Integer
     Dim lastRow As Integer
@@ -2697,14 +2140,10 @@ For i = 1 To nTables
         nCols = .Tables(i).Columns.count
         If nCols <> 1 Then
             .Tables(i - 1).Select
-            Selection.GoTo What:=wdGoToLine, Which:=wdGoToPrevious, count:=1
-            Selection.EndKey Unit:=wdLine
-            Selection.InsertBreak Type:=1
+            Selection.InsertBreak Type:=0
             Else
             .Tables(i).Select
-            Selection.GoTo What:=wdGoToLine, Which:=wdGoToPrevious, count:=1
-            Selection.EndKey Unit:=wdLine
-            Selection.InsertBreak Type:=1
+            Selection.InsertBreak Type:=0
         End If
     End If
     
@@ -2714,13 +2153,13 @@ For i = 1 To nTables
 End With
 End Sub
 
-Sub remove_coloumn_breaks()
+Sub remove_page_breaks()
 
 With ActiveDocument
 Selection.Find.ClearFormatting
 Selection.Find.Replacement.ClearFormatting
 With Selection.Find
-.Text = "^n"
+.Text = "^m"
 .Replacement.Text = ""
 .Forward = True
 .Wrap = wdFindContinue

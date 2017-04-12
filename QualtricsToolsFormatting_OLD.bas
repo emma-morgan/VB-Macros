@@ -9,6 +9,7 @@ Sub define_table_styles()
     Call Define_Matrix_Style
     Call define_appendix_table_style
     Call define_basic_table_style
+    Call define_question_style
 
 
 End Sub
@@ -559,6 +560,30 @@ Sub define_basic_table_style()
         End With
         
     End With
+    
+    With ActiveDocument.Styles("basic_table_style").ParagraphFormat
+        .LeftIndent = InchesToPoints(0.08)
+        .RightIndent = InchesToPoints(0.08)
+    End With
+        
+    
+End Sub
+Sub define_question_style()
+
+    On Error Resume Next
+    ActiveDocument.Styles("question_style").Delete
+    
+    ActiveDocument.Styles.Add Name:="question_style", Type:=wdStyleTypeTable
+    
+    With ActiveDocument.Styles("question_style")
+        With .Table
+
+            .AllowPageBreaks = False
+            .AllowBreakAcrossPage = False
+            
+        End With
+        
+    End With
         
     
 End Sub
@@ -568,7 +593,7 @@ Sub format_question_info(i As Integer, nrow As Integer)
 'Format question text and information
 
     With ActiveDocument
-        .Tables(i).Style = "basic_table_style"
+        .Tables(i).Style = "question_style"
         
         'format the question info, identified by single column
             ' Set table width to full page
@@ -613,6 +638,23 @@ Sub format_mc_singleQ(i As Integer, nrow As Integer, ncol As Integer)
     
         .Tables(i).Style = "basic_table_style"
         
+    Dim nRows As Long
+    Dim nCols As Long
+    
+    nRows = .Tables(i).Rows.count
+    nCols = .Tables(i).Columns.count
+    
+    
+    For j = 1 To nRows
+        For k = 1 To nCols
+            .Tables(i).Cell(j, k).TopPadding = 0
+            .Tables(i).Cell(j, k).BottomPadding = 0
+            .Tables(i).Cell(j, k).LeftPadding = 0
+            .Tables(i).Cell(j, k).RightPadding = 0
+
+        Next
+    Next
+        
         'Adjust cell padding for multiple choice
         With .Tables(i)
             .LeftPadding = InchesToPoints(0)
@@ -620,7 +662,7 @@ Sub format_mc_singleQ(i As Integer, nrow As Integer, ncol As Integer)
             .TopPadding = InchesToPoints(0.01)
             .BottomPadding = InchesToPoints(0.01)
             .Spacing = InchesToPoints(0)
-            .Range.Paragraphs
+            '.Range.Paragraphs
             
         End With
     
@@ -655,6 +697,8 @@ Sub format_mc_singleQ(i As Integer, nrow As Integer, ncol As Integer)
         'Delete first row from this type of question
         .Tables(i).Rows(1).Select
         Selection.Rows.Delete
+    
+    
     
     End With
 
@@ -739,7 +783,6 @@ Sub Define_Matrix_Style()
         
     End With
     
-    With ActiveDocument.Styles("basic_table_style").ParagraphFormat
         .LeftIndent = InchesToPoints(0.08)
         .RightIndent = InchesToPoints(0.08)
     End With
@@ -2633,6 +2676,64 @@ Next
 End With
 End Sub
 
+Sub insert_coloumn_breaks()
 
+With ActiveDocument
+Dim nTables As Long
+nTables = .Tables.count
 
+For i = 1 To nTables
+    Dim firstRow As Integer
+    Dim lastRow As Integer
+    Dim nRows As Integer
+    nRows = .Tables(i).Rows.count
+    .Tables(i).Rows(1).Select
+    firstRow = Selection.Information(wdActiveEndPageNumber)
+    .Tables(i).Rows(nRows).Select
+    lastRow = Selection.Information(wdActiveEndPageNumber)
+    
+    If firstRow <> lastRow Then
+        Dim nCols As Integer
+        nCols = .Tables(i).Columns.count
+        If nCols <> 1 Then
+            .Tables(i - 1).Select
+            Selection.GoTo What:=wdGoToLine, Which:=wdGoToPrevious, count:=1
+            Selection.EndKey Unit:=wdLine
+            Selection.InsertBreak Type:=1
+            Else
+            .Tables(i).Select
+            Selection.GoTo What:=wdGoToLine, Which:=wdGoToPrevious, count:=1
+            Selection.EndKey Unit:=wdLine
+            Selection.InsertBreak Type:=1
+        End If
+    End If
+    
+    Next
+    
+    
+End With
+End Sub
+
+Sub remove_coloumn_breaks()
+
+With ActiveDocument
+Selection.Find.ClearFormatting
+Selection.Find.Replacement.ClearFormatting
+With Selection.Find
+.Text = "^n"
+.Replacement.Text = ""
+.Forward = True
+.Wrap = wdFindContinue
+.Format = False
+.MatchCase = False
+.MatchWholeWord = False
+.MatchByte = False
+.MatchAllWordForms = False
+.MatchSoundsLike = False
+.MatchWildcards = False
+.MatchFuzzy = False
+End With
+Selection.Find.Execute Replace:=wdReplaceAll
+End With
+End Sub
 
