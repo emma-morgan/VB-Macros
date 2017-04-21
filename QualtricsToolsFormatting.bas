@@ -263,7 +263,7 @@ Sub Preview_Style_Change()
             .LeftMargin = InchesToPoints(0.5)
             .RightMargin = InchesToPoints(0.5)
             
-            .HeaderDistance = InchesToPoints(0.5)
+            .HeaderDistance = InchesToPoints(0.2)
             .FooterDistance = InchesToPoints(0.2)
             
         End With
@@ -284,6 +284,9 @@ Sub Preview_Style_Change()
                 .Color = wdColorAutomatic
             End With
             .ParagraphFormat.Alignment = wdAlignParagraphCenter
+            .ParagraphFormat.SpaceAfter = 0
+            .ParagraphFormat.SpaceBefore = 0
+            
         End With
                 
         With .Styles("Heading 5").Font
@@ -293,6 +296,11 @@ Sub Preview_Style_Change()
             .Italic = True
             .Bold = True
             .Underline = False
+        End With
+        
+        With .Styles("Heading 5").ParagraphFormat
+            .ParagraphFormat.SpaceAfter = 0
+            .ParagraphFormat.SpaceBefore = 0
         End With
         
         With .Styles("Compact").Font
@@ -356,9 +364,9 @@ Sub Insert_OIRE()
     
     With ActiveDocument
         'Move to the top right of the page
-        Selection.HomeKey unit:=wdStory
+        Selection.HomeKey Unit:=wdStory
         Selection.TypeParagraph
-        Selection.HomeKey unit:=wdStory
+        Selection.HomeKey Unit:=wdStory
         Selection.Style = ActiveDocument.Styles("Heading 4")
         Selection.Font.Bold = True
         Selection.Font.Italic = False
@@ -379,7 +387,7 @@ Sub Insert_logo()
 
     With ActiveDocument
         'Navigate to the top of the page
-        Selection.HomeKey unit:=wdStory
+        Selection.HomeKey Unit:=wdStory
         'Pick an image via its path and insert it
         Selection.InlineShapes.AddPicture FileName:= _
         "Q:\Student Work\Emma's Student Work\Report Generation\Report Macros_Adam\tufts_logo_black.png" _
@@ -1430,11 +1438,11 @@ Debug.Print (npar)
 For i = 1 To npar
     Debug.Print "Paragraph" + Str(i)
     ActiveDocument.Paragraphs(i).Range.Select
-    Selection.HomeKey unit:=wdLine
+    Selection.HomeKey Unit:=wdLine
     Selection.Find.Execute
 
     If Selection.Find.Found = True Then
-        Selection.Find.Parent.MoveDown unit:=wdLine, count:=2, Extend:=wdExtend
+        Selection.Find.Parent.MoveDown Unit:=wdLine, count:=2, Extend:=wdExtend
         Selection.Find.Parent.Delete
     Else: Exit For
     End If
@@ -1494,7 +1502,7 @@ Sub remove_blockHeaders_HTML()
         .MatchSoundsLike = False
         .MatchAllWordForms = False
     End With
-    Selection.HomeKey unit:=wdStory
+    Selection.HomeKey Unit:=wdStory
     Selection.Find.Execute
     
     Do While Selection.Find.Found = True And loopCount < 1000
@@ -1503,7 +1511,7 @@ Sub remove_blockHeaders_HTML()
         Selection.Expand wdParagraph
         Selection.Delete
         Selection.EndOf
-        Selection.HomeKey unit:=wdStory
+        Selection.HomeKey Unit:=wdStory
         Selection.Find.Execute
     Loop
     
@@ -1828,9 +1836,63 @@ Sub NumberingAppendices()
 '
     Selection.TypeBackspace
     Selection.TypeText Text:=" "
-    Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
-        "AUTONUM  \* ALPHABETIC ", PreserveFormatting:=False
-    Selection.MoveLeft unit:=wdCharacter, count:=1, Extend:=wdExtend
+    'Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
+    '    "AUTONUM  \* ALPHABETIC ", PreserveFormatting:=False
+    
+    ActiveWindow.View.ShowFieldCodes = True
+     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="QUOTE"
+ Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="Set A2Z"
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="=MOD("
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="SEQ ABC"
+'Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+'    PreserveFormatting:=False
+'Selection.TypeText Text:="MERGEFIELD FHB"
+Selection.MoveRight Unit:=wdCharacter, count:=2
+Selection.TypeText Text:="-1,26)+1"
+Selection.MoveRight Unit:=wdCharacter, count:=4
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="Set AA2ZZ"
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="=INT(("
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="SEQ ABC \c"
+Selection.MoveRight Unit:=wdCharacter, count:=2
+Selection.TypeText Text:="-1)/26)"
+Selection.MoveRight Unit:=wdCharacter, count:=4
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="IF"
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="AA2ZZ \* ALPHABETIC"
+Selection.MoveRight Unit:=wdCharacter, count:=2
+Selection.TypeText Text:="= """""
+Selection.MoveLeft Unit:=wdCharacter, count:=1
+Selection.TypeText Text:=" "
+Selection.MoveRight Unit:=wdCharacter, count:=2
+Selection.TypeText Text:=""""""
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="AA2ZZ \* ALPHABETIC"
+Selection.MoveRight Unit:=wdCharacter, count:=2
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="A2Z \* ALPHABETIC"
+ActiveWindow.View.ShowFieldCodes = False
+    
+    
+    Selection.MoveLeft Unit:=wdCharacter, count:=1, Extend:=wdExtend
     Selection.Copy
     Selection.Find.ClearFormatting
     Selection.Find.Replacement.ClearFormatting
@@ -2180,3 +2242,97 @@ Selection.Find.Execute Replace:=wdReplaceAll
 End With
 End Sub
 
+Sub test_appendix()
+'{QUOTE
+    '{SET A2Z
+        '{=MOD(
+            '{SEQ ABC}
+        '-1,26)+1}
+    '}
+    '{SET AA2ZZ
+            '{=INT((
+                '{SEQ ABC \c}
+            '-1)/26)}
+    '}
+    '{IF
+        '{AA2ZZ \* ALPHABETIC}
+        '= " " ""
+        '{AA2ZZ \* ALPHABETIC}
+    '}
+        '{A2Z \* ALPHABETIC}
+'}
+
+ActiveWindow.View.ShowFieldCodes = True
+
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="Set A2Z"
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="=MOD("
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="SEQ ABC"
+'Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+'    PreserveFormatting:=False
+'Selection.TypeText Text:="MERGEFIELD FHB"
+Selection.MoveRight Unit:=wdCharacter, count:=2
+Selection.TypeText Text:="-1,26)+1"
+Selection.MoveRight Unit:=wdCharacter, count:=4
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="Set AA2ZZ"
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="=INT(("
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="SEQ ABC \c"
+Selection.MoveRight Unit:=wdCharacter, count:=2
+Selection.TypeText Text:="-1)/26)"
+Selection.MoveRight Unit:=wdCharacter, count:=4
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="IF"
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="AA2ZZ \* ALPHABETIC"
+Selection.MoveRight Unit:=wdCharacter, count:=2
+Selection.TypeText Text:="= """""
+Selection.MoveLeft Unit:=wdCharacter, count:=1
+Selection.TypeText Text:=" "
+Selection.MoveRight Unit:=wdCharacter, count:=2
+Selection.TypeText Text:=""""""
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="AA2ZZ \* ALPHABETIC"
+Selection.MoveRight Unit:=wdCharacter, count:=2
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="A2Z \* ALPHABETIC"
+
+'Selection.TypeText Text:="T"
+Selection.MoveRight Unit:=wdCharacter, count:=3
+Selection.TypeText Text:=", "
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="COMPARE "
+Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+Selection.TypeText Text:="MERGEFIELD Other"
+Selection.MoveRight Unit:=wdCharacter, count:=2
+Selection.TypeText Text:=" <> """""
+Selection.MoveLeft Unit:=wdCharacter, count:=1
+Selection.TypeText Text:="T"
+Selection.MoveRight Unit:=wdCharacter, count:=3
+Selection.TypeText Text:=")"
+Selection.MoveRight Unit:=wdCharacter, count:=2
+Selection.TypeText Text:=" = 1 """""
+Selection.MoveLeft Unit:=wdCharacter, count:=1
+Selection.TypeText Text:="IfTrue"
+Selection.MoveRight Unit:=wdCharacter, count:=1
+Selection.TypeText Text:=" """""
+Selection.MoveLeft Unit:=wdCharacter, count:=1
+Selection.TypeText Text:="IfFalse"
+
+End Sub

@@ -96,6 +96,10 @@ Sub format_appendix()
     
     Call Preview_Style_Change
        
+       
+    Call replace_newline
+    Call RemoveEmptyParagraphs
+       
     Dim nTables As Long
     nTables = .Tables.count
     Debug.Print nTables
