@@ -87,6 +87,17 @@ Sub finish_clean_preview()
 
 End Sub
 
+Sub finish_clean_appendix()
+'This macro should be run AFTER the human components are finished
+'Removes the Export and Response Tags
+
+
+    Call Remove_Export_Tag
+    Call Remove_Response_Tag
+
+
+End Sub
+
 Sub format_appendix()
 '
 ' Macro that will call all the steps required to format appendix tables
@@ -299,8 +310,8 @@ Sub Preview_Style_Change()
         End With
         
         With .Styles("Heading 5").ParagraphFormat
-            .ParagraphFormat.SpaceAfter = 0
-            .ParagraphFormat.SpaceBefore = 0
+            .SpaceAfter = 0
+            .SpaceBefore = 0
         End With
         
         With .Styles("Compact").Font
@@ -1519,6 +1530,8 @@ Sub remove_blockHeaders_HTML()
     
     End With
 
+    Call RemoveEmptyParagraphs
+
 End Sub
 
 
@@ -1671,6 +1684,27 @@ Sub RemoveEmptyParagraphs()
         .Wrap = wdFindContinue
         .Format = True
         .MatchCase = True
+        .MatchWholeWord = False
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+    End With
+    Selection.Find.Execute Replace:=wdReplaceAll
+    
+    
+     Selection.Find.ClearFormatting
+    Selection.Find.Replacement.ClearFormatting
+    With Selection.Find.Replacement.Font
+        .Bold = False
+        .Italic = False
+    End With
+    With Selection.Find
+        .Text = "^p"
+        .Replacement.Text = "^p"
+        .Forward = True
+        .Wrap = wdFindContinue
+        .Format = True
+        .MatchCase = False
         .MatchWholeWord = False
         .MatchWildcards = False
         .MatchSoundsLike = False
@@ -2181,10 +2215,11 @@ For i = 1 To nTables
 Next
 End With
 End Sub
-
-
-
 Sub insert_page_breaks()
+'This macro checks to ensure that a table is not split onto two pages
+'If it is it will push the entire table on to the next page
+'NOT SURE IF THIS CHECKS TO SEE IF THE QUESTION AND RESPONSE ARE ON THE SAME PAGE MIGHT HAVE TO GO BACK AND CHECK
+
 
 With ActiveDocument
 Dim nTables As Long
@@ -2218,8 +2253,11 @@ For i = 1 To nTables
     
 End With
 End Sub
-
 Sub remove_page_breaks()
+'This needs to be run if a table or something was inserted after the insert page breaks macro was run
+'Before re running the insert_page_breaks as the entire document will need to be reformatted not just
+'The seciton that the insertion changes
+
 
 With ActiveDocument
 Selection.Find.ClearFormatting
@@ -2336,3 +2374,43 @@ Selection.MoveLeft Unit:=wdCharacter, count:=1
 Selection.TypeText Text:="IfFalse"
 
 End Sub
+
+
+Sub format_user_note()
+'http://stackoverflow.com/questions/13465709/repeating-microsoft-word-vba-until-no-search-results-found
+
+    Selection.Find.ClearFormatting
+    With Selection.Find
+        .Text = "User Note: "
+        .Replacement.Text = ""
+        .Forward = True
+        .Wrap = wdFindAsk
+        .Format = False
+        .MatchCase = False
+        .MatchWholeWord = True
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+    
+    Dim iCount As Integer
+
+    
+    Do While Selection.Find.Execute = True
+        Selection.MoveUp Unit:=wdLine, count:=1
+        Selection.MoveDown Unit:=wdLine, count:=1
+        Selection.Expand wdLine
+        Selection.ParagraphFormat.LeftIndent = InchesToPoints(0.5)
+        Selection.ParagraphFormat.SpaceBefore = 10
+        Selection.ParagraphFormat.SpaceAfter = 0
+        Selection.Font.Bold = False
+        Selection.Font.Color = wdColorAutomatic
+        Selection.Find.Execute Replace:=wdReplaceOne
+        Selection.Collapse
+    Loop
+    
+    End With
+
+
+End Sub
+
+

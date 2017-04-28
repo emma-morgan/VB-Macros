@@ -74,29 +74,14 @@ Sub finish_clean_preview()
 ' These macros can also easily be run separately, as long as the numbering is run first
 ' These apply ONLY to question info rows, so we can take advantage of this
 
-    Dim i As Integer
-    Dim ncol As Integer
-    Dim nrow As Integer
-    Dim nTables As Integer
-    
-    nTables = ActiveDocument.Tables.count
-        
+         
     Call number_questions
     Call remove_denominatorRow
     Call Remove_Export_Tag
 
 End Sub
 
-Sub finish_clean_appendix()
-'This macro should be run AFTER the human components are finished
-'Removes the Export and Response Tags
 
-
-    Call Remove_Export_Tag
-    Call Remove_Response_Tag
-
-
-End Sub
 
 Sub format_appendix()
 '
@@ -251,7 +236,16 @@ Sub format_appendix()
 
 End Sub
 
+Sub finish_clean_appendix()
+'This macro should be run AFTER the human components are finished
+'Removes the Export and Response Tags
 
+
+    Call Remove_Export_Tag
+    Call Remove_Response_Tag
+
+
+End Sub
 Sub Preview_Style_Change()
 
 'First step in formatting preview
@@ -1490,7 +1484,7 @@ End With
 
 End Sub
 
-Sub remove_blockHeaders_HTML()
+Sub remove_blockHeaders()
 
     With ActiveDocument
     
@@ -2281,6 +2275,8 @@ End With
 End Sub
 
 Sub test_appendix()
+'Doesn;t Work But I think its somewhat on the right track maybe?
+
 '{QUOTE
     '{SET A2Z
         '{=MOD(
@@ -2377,7 +2373,6 @@ End Sub
 
 
 Sub format_user_note()
-'http://stackoverflow.com/questions/13465709/repeating-microsoft-word-vba-until-no-search-results-found
 
     Selection.Find.ClearFormatting
     With Selection.Find
@@ -2413,4 +2408,9 @@ Sub format_user_note()
 
 End Sub
 
+Sub reset_page_breaks()
 
+Call remove_page_breaks
+Call insert_page_breaks
+
+End Sub
