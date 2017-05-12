@@ -8,7 +8,7 @@ Sub define_table_styles()
 
     Call Define_Matrix_Style
     Call define_appendix_table_style
-    Call define_basic_table_style
+    Call define_mc_table_style
     Call define_question_style
 
 
@@ -351,9 +351,13 @@ Sub number_of_respondents()
         
         Selection.find.Execute
         
-        Selection.Expand wdLine
-        Selection.Font.Size = 10
-        Selection.ParagraphFormat.Alignment = wdAlignParagraphCenter
+        If Selection.find.Found = True Then
+            Selection.Expand wdLine
+            Selection.Font.Size = 10
+            Selection.ParagraphFormat.Alignment = wdAlignParagraphCenter
+            Selection.Collapse
+        End If
+        
     End With
 
 End Sub
@@ -548,9 +552,9 @@ End Sub
 Sub format_preview_tables(i As Integer, nrow As Integer, ncol As Integer)
 
     If ncol = 1 Then
-        Call format_question_info(i, nrow)
+        Call format_question_style(i, nrow)
     ElseIf ncol = 3 Then
-        Call format_mc_singleQ(i, nrow, ncol)
+        Call format_mc_singleQ(i)
     ElseIf ncol > 3 Then
         Call format_matrix_table(i, nrow, ncol)
     
@@ -558,14 +562,14 @@ Sub format_preview_tables(i As Integer, nrow As Integer, ncol As Integer)
 
 End Sub
 
-Sub define_basic_table_style()
+Sub define_mc_table_style()
 
     On Error Resume Next
-    ActiveDocument.Styles("basic_table_style").Delete
+    ActiveDocument.Styles("mc_table_style").Delete
     
-    ActiveDocument.Styles.Add Name:="basic_table_style", Type:=wdStyleTypeTable
+    ActiveDocument.Styles.Add Name:="mc_table_style", Type:=wdStyleTypeTable
     
-    With ActiveDocument.Styles("basic_table_style")
+    With ActiveDocument.Styles("mc_table_style")
         With .Table
 
             .AllowPageBreaks = False
@@ -575,13 +579,55 @@ Sub define_basic_table_style()
         
     End With
     
-    With ActiveDocument.Styles("basic_table_style").ParagraphFormat
-        .leftindent = InchesToPoints(0.08)
-        .RightIndent = InchesToPoints(0.08)
+    With ActiveDocument.Styles("mc_table_style")
+    
+        With .ParagraphFormat
+            .leftindent = InchesToPoints(0.08)
+            .RightIndent = InchesToPoints(0.08)
+        End With
+        
+        With .Table
+            .RightPadding = 0
+            .LeftPadding = 0
+            .TopPadding = InchesToPoints(0.01)
+            .BottomPadding = InchesToPoints(0.01)
+        End With
+        
+        .Borders.InsideLineStyle = wdLineStyleNone
+        .Borders.OutsideLineStyle = wdLineStyleNone
+        
+        'We can specify formatting for the first and last column
+        'Make default the foramttign for % since this will be unspecified
+        
+        .Font.Bold = True
+        .ParagraphFormat.Alignment = wdAlignParagraphRight
+               
+        'Format first column: bold, italic, gray, right aligned
+        With .Table.Condition(wdFirstColumn)
+            
+            With .Font
+                .Bold = True
+                .Italic = True
+                .ColorIndex = wdGray50
+            End With
+            
+            .ParagraphFormat.Alignment = wdAlignParagraphRight
+        
+        End With
+        
+        With .Table.Condition(wdLastColumn)
+            
+            .Font.Bold = False
+            .ParagraphFormat.Alignment = wdAlignParagraphLeft
+        
+        End With
+        
     End With
         
     
 End Sub
+
+
 Sub define_question_style()
 
     On Error Resume Next
@@ -595,6 +641,12 @@ Sub define_question_style()
             .AllowPageBreaks = False
             .AllowBreakAcrossPage = False
             
+            .Spacing = InchesToPoints(0)
+            .TopPadding = InchesToPoints(0)
+            .BottomPadding = InchesToPoints(0)
+            .LeftPadding = InchesToPoints(0)
+            .RightPadding = InchesToPoints(0)
+            
         End With
         
     End With
@@ -602,7 +654,7 @@ Sub define_question_style()
     
 End Sub
 
-Sub format_question_info(i As Integer, nrow As Integer)
+Sub format_question_style(i As Integer, nrow As Integer)
 
 'Format question text and information
 
@@ -646,76 +698,98 @@ End With
     
 End Sub
 
-Sub format_mc_singleQ(i As Integer, nrow As Integer, ncol As Integer)
+Sub format_mc_singleQ(i As Integer)
     
     With ActiveDocument
     
-        .Tables(i).Style = "basic_table_style"
+        .Tables(i).Style = "mc_table_style"
         
-    Dim nRows As Long
-    Dim nCols As Long
-    
-    nRows = .Tables(i).Rows.count
-    nCols = .Tables(i).Columns.count
-    
-    
-    For j = 1 To nRows
-        For k = 1 To nCols
-            .Tables(i).Cell(j, k).TopPadding = 0
-            .Tables(i).Cell(j, k).BottomPadding = 0
-            .Tables(i).Cell(j, k).LeftPadding = 0
-            .Tables(i).Cell(j, k).RightPadding = 0
-
-        Next
-    Next
+       
+        .Tables(i).ApplyStyleFirstColumn = True
+        .Tables(i).ApplyStyleLastColumn = True
         
-        'Adjust cell padding for multiple choice
-        With .Tables(i)
-            .LeftPadding = InchesToPoints(0)
-            .RightPadding = InchesToPoints(0)
-            .TopPadding = InchesToPoints(0.01)
-            .BottomPadding = InchesToPoints(0.01)
-            .Spacing = InchesToPoints(0)
-        End With
+'    Dim nRows As Long
+'    Dim nCols As Long
+'
+'    nRows = .Tables(i).Rows.count
+'    nCols = .Tables(i).Columns.count
     
-        .Tables(i).Select
+    'Check to make sure that the first row has labels for "N" and "Percent"
+    'If yes, delete the first row
         
-        'Remove inside borders
-        Selection.Borders.InsideLineStyle = wdLineStyleNone
+        cellText1 = .Tables(i).Cell(1, 1).Range.Text
+        cellText2 = .Tables(i).Cell(1, 2).Range.Text
+        Debug.Print "Cell_1: " & cellText1
+        Debug.Print "Cell_2: " & cellText2
         
-        'Select N column
-        'Adjust font and right align
-        .Tables(i).Columns(1).Select
-        With Selection
-            With .Font
-                .Bold = True
-                .Italic = True
-                .Color = wdColorGray40
-            End With
-            
-            With .ParagraphFormat
-                .Alignment = wdAlignParagraphRight
-            End With
-        End With
-        
-        'Select % column
-        'Bold and right align
-        .Tables(i).Columns(2).Select
-        With Selection
-            .Font.Bold = True
-            .ParagraphFormat.Alignment = wdAlignParagraphRight
-        End With
-        
-        'Delete first row from this type of question
-        .Tables(i).Rows(1).Select
-        Selection.Rows.Delete
-    
-    
+        If cellText1 Like "N*" And cellText2 Like "Percent*" Then
+            .Tables(i).Rows(1).Delete
+        End If
     
     End With
-
-
+    
 End Sub
+    
+    
+'    For j = 1 To nRows
+'        For k = 1 To nCols
+'            .Tables(i).Cell(j, k).TopPadding = 0
+'            .Tables(i).Cell(j, k).BottomPadding = 0
+'            .Tables(i).Cell(j, k).LeftPadding = 0
+'            .Tables(i).Cell(j, k).RightPadding = 0
+'
+'        Next
+'    Next
+        
+        'Adjust cell padding for multiple choice
+'        With .Tables(i)
+'            .LeftPadding = InchesToPoints(0)
+'            .RightPadding = InchesToPoints(0)
+'            .TopPadding = InchesToPoints(0.01)
+'            .BottomPadding = InchesToPoints(0.01)
+'            .Spacing = InchesToPoints(0)
+'        End With
+    
+        
+        'Remove inside borders
+'        Selection.Borders.InsideLineStyle = wdLineStyleNone
+        
+'        'Select N column
+'        'Adjust font and right align
+'        .Tables(i).Columns(1).Select
+'        With Selection
+'            With .Font
+'                .Bold = True
+'                .Italic = True
+'                .Color = wdColorGray40
+'            End With
+'
+'            With .ParagraphFormat
+'                .Alignment = wdAlignParagraphRight
+'            End With
+'        End With
+        
+'        'Select % column
+'        'Bold and right align
+'        .Tables(i).Columns(2).Select
+'        With Selection
+'            .Font.Bold = True
+'            .ParagraphFormat.Alignment = wdAlignParagraphRight
+'        End With
+        
+        'Delete first row from this type of question
+        'Want to make sure that the first row hasn't already been deleted
+        
+'        .Tables(i).Row(1).Select
+'        Selection.Rows.Delete
+'        Selection.Collapse
+'
+'
+'
+'    End With
+'
+'
+'End Sub
 
 
 Sub Define_Matrix_Style()
@@ -752,7 +826,7 @@ Sub Define_Matrix_Style()
             
             
             
-            .leftindent = InchesToPoints(0.01)
+'            .leftindent = InchesToPoints(0.01)
 '            .RightIndent = InchesToPoints(0.01)
             
             With .Condition(wdEvenRowBanding)
@@ -1765,7 +1839,7 @@ Sub format_NA_table()
     
     Dim i As Integer
     Dim tbl As Table
-    Dim rowHeadings As row
+    Dim rowHeadings As Row
     Dim cellHeading As Cell
     Dim isTableTypeNA As Boolean
     Dim iHeadingsRowIndex As Integer
@@ -1838,27 +1912,27 @@ Sub format_NA_table()
                 .Shading.BackgroundPatternColor = wdColorWhite
             End With
             
-            With tbl.Cell(row:=1, Column:=1)
+            With tbl.Cell(Row:=1, Column:=1)
                 .Borders(wdBorderTop).LineStyle = wdLineStyleNone
                 .Borders(wdBorderLeft).LineStyle = wdLineStyleNone
             End With
             tbl.Rows.Add BeforeRow:=tbl.Rows(1)
             
-            With tbl.Cell(row:=1, Column:=2).Range
+            With tbl.Cell(Row:=1, Column:=2).Range
                 .Text = "Of those NOT selecting ""Not Applicable"""
                 .Font.Bold = True
                 '.ParagraphFormat.Alignment = wdAlignParagraphCenter
             End With
             
-            With tbl.Cell(row:=1, Column:=iNAColumnIndex - 1).Range
+            With tbl.Cell(Row:=1, Column:=iNAColumnIndex - 1).Range
                 .Text = "Of all respondents"
                 .Font.Bold = True
             End With
             
-            tbl.Cell(row:=1, Column:=iNAColumnIndex - 1).Merge MergeTo:=tbl.Cell(row:=1, Column:=iNAColumnIndex)
-            tbl.Cell(row:=1, Column:=2).Merge MergeTo:=tbl.Cell(row:=1, Column:=iNAColumnIndex - 2)
+            tbl.Cell(Row:=1, Column:=iNAColumnIndex - 1).Merge MergeTo:=tbl.Cell(Row:=1, Column:=iNAColumnIndex)
+            tbl.Cell(Row:=1, Column:=2).Merge MergeTo:=tbl.Cell(Row:=1, Column:=iNAColumnIndex - 2)
                         
-            With tbl.Cell(row:=1, Column:=tbl.Rows(1).Cells.count)
+            With tbl.Cell(Row:=1, Column:=tbl.Rows(1).Cells.count)
                 .Borders(wdBorderRight).LineStyle = wdLineStyleSingle
                 .Borders(wdBorderRight).LineWidth = wdLineWidth025pt
                 .Borders(wdBorderTop).LineStyle = wdLineStyleSingle
@@ -1868,16 +1942,16 @@ Sub format_NA_table()
                 .Range.ParagraphFormat.Alignment = wdAlignParagraphCenter
             End With
             
-            With tbl.Cell(row:=1, Column:=tbl.Rows(1).Cells.count - 1)
+            With tbl.Cell(Row:=1, Column:=tbl.Rows(1).Cells.count - 1)
                 .Range.ParagraphFormat.Alignment = wdAlignParagraphCenter
             End With
             
-            With tbl.Cell(row:=1, Column:=2)
+            With tbl.Cell(Row:=1, Column:=2)
                 .Borders(wdBorderTop).LineStyle = wdLineStyleSingle
                 .Borders(wdBorderTop).LineWidth = wdLineWidth150pt
             End With
 
-            With tbl.Cell(row:=1, Column:=1)
+            With tbl.Cell(Row:=1, Column:=1)
                 .Borders(wdBorderBottom).LineStyle = wdLineStyleNone
             End With
             
