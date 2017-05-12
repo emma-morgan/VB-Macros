@@ -36,7 +36,7 @@ Sub format_survey_preview()
     Call RemoveEmptyParagraphs
     
     
-'    Call number_of_respondents
+    Call number_of_respondents
     Call Insert_OIRE
     Call Insert_logo
     Call Insert_footer
@@ -338,6 +338,10 @@ Sub Preview_Style_Change()
 End Sub
 
 Sub number_of_respondents()
+
+    'This currently will format only overall reports
+    'We will need to add an addition search for "Size of respondent group"
+        'if we would like to add formatting for split reports
 
     With ActiveDocument
     
@@ -707,12 +711,6 @@ Sub format_mc_singleQ(i As Integer)
        
         .Tables(i).ApplyStyleFirstColumn = True
         .Tables(i).ApplyStyleLastColumn = True
-        
-'    Dim nRows As Long
-'    Dim nCols As Long
-'
-'    nRows = .Tables(i).Rows.count
-'    nCols = .Tables(i).Columns.count
     
     'Check to make sure that the first row has labels for "N" and "Percent"
     'If yes, delete the first row
@@ -730,67 +728,6 @@ Sub format_mc_singleQ(i As Integer)
     
 End Sub
     
-    
-'    For j = 1 To nRows
-'        For k = 1 To nCols
-'            .Tables(i).Cell(j, k).TopPadding = 0
-'            .Tables(i).Cell(j, k).BottomPadding = 0
-'            .Tables(i).Cell(j, k).LeftPadding = 0
-'            .Tables(i).Cell(j, k).RightPadding = 0
-'
-'        Next
-'    Next
-        
-        'Adjust cell padding for multiple choice
-'        With .Tables(i)
-'            .LeftPadding = InchesToPoints(0)
-'            .RightPadding = InchesToPoints(0)
-'            .TopPadding = InchesToPoints(0.01)
-'            .BottomPadding = InchesToPoints(0.01)
-'            .Spacing = InchesToPoints(0)
-'        End With
-    
-        
-        'Remove inside borders
-'        Selection.Borders.InsideLineStyle = wdLineStyleNone
-        
-'        'Select N column
-'        'Adjust font and right align
-'        .Tables(i).Columns(1).Select
-'        With Selection
-'            With .Font
-'                .Bold = True
-'                .Italic = True
-'                .Color = wdColorGray40
-'            End With
-'
-'            With .ParagraphFormat
-'                .Alignment = wdAlignParagraphRight
-'            End With
-'        End With
-        
-'        'Select % column
-'        'Bold and right align
-'        .Tables(i).Columns(2).Select
-'        With Selection
-'            .Font.Bold = True
-'            .ParagraphFormat.Alignment = wdAlignParagraphRight
-'        End With
-        
-        'Delete first row from this type of question
-        'Want to make sure that the first row hasn't already been deleted
-        
-'        .Tables(i).Row(1).Select
-'        Selection.Rows.Delete
-'        Selection.Collapse
-'
-'
-'
-'    End With
-'
-'
-'End Sub
-
 
 Sub Define_Matrix_Style()
 
@@ -823,12 +760,7 @@ Sub Define_Matrix_Style()
             .TopPadding = 0.01
             .BottomPadding = 0.01
             .Spacing = InchesToPoints(0)
-            
-            
-            
-'            .leftindent = InchesToPoints(0.01)
-'            .RightIndent = InchesToPoints(0.01)
-            
+                        
             With .Condition(wdEvenRowBanding)
                 With .Shading
                     .Texture = wdTextureNone
@@ -898,11 +830,6 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
 
         With .Tables(i)
             .Style = "Matrix_table_style"
-'            .LeftPadding = InchesToPoints(0)
-'            .RightPadding = InchesToPoints(0)
-'            .TopPadding = InchesToPoints(0.01)
-'            .BottomPadding = InchesToPoints(0.01)
-'            .Spacing = InchesToPoints(0)
             
         End With
                     
