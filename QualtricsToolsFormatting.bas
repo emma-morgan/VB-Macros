@@ -277,7 +277,7 @@ Sub Preview_Style_Change()
         .Paragraphs.SpaceBeforeAuto = False
         .Paragraphs.SpaceBefore = 0
         .Paragraphs.SpaceAfter = 0
-        .Paragraphs.format.Alignment = wdAlignParagraphLeft
+'        .Paragraphs.format.Alignment = wdAlignParagraphLeft
         
                 
         'Change style of title (Heading 4), Block names (Header 5), and regular text (Compact)
@@ -360,7 +360,19 @@ Sub number_of_respondents()
             Selection.Font.Size = 10
             Selection.ParagraphFormat.Alignment = wdAlignParagraphCenter
             Selection.Collapse
+        Else
+            Selection.find.Text = "Size of Respondent Group: "
+            Selection.find.Execute
+            If Selection.find.Found = True Then
+                Selection.Expand wdLine
+                Selection.Font.Size = 10
+                Selection.ParagraphFormat.Alignment = wdAlignParagraphCenter
+                Selection.Collapse
+            End If
+            
         End If
+        
+        
         
     End With
 
@@ -560,7 +572,7 @@ Sub format_preview_tables(i As Integer, nrow As Integer, ncol As Integer)
     ElseIf ncol = 3 Then
         Call format_mc_singleQ(i)
     ElseIf ncol > 3 Then
-        Call format_matrix_table(i, nrow, ncol)
+        Call format_matrix_table(i)
     
     End If
 
@@ -574,57 +586,57 @@ Sub define_mc_table_style()
     ActiveDocument.Styles.Add Name:="mc_table_style", Type:=wdStyleTypeTable
     
     With ActiveDocument.Styles("mc_table_style")
+    
+        With .ParagraphFormat
+            .leftindent = InchesToPoints(0.08)
+            .RightIndent = InchesToPoints(0.08)
+            .Alignment = wdAlignParagraphRight
+        End With
+        
+        'We can specify formatting for the first and last column
+        'Make default the foramtting for % since this will be unspecified
+        
+        .Font.Bold = True
+        .Font.Name = "Arial"
+        .Font.Size = 10
+        
         With .Table
 
             .AllowPageBreaks = False
             .AllowBreakAcrossPage = False
             
-        End With
-        
-    End With
-    
-    With ActiveDocument.Styles("mc_table_style")
-    
-        With .ParagraphFormat
-            .leftindent = InchesToPoints(0.08)
-            .RightIndent = InchesToPoints(0.08)
-        End With
-        
-        With .Table
             .RightPadding = 0
             .LeftPadding = 0
             .TopPadding = InchesToPoints(0.01)
             .BottomPadding = InchesToPoints(0.01)
-        End With
-        
-        .Borders.InsideLineStyle = wdLineStyleNone
-        .Borders.OutsideLineStyle = wdLineStyleNone
-        
-        'We can specify formatting for the first and last column
-        'Make default the foramttign for % since this will be unspecified
-        
-        .Font.Bold = True
-        .ParagraphFormat.Alignment = wdAlignParagraphRight
-               
-        'Format first column: bold, italic, gray, right aligned
-        With .Table.Condition(wdFirstColumn)
             
-            With .Font
-                .Bold = True
-                .Italic = True
-                .ColorIndex = wdGray50
+            .Borders.InsideLineStyle = wdLineStyleNone
+            .Borders.OutsideLineStyle = wdLineStyleNone
+
+            With .Condition(wdFirstColumn)
+                
+                With .Font
+                    .Bold = True
+                    .Italic = True
+                    .ColorIndex = wdGray50
+                End With
+                
+                .ParagraphFormat.Alignment = wdAlignParagraphRight
+            
             End With
             
-            .ParagraphFormat.Alignment = wdAlignParagraphRight
-        
-        End With
-        
-        With .Table.Condition(wdLastColumn)
+            With .Condition(wdLastColumn)
+                
+                .Font.Bold = False
+                .ParagraphFormat.Alignment = wdAlignParagraphLeft
             
-            .Font.Bold = False
-            .ParagraphFormat.Alignment = wdAlignParagraphLeft
+            End With
         
         End With
+            
+
+               
+        'Format first column: bold, italic, gray, right aligned
         
     End With
         
@@ -740,15 +752,23 @@ Sub Define_Matrix_Style()
     
     With ActiveDocument.Styles("Matrix_table_style")
         
+        With .Font
+            .Name = "Arial"
+            .Size = 10
+            .Bold = True
+            .Italic = False
+            .ColorIndex = wdAuto
+        End With
+        
         With .ParagraphFormat
             .leftindent = InchesToPoints(0.01)
             .RightIndent = InchesToPoints(0.01)
             .LineUnitAfter = 0
             .LineUnitBefore = 0
             .LineSpacingRule = wdLineSpaceSingle
+            .Alignment = wdAlignParagraphCenter
         End With
-        
-        
+                
         With .Table
             .RowStripe = 1
             .ColumnStripe = 0
@@ -760,6 +780,11 @@ Sub Define_Matrix_Style()
             .TopPadding = 0.01
             .BottomPadding = 0.01
             .Spacing = InchesToPoints(0)
+            
+            With .Condition(wdFirstColumn)
+                .Font.Bold = False
+                .ParagraphFormat.Alignment = wdAlignParagraphLeft
+            End With
                         
             With .Condition(wdEvenRowBanding)
                 With .Shading
@@ -824,42 +849,35 @@ Sub Define_Matrix_Style()
 
 End Sub
 
-Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
+Sub format_matrix_table(i As Integer)
    
     With ActiveDocument
 
         With .Tables(i)
             .Style = "Matrix_table_style"
-            
+            .ApplyStyleFirstColumn = True
         End With
+        
+        .Tables(i).Select
+        Selection.Cells.VerticalAlignment = wdCellAlignVerticalCenter
+        Selection.Collapse
                     
-        With .Tables(i).Cell(1, 1)
-            With .Borders(wdBorderLeft)
-                .LineStyle = wdLineStyleNone
-            End With
-            With .Borders(wdBorderTop)
-                .LineStyle = wdLineStyleNone
-            End With
-        End With
+        .Tables(i).Cell(1, 1).Borders(wdBorderLeft).LineStyle = wdLineStyleNone
+        .Tables(i).Cell(1, 1).Borders(wdBorderTop).LineStyle = wdLineStyleNone
+        
+'            With .Borders(wdBorderLeft)
+'                .LineStyle = wdLineStyleNone
+'            End With
+'            With .Borders(wdBorderTop)
+'                .LineStyle = wdLineStyleNone
+'            End With
+'        End With
         
 
         .Tables(i).PreferredWidthType = wdPreferredWidthPercent
         .Tables(i).PreferredWidth = 100
-
-        
-'        .Tables(i).Cell(1, 1).SetWidth ColumnWidth:=InchesToPoints(3.5), _
- '           RulerStyle:=wdAdjustProportional
         
         .Tables(i).Columns(1).PreferredWidth = InchesToPoints(3.5)
-        
-        
-        
-'        With Selection.Cells
-'            .SetWidth _
-'            ColumnWidth:=InchesToPoints(3.5), _
-'            RulerStyle:=wdAdjustFirstColumn
-''            RulerStyle:=wdAdjustNone
-'        End With
                         
         'Format N columns
 
@@ -880,21 +898,14 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
             
             If Selection.find.Found = True Then
                 .Tables(i).Columns(j).PreferredWidth = InchesToPoints(0.47)
-'                .Tables(i).Columns(j).Select
-'                With Selection.Cells
-'
-'                    .SetWidth _
-'                    ColumnWidth:=InchesToPoints(0.47), _
-'                    RulerStyle:=wdAdjustNone
-'                End With
                                  
                 .Tables(i).Columns(j).Select
                 With Selection
-                     .Font.Bold = True
+'                     .Font.Bold = True
                      .Font.Italic = True
-                     .Font.Color = wdColorGray40
-                     .ParagraphFormat.Alignment = wdAlignParagraphCenter
-                     .Cells.VerticalAlignment = wdCellAlignVerticalCenter
+                     .Font.ColorIndex = wdGray50
+'                     .ParagraphFormat.Alignment = wdAlignParagraphCenter
+'                     .Cells.VerticalAlignment = wdCellAlignVerticalCenter
                  End With
                  
 '                 With Selection.ParagraphFormat
@@ -905,43 +916,43 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
                  
                  Selection.Collapse
                  
-            'Format percentage columns
-            Else
-                
-                Selection.find.ClearFormatting
-                .Tables(i).Columns(j).Select
-                
-                '        Selection.Paragraphs.leftindent = InchesToPoints(0.08)
-                '        Selection.Paragraphs.RightIndent = InchesToPoints(0.08)
-                
-
-                With Selection.find
-                .Text = "%"
-                .MatchWholeWord = False
-                End With
-                
-                Selection.find.Execute
-                
-                
-                If Selection.find.Found = True Then
-                    .Tables(i).Columns(j).Select
-                    
-                    With Selection.Font
-                        .Bold = True
-                        .Italic = False
-                        .Color = wdColorAutomatic
-                    End With
-                     
-                    With Selection
-                        .ParagraphFormat.Alignment = wdAlignParagraphCenter
-                        .Cells.VerticalAlignment = wdCellAlignVerticalCenter
-                    End With
-                    
-                    Selection.Collapse
-                
-                End If
-                
-                     
+'            'Format percentage columns
+'            Else
+'
+'                Selection.find.ClearFormatting
+'                .Tables(i).Columns(j).Select
+'
+'                '        Selection.Paragraphs.leftindent = InchesToPoints(0.08)
+'                '        Selection.Paragraphs.RightIndent = InchesToPoints(0.08)
+'
+'
+'                With Selection.find
+'                .Text = "%"
+'                .MatchWholeWord = False
+'                End With
+'
+'                Selection.find.Execute
+'
+'
+'                If Selection.find.Found = True Then
+'                    .Tables(i).Columns(j).Select
+'
+'                    With Selection.Font
+'                        .Bold = True
+'                        .Italic = False
+'                        .Color = wdColorAutomatic
+'                    End With
+'
+'                    With Selection
+'                        .ParagraphFormat.Alignment = wdAlignParagraphCenter
+'                        .Cells.VerticalAlignment = wdCellAlignVerticalCenter
+'                    End With
+'
+'                    Selection.Collapse
+'
+'                End If
+'
+'
             End If
              
         Next
@@ -952,22 +963,28 @@ Sub format_matrix_table(i As Integer, nrow As Integer, ncol As Integer)
         
         
         'Format header
-        .Tables(i).Rows(1).Select
-        
-        With Selection.Font
-            .Bold = True
-            .Italic = False
-            .Color = wdColorAutomatic
-        End With
-        
-        With Selection.ParagraphFormat
-            .Alignment = wdAlignParagraphCenter
-        End With
-        
-        With Selection.Borders(wdBorderBottom)
+'        .Tables(i).Rows(1).Select
+'
+'        With Selection.Font
+'            .Bold = True
+'            .Italic = False
+'            .Color = wdColorAutomatic
+'        End With
+'
+'        With Selection.ParagraphFormat
+'            .Alignment = wdAlignParagraphCenter
+'        End With
+'
+'        With Selection.Borders(wdBorderBottom)
+'            .LineStyle = wdLineStyleSingle
+'            .LineWidth = wdLineWidth050pt
+'            .Color = wdColorAutomatic
+'        End With
+
+        With .Tables(i).Rows.Borders(wdBorderBottom)
             .LineStyle = wdLineStyleSingle
             .LineWidth = wdLineWidth050pt
-            .Color = wdColorAutomatic
+            .ColorIndex = wdAuto
         End With
 
     End With
