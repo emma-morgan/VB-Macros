@@ -63,6 +63,7 @@ Sub format_survey_preview()
         Call format_preview_tables(i, ncol)
         If ncol = 1 Then
             Call format_See_Appendix(i)
+            Call format_UserNote(i)
         ElseIf ncol > 1 Then
             Call Replace_zeros(i)
             Call Replace_NaN(i)
@@ -98,7 +99,6 @@ Sub format_appendix()
     With ActiveDocument
     
     Call Preview_Style_Change
-       
        
     Call replace_newline
     Call RemoveEmptyParagraphs
@@ -675,8 +675,7 @@ Sub format_mc_singleQ(i As Integer)
     With ActiveDocument
     
         .Tables(i).Style = "mc_table_style"
-        
-       
+
         .Tables(i).ApplyStyleFirstColumn = True
         .Tables(i).ApplyStyleLastColumn = True
     
@@ -691,6 +690,9 @@ Sub format_mc_singleQ(i As Integer)
         If cellText1 Like "N*" And cellText2 Like "Percent*" Then
             .Tables(i).Rows(1).Delete
         End If
+        
+        .Tables(i).AutoFitBehavior (wdAutoFitContent)
+        
     
     End With
     
@@ -747,14 +749,6 @@ Sub format_question_style(i As Integer)
         .Tables(i).PreferredWidthType = wdPreferredWidthPercent
         .Tables(i).PreferredWidth = 100
         
-'        With .Tables(i)
-'            .Spacing = InchesToPoints(0)
-'            .TopPadding = InchesToPoints(0)
-'            .BottomPadding = InchesToPoints(0)
-'            .LeftPadding = InchesToPoints(0)
-'            .RightPadding = InchesToPoints(0)
-'        End With
-            
         'Bold question text
         .Tables(i).Rows(2).Select
         With Selection
@@ -791,7 +785,7 @@ Sub Define_Matrix_Style()
     ActiveDocument.Styles.Add Name:="Matrix_table_style", Type:=wdStyleTypeTable
     
     With ActiveDocument.Styles("Matrix_table_style")
-        
+            
         With .Font
             .Name = "Arial"
             .Size = 10
@@ -825,6 +819,8 @@ Sub Define_Matrix_Style()
             With .Condition(wdFirstColumn)
                 .Font.Bold = False
                 .ParagraphFormat.Alignment = wdAlignParagraphLeft
+                .ParagraphFormat.leftindent = InchesToPoints(0.08)
+                .ParagraphFormat.RightIndent = InchesToPoints(0.01)
             End With
             
             With .Condition(wdFirstRow)
@@ -934,15 +930,6 @@ Sub format_matrix_table(i As Integer)
         .Tables(i).Cell(1, 1).Borders(wdBorderLeft).LineStyle = wdLineStyleNone
         .Tables(i).Cell(1, 1).Borders(wdBorderTop).LineStyle = wdLineStyleNone
         
-'            With .Borders(wdBorderLeft)
-'                .LineStyle = wdLineStyleNone
-'            End With
-'            With .Borders(wdBorderTop)
-'                .LineStyle = wdLineStyleNone
-'            End With
-'        End With
-        
-
         .Tables(i).PreferredWidthType = wdPreferredWidthPercent
         .Tables(i).PreferredWidth = 100
         
@@ -970,91 +957,28 @@ Sub format_matrix_table(i As Integer)
                                  
                 .Tables(i).Columns(j).Select
                 With Selection
-'                     .Font.Bold = True
                      .Font.Italic = True
                      .Font.ColorIndex = wdGray50
-'                     .ParagraphFormat.Alignment = wdAlignParagraphCenter
-'                     .Cells.VerticalAlignment = wdCellAlignVerticalCenter
                  End With
                  
-'                 With Selection.ParagraphFormat
-'                     .Alignment = wdAlignParagraphCenter
-'                 End With
+                 With Selection.find
+                    .Text = "total_N"
+                    .Replacement.Text = "Total N"
+                End With
+                
+                Selection.find.Execute Replace:=wdReplaceOne
                  
-'                 Selection.Cells.VerticalAlignment = wdCellAlignVerticalCenter
+                Selection.Collapse
                  
-                 Selection.Collapse
-                 
-'            'Format percentage columns
-'            Else
-'
-'                Selection.find.ClearFormatting
-'                .Tables(i).Columns(j).Select
-'
-'                '        Selection.Paragraphs.leftindent = InchesToPoints(0.08)
-'                '        Selection.Paragraphs.RightIndent = InchesToPoints(0.08)
-'
-'
-'                With Selection.find
-'                .Text = "%"
-'                .MatchWholeWord = False
-'                End With
-'
-'                Selection.find.Execute
-'
-'
-'                If Selection.find.Found = True Then
-'                    .Tables(i).Columns(j).Select
-'
-'                    With Selection.Font
-'                        .Bold = True
-'                        .Italic = False
-'                        .Color = wdColorAutomatic
-'                    End With
-'
-'                    With Selection
-'                        .ParagraphFormat.Alignment = wdAlignParagraphCenter
-'                        .Cells.VerticalAlignment = wdCellAlignVerticalCenter
-'                    End With
-'
-'                    Selection.Collapse
-'
-'                End If
-'
-'
             End If
              
         Next
-     
-                
-       
-       'Center align test horizontal and vertical
-        
-        
-        'Format header
-'        .Tables(i).Rows(1).Select
-'
-'        With Selection.Font
-'            .Bold = True
-'            .Italic = False
-'            .Color = wdColorAutomatic
-'        End With
-'
-'        With Selection.ParagraphFormat
-'            .Alignment = wdAlignParagraphCenter
-'        End With
-'
-'        With Selection.Borders(wdBorderBottom)
+
+'        With .Tables(i).Rows.Borders(wdBorderBottom)
 '            .LineStyle = wdLineStyleSingle
 '            .LineWidth = wdLineWidth050pt
-'            .Color = wdColorAutomatic
+'            .ColorIndex = wdAuto
 '        End With
-
-        With .Tables(i).Rows.Borders(wdBorderBottom)
-            .LineStyle = wdLineStyleSingle
-            .LineWidth = wdLineWidth050pt
-            .ColorIndex = wdAuto
-        End With
 
     End With
     
@@ -1186,12 +1110,10 @@ Sub remove_denominatorRow()
     
     nTables = .Tables.count
 
-    For i = 1 To nTables
-        .Tables(i).Select
-        Selection.find.ClearFormatting
-        Selection.find.Replacement.ClearFormatting
-        
-        With Selection.find
+    Selection.find.ClearFormatting
+    Selection.find.Replacement.ClearFormatting
+    
+    With Selection.find
             .Text = "Denominator Used:"
             .Replacement.Text = ""
             .Forward = True
@@ -1202,9 +1124,14 @@ Sub remove_denominatorRow()
             .MatchWildcards = False
             .MatchSoundsLike = False
             .MatchAllWordForms = False
-        End With
-        If Selection.find.Execute Then Selection.Rows.Delete
+    End With
+    
+    For i = 1 To nTables
+        If .Tables(i).Columns.count = 1 Then
+            .Tables(i).Select
 
+            If Selection.find.Execute Then Selection.Rows.Delete
+        End If
     Next
     
     End With
@@ -1691,17 +1618,48 @@ Sub format_See_Appendix(i)
         .MatchSoundsLike = False
         .MatchAllWordForms = False
     End With
-
-    If .Tables(i).Columns.count = 1 Then
-        
-        .Tables(i).Select
-        
-        If Selection.find.Execute Then
-            Selection.Paragraphs.Indent
-            Selection.InsertRowsAbove
-        End If
-            
+    
+    .Tables(i).Select
+    
+    If Selection.find.Execute Then
+        Selection.ParagraphFormat.leftindent = InchesToPoints(0.5)
+        Selection.ParagraphFormat.SpaceBefore = 10
     End If
+    Selection.Collapse
+  
+    End With
+
+End Sub
+
+Sub format_UserNote(i)
+
+    With ActiveDocument
+    
+    Selection.find.ClearFormatting
+    Selection.find.Replacement.ClearFormatting
+        
+    With Selection.find
+        .Text = "User Note:"
+        .Replacement.Text = ""
+        .Forward = True
+        .Wrap = wdFindStop
+        .format = False
+        .MatchCase = True
+        .MatchWholeWord = False
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+    End With
+
+    .Tables(i).Select
+    
+    If Selection.find.Execute Then
+        Selection.Expand (wdParagraph)
+        Selection.Font.ColorIndex = wdGray50
+        Selection.Font.Italic = True
+        Selection.ParagraphFormat.leftindent = InchesToPoints(0.25)
+    End If
+    Selection.Collapse
     
     End With
 
