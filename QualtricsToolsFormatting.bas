@@ -15,6 +15,17 @@ Sub define_table_styles()
 End Sub
 
 
+Sub insert_header_footer()
+
+With ActiveDocument
+
+    Call Insert_OIRE
+    Call Insert_logo
+    Call Insert_footer
+    
+End With
+
+End Sub
 
 Sub format_survey_preview()
 
@@ -31,35 +42,31 @@ Sub format_survey_preview()
     'Change global font and spacing, format title header
     
     Call Preview_Style_Change
+    Call number_of_respondents
     
     Call replace_newline
     Call RemoveEmptyParagraphs
     
-    
-    Call number_of_respondents
-    Call Insert_OIRE
-    Call Insert_logo
-    Call Insert_footer
-    
     With ActiveDocument
 
     nTables = .Tables.count
-        
-
-        
+    
     For i = 1 To nTables
         ncol = .Tables(i).Columns.count
         nrow = .Tables(i).Rows.count
-        Debug.Print ncol
+'        Debug.Print ncol
 
-        .Tables(i).AllowPageBreaks = False
+'        .Tables(i).AllowPageBreaks = False
 
         'We have one macro that will iterate through each table and perform
         'the appropriate formatting functions
-        Call format_preview_tables(i, nrow, ncol)
-        Call Replace_zeros(i)
-        Call Replace_NaN(i)
-        Call format_See_Appendix(i)
+        Call format_preview_tables(i, ncol)
+        If ncol = 1 Then
+            Call format_See_Appendix(i)
+        ElseIf ncol > 1 Then
+            Call Replace_zeros(i)
+            Call Replace_NaN(i)
+        End If
 
     Next
     
@@ -378,31 +385,41 @@ Sub number_of_respondents()
 
 End Sub
 
+
 Sub Insert_OIRE()
-'
+
 ' Moves to the upper right hand corner and inserts, then formats, text
-' This is inserted as style Heading 4 to match Survey name;
+' This is inserted with its own formatting and can be used with any document;
     ' this is then adjusted when we change the format of Heading 4 in Preview_Style_Change
 ' Created by Adam Kaminski, summer 2016
-' Edits by ECM
+' Updated ECM 5/25/17
     
-    
-    With ActiveDocument
-        'Move to the top right of the page
-        Selection.HomeKey Unit:=wdStory
-        Selection.TypeParagraph
-        Selection.HomeKey Unit:=wdStory
-        Selection.Style = ActiveDocument.Styles("Heading 4")
-        Selection.Font.Bold = True
-        Selection.Font.Italic = False
-        Selection.ParagraphFormat.Alignment = wdAlignParagraphRight
 
-        'Insert text
-        oireName = "Office of Institutional" + Chr(10) + "Research & Evaluation" + Chr(10)
-        Selection.TypeText Text:=oireName
+With ActiveDocument
+
+    oireName = "Office of Institutional" + Chr(10) + "Research & Evaluation" + Chr(10)
+    
+    Selection.HomeKey Unit:=wdStory
+    Selection.TypeParagraph
+    Selection.HomeKey Unit:=wdStory
+    Selection.ParagraphFormat.Alignment = wdAlignParagraphRight
+    With Selection.Font
+        .Bold = True
+        .Italic = False
+        .Underline = False
+        .Name = "Arial"
+        .Size = 16
+        .Color = wdColorAutomatic
     End With
+    
+    Selection.TypeText Text:=oireName
+    Selection.Collapse
+
+End With
+
 
 End Sub
+
 
 Sub Insert_logo()
 '
@@ -430,6 +447,8 @@ Sub Insert_logo()
             .Top = 0
             .Left = 0
         End With
+        
+        Selection.Collapse
 
     End With
     
@@ -565,10 +584,14 @@ Sub Insert_footer()
 End Sub
 
 
-Sub format_preview_tables(i As Integer, nrow As Integer, ncol As Integer)
+Sub format_preview_tables(i As Integer, ncol As Integer)
+
+    ActiveDocument.Tables(i).Select
+    Selection.ClearFormatting
+    Selection.Collapse
 
     If ncol = 1 Then
-        Call format_question_style(i, nrow)
+        Call format_question_style(i)
     ElseIf ncol = 3 Then
         Call format_mc_singleQ(i)
     ElseIf ncol > 3 Then
@@ -591,6 +614,10 @@ Sub define_mc_table_style()
             .leftindent = InchesToPoints(0.08)
             .RightIndent = InchesToPoints(0.08)
             .Alignment = wdAlignParagraphRight
+            .SpaceAfter = 0
+            .SpaceBefore = 0
+            .LineSpacingRule = wdLineSpaceSingle
+            .KeepWithNext = True
         End With
         
         'We can specify formatting for the first and last column
@@ -602,7 +629,7 @@ Sub define_mc_table_style()
         
         With .Table
 
-            .AllowPageBreaks = False
+'            .AllowPageBreaks = False
             .AllowBreakAcrossPage = False
             
             .RightPadding = 0
@@ -643,6 +670,32 @@ Sub define_mc_table_style()
     
 End Sub
 
+Sub format_mc_singleQ(i As Integer)
+    
+    With ActiveDocument
+    
+        .Tables(i).Style = "mc_table_style"
+        
+       
+        .Tables(i).ApplyStyleFirstColumn = True
+        .Tables(i).ApplyStyleLastColumn = True
+    
+    'Check to make sure that the first row has labels for "N" and "Percent"
+    'If yes, delete the first row
+        
+        cellText1 = .Tables(i).Cell(1, 1).Range.Text
+        cellText2 = .Tables(i).Cell(1, 2).Range.Text
+'        Debug.Print "Cell_1: " & cellText1
+'        Debug.Print "Cell_2: " & cellText2
+        
+        If cellText1 Like "N*" And cellText2 Like "Percent*" Then
+            .Tables(i).Rows(1).Delete
+        End If
+    
+    End With
+    
+End Sub
+
 
 Sub define_question_style()
 
@@ -654,15 +707,23 @@ Sub define_question_style()
     With ActiveDocument.Styles("question_style")
         With .Table
 
-            .AllowPageBreaks = False
+'            .AllowPageBreaks = False
             .AllowBreakAcrossPage = False
             
-            .Spacing = InchesToPoints(0)
+'            .Spacing = InchesToPoints(0)
             .TopPadding = InchesToPoints(0)
             .BottomPadding = InchesToPoints(0)
             .LeftPadding = InchesToPoints(0)
             .RightPadding = InchesToPoints(0)
             
+            
+        End With
+        
+        With .ParagraphFormat
+            .KeepWithNext = True
+            .LineSpacingRule = wdLineSpaceSingle
+            .SpaceAfter = 0
+            .SpaceBefore = 0
         End With
         
     End With
@@ -670,11 +731,15 @@ Sub define_question_style()
     
 End Sub
 
-Sub format_question_style(i As Integer, nrow As Integer)
+Sub format_question_style(i As Integer)
 
 'Format question text and information
-
+    
+    Dim nrow As Integer
+        
     With ActiveDocument
+        nrow = .Tables(i).Rows.count
+
         .Tables(i).Style = "question_style"
         
         'format the question info, identified by single column
@@ -682,13 +747,13 @@ Sub format_question_style(i As Integer, nrow As Integer)
         .Tables(i).PreferredWidthType = wdPreferredWidthPercent
         .Tables(i).PreferredWidth = 100
         
-        With .Tables(i)
-            .Spacing = InchesToPoints(0)
-            .TopPadding = InchesToPoints(0)
-            .BottomPadding = InchesToPoints(0)
-            .LeftPadding = InchesToPoints(0)
-            .RightPadding = InchesToPoints(0)
-        End With
+'        With .Tables(i)
+'            .Spacing = InchesToPoints(0)
+'            .TopPadding = InchesToPoints(0)
+'            .BottomPadding = InchesToPoints(0)
+'            .LeftPadding = InchesToPoints(0)
+'            .RightPadding = InchesToPoints(0)
+'        End With
             
         'Bold question text
         .Tables(i).Rows(2).Select
@@ -705,6 +770,7 @@ Sub format_question_style(i As Integer, nrow As Integer)
                     .Bold = True
                     .Color = wdColorDarkRed
                 End With
+                Selection.Collapse
             Next
         End If
         
@@ -714,32 +780,6 @@ End With
     
 End Sub
 
-Sub format_mc_singleQ(i As Integer)
-    
-    With ActiveDocument
-    
-        .Tables(i).Style = "mc_table_style"
-        
-       
-        .Tables(i).ApplyStyleFirstColumn = True
-        .Tables(i).ApplyStyleLastColumn = True
-    
-    'Check to make sure that the first row has labels for "N" and "Percent"
-    'If yes, delete the first row
-        
-        cellText1 = .Tables(i).Cell(1, 1).Range.Text
-        cellText2 = .Tables(i).Cell(1, 2).Range.Text
-        Debug.Print "Cell_1: " & cellText1
-        Debug.Print "Cell_2: " & cellText2
-        
-        If cellText1 Like "N*" And cellText2 Like "Percent*" Then
-            .Tables(i).Rows(1).Delete
-        End If
-    
-    End With
-    
-End Sub
-    
 
 Sub Define_Matrix_Style()
 
@@ -767,23 +807,51 @@ Sub Define_Matrix_Style()
             .LineUnitBefore = 0
             .LineSpacingRule = wdLineSpaceSingle
             .Alignment = wdAlignParagraphCenter
+            .KeepWithNext = True
         End With
                 
         With .Table
             .RowStripe = 1
             .ColumnStripe = 0
-            .AllowPageBreaks = False
+'            .AllowPageBreaks = False
             .AllowBreakAcrossPage = False
             
             .LeftPadding = 0
             .RightPadding = 0
             .TopPadding = 0.01
             .BottomPadding = 0.01
-            .Spacing = InchesToPoints(0)
+'            .Spacing = InchesToPoints(0)
             
             With .Condition(wdFirstColumn)
                 .Font.Bold = False
                 .ParagraphFormat.Alignment = wdAlignParagraphLeft
+            End With
+            
+            With .Condition(wdFirstRow)
+                With .Borders(wdBorderTop)
+                    .LineStyle = wdLineStyleSingle
+                    .LineWidth = wdLineWidth050pt
+                    .Color = wdColorAutomatic
+                End With
+                
+                With .Borders(wdBorderBottom)
+                    .LineStyle = wdLineStyleSingle
+                    .LineWidth = wdLineWidth050pt
+                    .Color = wdColorAutomatic
+                End With
+                
+                With .Borders(wdBorderRight)
+                    .LineStyle = wdLineStyleSingle
+                    .LineWidth = wdLineWidth050pt
+                    .Color = wdColorAutomatic
+                End With
+                
+                With .Borders(wdBorderVertical)
+                    .LineStyle = wdLineStyleSingle
+                    .LineWidth = wdLineWidth050pt
+                    .Color = wdColorAutomatic
+                End With
+                
             End With
                         
             With .Condition(wdEvenRowBanding)
@@ -856,6 +924,7 @@ Sub format_matrix_table(i As Integer)
         With .Tables(i)
             .Style = "Matrix_table_style"
             .ApplyStyleFirstColumn = True
+            .ApplyStyleHeadingRows = True
         End With
         
         .Tables(i).Select
