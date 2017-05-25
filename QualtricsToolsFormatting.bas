@@ -1,5 +1,5 @@
 Attribute VB_Name = "QualtricsTools"
-''Updated 5/3/17
+''Updated 5/25/17
 
 Sub define_table_styles()
 
@@ -1804,132 +1804,7 @@ Sub Remove_Export_Tag()
     
 End Sub
 
-Sub format_NA_table()
 
-    
-    Dim i As Integer
-    Dim tbl As Table
-    Dim rowHeadings As Row
-    Dim cellHeading As Cell
-    Dim isTableTypeNA As Boolean
-    Dim iHeadingsRowIndex As Integer
-    Dim iNAColumnIndex As Integer
-    Dim iNAColumnIndexMin As Integer
-    
-    iHeadingsRowIndex = 1                  'Set heading row to 1st row.  Best way to determine this for now.
-    iNAColumnIndexMin = 4
-    
-    For Each tbl In ActiveDocument.Tables
-        isTableTypeNA = False
-        
-        Set rowHeadings = tbl.Rows(iHeadingsRowIndex)
-        
-        For Each cellHeading In rowHeadings.Cells
-            'If you have an NA-type table that includes other text such as "Not relevant," "No basis for evaluation," etc., you will need to edit the "Not applicable" part of the code below to reflect the appropriate text
-            If InStr(1, cellHeading.Range.Text, "Not applicable") And cellHeading.ColumnIndex > iNAColumnIndexMin Then
-                isTableTypeNA = True
-                iNAColumnIndex = cellHeading.ColumnIndex
-            End If
-        Next cellHeading
-        
-        If isTableTypeNA Then
-            
-            tbl.Style = "Matrix_table_style"
-            'Add top rows here
-                                    
-           With tbl
-                .LeftPadding = InchesToPoints(0.08)
-                .RightPadding = InchesToPoints(0.08)
-                .TopPadding = InchesToPoints(0.01)
-                .BottomPadding = InchesToPoints(0.01)
-                .Spacing = InchesToPoints(0)
-                .PreferredWidthType = wdPreferredWidthPercent
-                .PreferredWidth = 100
-            End With
-                                    
-            With tbl.Columns(2)
-                .Borders(wdBorderLeft).LineStyle = wdLineStyleSingle
-                .Borders(wdBorderLeft).LineWidth = wdLineWidth150pt
-                .Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
-                .Borders(wdBorderBottom).LineWidth = wdLineWidth150pt
-                '.Borders(wdBorderTop).LineStyle = wdLineStyleSingle
-                '.Borders(wdBorderTop).LineWidth = wdLineWidth150pt
-            End With
-            
-            For i = 3 To iNAColumnIndex - 2
-                With tbl.Columns(i)
-                    .Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
-                    .Borders(wdBorderBottom).LineWidth = wdLineWidth150pt
-                    '.Borders(wdBorderTop).LineStyle = wdLineStyleSingle
-                    '.Borders(wdBorderTop).LineWidth = wdLineWidth150pt
-                End With
-            Next i
-            
-            With tbl.Columns(iNAColumnIndex - 2)
-                .Borders(wdBorderRight).LineStyle = wdLineStyleSingle
-                .Borders(wdBorderRight).LineWidth = wdLineWidth150pt
-                '.Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
-                '.Borders(wdBorderBottom).LineWidth = wdLineWidth150pt
-                '.Borders(wdBorderTop).LineStyle = wdLineStyleSingle
-                '.Borders(wdBorderTop).LineWidth = wdLineWidth150pt
-            End With
-            
-            With tbl.Rows(1)
-                .Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
-                .Borders(wdBorderBottom).LineWidth = wdLineWidth025pt
-                .Shading.Texture = wdTextureNone
-                .Shading.ForegroundPatternColor = wdColorWhite
-                .Shading.BackgroundPatternColor = wdColorWhite
-            End With
-            
-            With tbl.Cell(Row:=1, Column:=1)
-                .Borders(wdBorderTop).LineStyle = wdLineStyleNone
-                .Borders(wdBorderLeft).LineStyle = wdLineStyleNone
-            End With
-            tbl.Rows.Add BeforeRow:=tbl.Rows(1)
-            
-            With tbl.Cell(Row:=1, Column:=2).Range
-                .Text = "Of those NOT selecting ""Not Applicable"""
-                .Font.Bold = True
-                '.ParagraphFormat.Alignment = wdAlignParagraphCenter
-            End With
-            
-            With tbl.Cell(Row:=1, Column:=iNAColumnIndex - 1).Range
-                .Text = "Of all respondents"
-                .Font.Bold = True
-            End With
-            
-            tbl.Cell(Row:=1, Column:=iNAColumnIndex - 1).Merge MergeTo:=tbl.Cell(Row:=1, Column:=iNAColumnIndex)
-            tbl.Cell(Row:=1, Column:=2).Merge MergeTo:=tbl.Cell(Row:=1, Column:=iNAColumnIndex - 2)
-                        
-            With tbl.Cell(Row:=1, Column:=tbl.Rows(1).Cells.count)
-                .Borders(wdBorderRight).LineStyle = wdLineStyleSingle
-                .Borders(wdBorderRight).LineWidth = wdLineWidth025pt
-                .Borders(wdBorderTop).LineStyle = wdLineStyleSingle
-                .Borders(wdBorderTop).LineWidth = wdLineWidth025pt
-                .Borders(wdBorderLeft).LineStyle = wdLineStyleSingle
-                .Borders(wdBorderLeft).LineWidth = wdLineWidth150pt
-                .Range.ParagraphFormat.Alignment = wdAlignParagraphCenter
-            End With
-            
-            With tbl.Cell(Row:=1, Column:=tbl.Rows(1).Cells.count - 1)
-                .Range.ParagraphFormat.Alignment = wdAlignParagraphCenter
-            End With
-            
-            With tbl.Cell(Row:=1, Column:=2)
-                .Borders(wdBorderTop).LineStyle = wdLineStyleSingle
-                .Borders(wdBorderTop).LineWidth = wdLineWidth150pt
-            End With
-
-            With tbl.Cell(Row:=1, Column:=1)
-                .Borders(wdBorderBottom).LineStyle = wdLineStyleNone
-            End With
-            
-        End If
-    
-    Next
-    
-End Sub
 
 Sub NumberingAppendices()
 ' Working on numbering the appendices
@@ -2455,11 +2330,13 @@ End Sub
 
 
 
-Sub format_NA_table()
+Sub format_NA_table(tbl As Table)
 
-    
-    Dim i As Integer
-    Dim tbl As Table
+'Adapted from Rebecca's macro
+'Adjusted by Emma to be called in sequence with the macros rather than separate
+
+'    Dim i As Integer
+'    Dim tbl As Table
     Dim rowHeadings As Row
     Dim cellHeading As Cell
     Dim isTableTypeNA As Boolean
@@ -2468,81 +2345,98 @@ Sub format_NA_table()
     Dim iNAColumnIndexMin As Integer
     Dim iLast As Integer
     Dim NAText As String
+    Dim validRange As Range
+    Dim myRange_start As Range
+    Dim myRange_end As Range
+    
     
     iHeadingsRowIndex = 1                  'Set heading row to 1st row.  Best way to determine this for now.
     iNAColumnIndexMin = 4
     
-    For Each tbl In ActiveDocument.Tables
+'    For Each tbl In ActiveDocument.Tables
         isTableTypeNA = False
+        
+'        tbl = ActiveDocument.Tables(j)
         
         Set rowHeadings = tbl.Rows(iHeadingsRowIndex)
         
         For Each cellHeading In rowHeadings.Cells
             'If you have an NA-type table that includes other text such as "Not relevant," "No basis for evaluation," etc., you will need to edit the "Not applicable" part of the code below to reflect the appropriate text
-            If InStr(1, cellHeading.Range.Text, "total_N") And cellHeading.ColumnIndex > iNAColumnIndexMin Then
+            'Think we might be able to turn this into a "do while" that would stop as soon as you find
+                'Total N
+            If InStr(1, cellHeading.Range.Text, "Total N") And cellHeading.ColumnIndex > iNAColumnIndexMin Then
                 isTableTypeNA = True
                 iNAColumnIndex = cellHeading.ColumnIndex
             End If
         Next cellHeading
         
+        'Select the text from the last column of the table
+            'Trim the last two characters to remove the strange cell character
         If isTableTypeNA Then
             NAText = tbl.Cell(1, tbl.Columns.count).Range.Text
             NAText = Trim(Left(NAText, Len(NAText) - 2))
             Debug.Print NAText
-            tbl.Style = "Matrix_table_style"
+'            tbl.Style = "Matrix_table_style"
             'Add top rows here
             
                                     
-           With tbl
-                .LeftPadding = InchesToPoints(0.08)
-                .RightPadding = InchesToPoints(0.08)
-                .TopPadding = InchesToPoints(0.01)
-                .BottomPadding = InchesToPoints(0.01)
-                .Spacing = InchesToPoints(0)
-                .PreferredWidthType = wdPreferredWidthPercent
-                .PreferredWidth = 100
-            End With
+'           With tbl
+'                .LeftPadding = InchesToPoints(0.08)
+'                .RightPadding = InchesToPoints(0.08)
+'                .TopPadding = InchesToPoints(0.01)
+'                .BottomPadding = InchesToPoints(0.01)
+'                .Spacing = InchesToPoints(0)
+'                .PreferredWidthType = wdPreferredWidthPercent
+'                .PreferredWidth = 100
+'            End With
                                     
-            With tbl.Columns(2)
-                .Borders(wdBorderLeft).LineStyle = wdLineStyleSingle
-                .Borders(wdBorderLeft).LineWidth = wdLineWidth150pt
-                .Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
-                .Borders(wdBorderBottom).LineWidth = wdLineWidth150pt
-                '.Borders(wdBorderTop).LineStyle = wdLineStyleSingle
-                '.Borders(wdBorderTop).LineWidth = wdLineWidth150pt
-            End With
-            
-            For i = 3 To iNAColumnIndex - 1
-                With tbl.Columns(i)
-                    .Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
-                    .Borders(wdBorderBottom).LineWidth = wdLineWidth150pt
-                    '.Borders(wdBorderTop).LineStyle = wdLineStyleSingle
-                    '.Borders(wdBorderTop).LineWidth = wdLineWidth150pt
-                End With
-            Next i
-            
-            With tbl.Columns(iNAColumnIndex - 1)
-                .Borders(wdBorderRight).LineStyle = wdLineStyleSingle
-                .Borders(wdBorderRight).LineWidth = wdLineWidth150pt
-                '.Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
-                '.Borders(wdBorderBottom).LineWidth = wdLineWidth150pt
-                '.Borders(wdBorderTop).LineStyle = wdLineStyleSingle
-                '.Borders(wdBorderTop).LineWidth = wdLineWidth150pt
-            End With
-            
-            With tbl.Rows(1)
-                .Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
-                .Borders(wdBorderBottom).LineWidth = wdLineWidth025pt
-                .Shading.Texture = wdTextureNone
-                .Shading.ForegroundPatternColor = wdColorWhite
-                .Shading.BackgroundPatternColor = wdColorWhite
-            End With
-            
-            With tbl.Cell(Row:=1, Column:=1)
-                .Borders(wdBorderTop).LineStyle = wdLineStyleNone
-                .Borders(wdBorderLeft).LineStyle = wdLineStyleNone
-            End With
+    'Things to add:
+        ' Thick borders around the appropriate columns
+        ' Check shading if this needs to be changed
+        
+                                  
+'            With tbl.Columns(2)
+'                .Borders(wdBorderLeft).LineStyle = wdLineStyleSingle
+'                .Borders(wdBorderLeft).LineWidth = wdLineWidth150pt
+'                .Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
+'                .Borders(wdBorderBottom).LineWidth = wdLineWidth150pt
+'                '.Borders(wdBorderTop).LineStyle = wdLineStyleSingle
+'                '.Borders(wdBorderTop).LineWidth = wdLineWidth150pt
+'            End With
+'
+'            For i = 3 To iNAColumnIndex - 1
+'                With tbl.Columns(i)
+'                    .Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
+'                    .Borders(wdBorderBottom).LineWidth = wdLineWidth150pt
+'                    '.Borders(wdBorderTop).LineStyle = wdLineStyleSingle
+'                    '.Borders(wdBorderTop).LineWidth = wdLineWidth150pt
+'                End With
+'            Next i
+'
+'            With tbl.Columns(iNAColumnIndex - 1)
+'                .Borders(wdBorderRight).LineStyle = wdLineStyleSingle
+'                .Borders(wdBorderRight).LineWidth = wdLineWidth150pt
+'                '.Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
+'                '.Borders(wdBorderBottom).LineWidth = wdLineWidth150pt
+'                '.Borders(wdBorderTop).LineStyle = wdLineStyleSingle
+'                '.Borders(wdBorderTop).LineWidth = wdLineWidth150pt
+'            End With
+'
+'            With tbl.Rows(1)
+'                .Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
+'                .Borders(wdBorderBottom).LineWidth = wdLineWidth025pt
+'                .Shading.Texture = wdTextureNone
+'                .Shading.ForegroundPatternColor = wdColorWhite
+'                .Shading.BackgroundPatternColor = wdColorWhite
+'            End With
+'
+'            With tbl.Cell(Row:=1, Column:=1)
+'                .Borders(wdBorderTop).LineStyle = wdLineStyleNone
+'                .Borders(wdBorderLeft).LineStyle = wdLineStyleNone
+'            End With
+
             tbl.Rows.Add BeforeRow:=tbl.Rows(1)
+            tbl.Cell(1, 1).Borders(wdBorderBottom).LineStyle = wdLineStyleNone
             
             With tbl.Cell(Row:=1, Column:=2).Range
                 .Text = "Of those NOT selecting " & Chr(34) & NAText & Chr(34)
@@ -2555,36 +2449,66 @@ Sub format_NA_table()
                 .Font.Bold = True
             End With
             
+            Set validRange = tbl.Cell(1, 2).Range
+            validRange.SetRange Start:=validRange.Start, _
+            End:=tbl.Cell(tbl.Rows.count, iNAColumnIndex - 1).Range.End
+            
+            'validRange = tbl.Range(Start:=tbl.Cell(1, 2).Range.Start, End:=tbl.Cell(tbl.Rows.count, iNAColumnIndex - 1).Range.End)
+            
+            'myRange_start = tbl.Cell(1, 2).Range
+            'myRange_end = tbl.Cell(tbl.Rows.count, iNAColumnIndex - 1).Range
+            
+           ' validRange = ActiveDocument.Range(Start:=myRange_start, _
+           ' End:=myRange_end)
+            
+           ' validRange.Select
+
+            validRange.Borders(wdBorderBottom).LineWidth = wdLineWidth150pt
+            validRange.Borders(wdBorderTop).LineWidth = wdLineWidth150pt
+            validRange.Borders(wdBorderLeft).LineWidth = wdLineWidth150pt
+            validRange.Borders(wdBorderRight).LineWidth = wdLineWidth150pt
+            
+            tbl.Rows(2).Range.Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
+            tbl.Rows(2).Range.Borders(wdBorderBottom).LineWidth = wdLineWidth050pt
+
+
+            'Selection.Collapse
+            
                         
             tbl.Cell(Row:=1, Column:=2).Merge MergeTo:=tbl.Cell(Row:=1, Column:=iNAColumnIndex - 1)
             iLast = tbl.Rows(1).Cells.count
             tbl.Cell(Row:=1, Column:=3).Merge MergeTo:=tbl.Cell(Row:=1, Column:=iLast)
             
-            With tbl.Cell(Row:=1, Column:=tbl.Rows(1).Cells.count)
-                .Borders(wdBorderRight).LineStyle = wdLineStyleSingle
-                .Borders(wdBorderRight).LineWidth = wdLineWidth025pt
-                .Borders(wdBorderTop).LineStyle = wdLineStyleSingle
-                .Borders(wdBorderTop).LineWidth = wdLineWidth025pt
-                .Borders(wdBorderLeft).LineStyle = wdLineStyleSingle
-                .Borders(wdBorderLeft).LineWidth = wdLineWidth150pt
-                .Range.ParagraphFormat.Alignment = wdAlignParagraphCenter
-            End With
+            'Add thick box border
             
-            With tbl.Cell(Row:=1, Column:=tbl.Rows(1).Cells.count - 1)
-                .Range.ParagraphFormat.Alignment = wdAlignParagraphCenter
-            End With
             
-            With tbl.Cell(Row:=1, Column:=2)
-                .Borders(wdBorderTop).LineStyle = wdLineStyleSingle
-                .Borders(wdBorderTop).LineWidth = wdLineWidth150pt
-            End With
-
-            With tbl.Cell(Row:=1, Column:=1)
-                .Borders(wdBorderBottom).LineStyle = wdLineStyleNone
-            End With
+'
+            
+'            With tbl.Cell(Row:=1, Column:=tbl.Rows(1).Cells.count)
+'                .Borders(wdBorderRight).LineStyle = wdLineStyleSingle
+'                .Borders(wdBorderRight).LineWidth = wdLineWidth025pt
+'                .Borders(wdBorderTop).LineStyle = wdLineStyleSingle
+'                .Borders(wdBorderTop).LineWidth = wdLineWidth025pt
+'                .Borders(wdBorderLeft).LineStyle = wdLineStyleSingle
+'                .Borders(wdBorderLeft).LineWidth = wdLineWidth150pt
+'                .Range.ParagraphFormat.Alignment = wdAlignParagraphCenter
+'            End With
+'
+'            With tbl.Cell(Row:=1, Column:=tbl.Rows(1).Cells.count - 1)
+'                .Range.ParagraphFormat.Alignment = wdAlignParagraphCenter
+'            End With
+'
+'            With tbl.Cell(Row:=1, Column:=2)
+'                .Borders(wdBorderTop).LineStyle = wdLineStyleSingle
+'                .Borders(wdBorderTop).LineWidth = wdLineWidth150pt
+'            End With
+'
+'            With tbl.Cell(Row:=1, Column:=1)
+'                .Borders(wdBorderBottom).LineStyle = wdLineStyleNone
+'            End With
             
         End If
     
-    Next
+'    Next
     
 End Sub
