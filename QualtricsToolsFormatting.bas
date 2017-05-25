@@ -928,7 +928,8 @@ Sub format_matrix_table(i As Integer)
     
     'For reproducability - if we have already formatted the NA style type, delete the first row and start again
     
-    If .Tables(i).Rows(1).Cells.count <> .Tables(i).Rows(.Tables(i).Rows.count).Cells.count Then
+    If .Tables(i).Rows(1).Cells.count <> .Tables(i).Rows(.Tables(i).Rows.count).Cells.count _
+        And InStr(1, .Tables(i).Cell(1, 2).Range.Text, "Of those NOT selecting") Then
         .Tables(i).Rows(1).Delete
     End If
 
