@@ -1721,7 +1721,7 @@ Sub format_UserNote(i)
     Selection.find.Replacement.ClearFormatting
         
     With Selection.find
-        .Text = "User Note:"
+        .Text = "User Note: "
         .Replacement.Text = ""
         .Forward = True
         .Wrap = wdFindStop
@@ -1735,11 +1735,16 @@ Sub format_UserNote(i)
 
     .Tables(i).Select
     
-    If Selection.find.Execute Then
-        Selection.Expand (wdParagraph)
-        Selection.Font.ColorIndex = wdGray50
+    Selection.find.Execute
+    If Selection.find.Found = True Then
+        Selection.SelectRow
+ '       Selection.Expand (wdTableRow)
+ '       Selection.Expand (wdParagraph)
+        Selection.Font.ColorIndex = wdAuto
         Selection.Font.Italic = True
-        Selection.ParagraphFormat.leftindent = InchesToPoints(0.25)
+        Selection.Font.Bold = False
+        Selection.ParagraphFormat.leftindent = InchesToPoints(0.5)
+'        Selection.find.Execute Replace:=wdReplaceAll
     End If
     Selection.Collapse
     
