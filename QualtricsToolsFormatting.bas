@@ -1,5 +1,5 @@
 Attribute VB_Name = "QualtricsTools"
-''Updated 5/25/17
+''Updated 5/26/17
 
 Sub define_table_styles()
 
@@ -28,6 +28,8 @@ End With
 End Sub
 
 Sub format_survey_preview()
+
+'    Application.ScreenUpdating = False
 
     'This macro should be used BEFORE any manual updates to the survey preview
     
@@ -72,6 +74,8 @@ Sub format_survey_preview()
     Next
     
     End With
+    
+'    Application.ScreenUpdating = True
     
 End Sub
 
@@ -984,16 +988,21 @@ Sub format_matrix_table(i As Integer)
 
                 Selection.find.Execute Replace:=wdReplaceOne
                                 
-                Selection.find.Text = "Total N"
-                Selection.find.Execute
-                If Selection.find.Found = True Then isNATable = True
                 Selection.Collapse
       
             End If
              
         Next
         
+        Selection.find.ClearFormatting
+        Selection.find.Text = "Total N"
+        .Tables(i).Select
+        Selection.find.Execute
+        If Selection.find.Found = True Then isNATable = True
+        
         If isNATable Then Call format_NA_table(.Tables(i))
+        
+        Selection.Collapse
 
     End With
     
