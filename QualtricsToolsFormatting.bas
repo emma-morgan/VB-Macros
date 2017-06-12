@@ -36,7 +36,7 @@ Sub format_survey_preview()
     Dim i As Integer
     Dim ncol As Integer
     Dim nrow As Integer
-    Dim nTables As Integer
+    Dim ntables As Integer
     
     
     'This calls the formatting macros in order
@@ -51,9 +51,9 @@ Sub format_survey_preview()
     
     With ActiveDocument
 
-    nTables = .Tables.count
+    ntables = .Tables.count
     
-    For i = 1 To nTables
+    For i = 1 To ntables
         ncol = .Tables(i).Columns.count
         nrow = .Tables(i).Rows.count
 '        Debug.Print ncol
@@ -69,6 +69,7 @@ Sub format_survey_preview()
         ElseIf ncol > 1 Then
             Call Replace_zeros(i)
             Call Replace_NaN(i)
+            Call keepTableWithQuestion(i)
         End If
 
     Next
@@ -107,12 +108,12 @@ Sub format_appendix()
     Call replace_newline
     Call RemoveEmptyParagraphs
        
-    Dim nTables As Long
-    nTables = .Tables.count
-    Debug.Print nTables
+    Dim ntables As Long
+    ntables = .Tables.count
+    Debug.Print ntables
     
     Dim i As Integer
-    For i = 1 To nTables
+    For i = 1 To ntables
         
         Dim celltxt As String
         celltxt = .Tables(i).Cell(4, 1).Range.Text
@@ -864,7 +865,7 @@ Sub Define_Matrix_Style()
                 With .Shading
                     .Texture = wdTextureNone
                     .ForegroundPatternColor = wdColorAutomatic
-                    .BackgroundPatternColor = -738132173
+                    .BackgroundPatternColor = RGB(220, 230, 250)
                 End With
             
                 With .Borders(wdBorderVertical)
@@ -1032,7 +1033,7 @@ Sub format_NA_table(tbl As Table)
     Set rowHeadings = tbl.Rows(iHeadingsRowIndex)
     
     For Each cellHeading In rowHeadings.Cells
-        If InStr(1, cellHeading.Range.Text, "Total N") And cellHeading.ColumnIndex > iNAColumnIndexMin Then
+        If InStr(1, cellHeading.Range.Text, "Total N") Then ' And cellHeading.ColumnIndex > iNAColumnIndexMin Then
             iNAColumnIndex = cellHeading.ColumnIndex
             Exit For
         End If
@@ -1068,7 +1069,9 @@ Sub format_NA_table(tbl As Table)
     tbl.Rows(2).Range.Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
     tbl.Rows(2).Range.Borders(wdBorderBottom).LineWidth = wdLineWidth050pt
                 
-    tbl.Cell(Row:=1, Column:=2).Merge MergeTo:=tbl.Cell(Row:=1, Column:=iNAColumnIndex - 1)
+    If iNAColumnIndex >= 4 Then
+        tbl.Cell(Row:=1, Column:=2).Merge MergeTo:=tbl.Cell(Row:=1, Column:=iNAColumnIndex - 1)
+    End If
     iLast = tbl.Rows(1).Cells.count
     tbl.Cell(Row:=1, Column:=3).Merge MergeTo:=tbl.Cell(Row:=1, Column:=iLast)
 
@@ -1154,10 +1157,10 @@ Sub number_questions()
     Dim Q As Long
     Q = 1
     
-    Dim nTables As Long
-    nTables = .Tables.count
+    Dim ntables As Long
+    ntables = .Tables.count
 
-    For i = 1 To nTables
+    For i = 1 To ntables
         ncol = .Tables(i).Columns.count
         
     If ncol = 1 Then
@@ -1195,11 +1198,11 @@ End Sub
 Sub remove_denominatorRow()
 
     Dim i As Integer
-    Dim nTables As Integer
+    Dim ntables As Integer
     
     With ActiveDocument
     
-    nTables = .Tables.count
+    ntables = .Tables.count
 
     Selection.find.ClearFormatting
     Selection.find.Replacement.ClearFormatting
@@ -1217,7 +1220,7 @@ Sub remove_denominatorRow()
             .MatchAllWordForms = False
     End With
     
-    For i = 1 To nTables
+    For i = 1 To ntables
         If .Tables(i).Columns.count = 1 Then
             .Tables(i).Select
 
@@ -1236,10 +1239,10 @@ Sub remove_questionInfo_row()
 '
     With ActiveDocument
     
-    Dim nTables As Long
-    nTables = .Tables.count
+    Dim ntables As Long
+    ntables = .Tables.count
     
-    For i = 1 To nTables
+    For i = 1 To ntables
         ncol = .Tables(i).Columns.count
         
 '        Delete first row of the question info (data export tag)
@@ -1296,7 +1299,7 @@ Sub define_appendix_table_style()
                 With .Shading
                     .Texture = wdTextureNone
                     .ForegroundPatternColor = wdColorAutomatic
-                    .BackgroundPatternColor = -738132173
+                    .BackgroundPatternColor = RGB(220, 230, 250)
                 End With
                                 
                 With .Borders(wdBorderLeft)
@@ -1379,8 +1382,8 @@ Attribute alphabetize_table.VB_ProcData.VB_Invoke_Func = "Normal.NewMacros.alpha
 'Sort verbatim text appendices alphabetically
     With ActiveDocument
     
-        Dim nTables As Long
-        nTables = .Tables.count
+        Dim ntables As Long
+        ntables = .Tables.count
     
             nrow = .Tables(i).Rows.count
             ncol = .Tables(i).Columns.count
@@ -1482,8 +1485,8 @@ Sub fix_page_breaks()
 ' Version with EM edits
 
     With ActiveDocument
-        Dim nTables As Long
-        nTables = .Tables.count
+        Dim ntables As Long
+        ntables = .Tables.count
         
         Selection.find.ClearFormatting
         Selection.find.Replacement.ClearFormatting
@@ -1501,7 +1504,7 @@ Sub fix_page_breaks()
         End With
 
     
-    For i = 1 To nTables
+    For i = 1 To ntables
     
         nrow = .Tables(i).Rows.count
         
@@ -1597,8 +1600,8 @@ Sub TableCellPadding()
 'Need to add this to initial macro for others to run
 
 With ActiveDocument
-    nTables = .Tables.count
-    For i = 1 To nTables
+    ntables = .Tables.count
+    For i = 1 To ntables
         ncol = .Tables(i).Columns.count
         nrow = .Tables(i).Rows.count
         
@@ -2111,10 +2114,10 @@ Sub remove_first_row()
 '
     With ActiveDocument
     
-    Dim nTables As Long
-    nTables = .Tables.count
+    Dim ntables As Long
+    ntables = .Tables.count
     
-    For i = 1 To nTables
+    For i = 1 To ntables
         ncol = .Tables(i).Columns.count
         
 '        Delete first row of the question info (data export tag)
@@ -2136,14 +2139,14 @@ Sub renumber_lists()
 
 With ActiveDocument
 
-Dim nTables As Long
+Dim ntables As Long
 Dim nCols As Integer
 Dim count As Integer
 
-nTables = .Tables.count
+ntables = .Tables.count
 count = 0
 
-For i = 1 To nTables
+For i = 1 To ntables
     nCols = .Tables(i).Columns.count
     .Tables(i).Select
     
@@ -2210,14 +2213,14 @@ End Sub
 Sub AppendicesNumbering()
 With ActiveDocument
 
-Dim nTables As Long
+Dim ntables As Long
 Dim nCols As Integer
 Dim count As Integer
 
-nTables = .Tables.count
+ntables = .Tables.count
 count = 0
 
-For i = 1 To nTables
+For i = 1 To ntables
     nRows = .Tables(i).Rows.count
     For j = 1 To nRows
         .Tables(i).Rows(j).Select
@@ -2261,11 +2264,11 @@ Sub insert_page_breaks()
 
 
 With ActiveDocument
-Dim nTables As Long
-nTables = .Tables.count
+Dim ntables As Long
+ntables = .Tables.count
 
 'If for your purpose you need to start in a later point in the document change i = 1 to i = x where x is the table number you want to start at
-For i = 1 To nTables
+For i = 1 To ntables
     Dim firstRow As Integer
     Dim lastRow As Integer
     Dim nRows As Integer
@@ -2425,4 +2428,35 @@ Call insert_page_breaks
 
 End Sub
 
+
+
+Sub keepTableWithQuestion(i As Integer)
+
+'Dim tbl As Table
+'Dim i As Integer
+'Dim ntables As Long
+Dim questionRange As Range
+'ntables = ActiveDocument.Tables.count
+'Debug.Print ntables
+
+'For i = 1 To ntables
+    
+    If ActiveDocument.Tables(i).Columns.count > 1 And i >= 2 Then
+'        Dim rng As Variant
+'        rng = ActiveDocument.Range(Start:=ActiveDocument.Tables(i - 1).Range.Start, End:=ActiveDocument.Tables(i).Range.End)
+'        Debug.Print "Table index: i=" & i
+'        Debug.Print "Question: " & rng
+'        rng.ParagraphFormat.KeepWithNext = True
+
+        Dim qrng As Range
+        Set qrng = ActiveDocument.Tables(i - 1).Range
+        qrng.End = ActiveDocument.Tables(i).Range.End
+        Debug.Print "Table index: i=" & i
+        Debug.Print "Question: " & qrng
+        qrng.ParagraphFormat.KeepWithNext = True
+        
+    End If
+'Next
+
+End Sub
 
