@@ -35,11 +35,13 @@ End Function
 
 Sub AppendixFields_Full()
 
+    Application.ScreenUpdating = False
+
     Dim i As Integer
     
     i = 1
     
-'    Do While i <= 100
+    Do While i <= 100
     
 '    Selection.TypeText Chr(10)
 
@@ -93,8 +95,7 @@ Sub AppendixFields_Full()
     Selection.MoveRight (3)
     Selection.PreviousField
     Selection.PreviousField
-    
-    
+
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
         preserveFormatting:=False
     Selection.TypeText Text:="SET AA2ZZ"
@@ -106,24 +107,32 @@ Sub AppendixFields_Full()
     
     'Set If statement
     'Selection.TypeText (" ")
+    Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+        preserveFormatting:=False
+    Selection.TypeText ("IF=" & Chr(34) & " " & Chr(34) & " " & Chr(34) & Chr(34))
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
         "AA2ZZ \* ALPHABETIC", preserveFormatting:=False
-    Selection.Fields.ToggleShowCodes
-'    Selection.PreviousField
+'    Selection.Fields.ToggleShowCodes
+    Selection.PreviousField
     Selection.NextField
+    Selection.Collapse (wdCollapseStart)
+    Selection.MoveRight Unit:=wdCharacter, count:=4
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
     preserveFormatting:=False
-    Selection.TypeText Text:="IF"
-    Selection.NextField
-    Selection.Collapse direction:=wdCollapseEnd
-    Selection.TypeText Text:="= " & Chr(34) & " " & Chr(34) & " " & Chr(34) & Chr(34)
+'    Selection.TypeText Text:="IF"
+'    Selection.NextField
+'    Selection.Collapse direction:=wdCollapseEnd
+'    Selection.TypeText Text:="= " & Chr(34) & " " & Chr(34) & " " & Chr(34) & Chr(34)
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
         "AA2ZZ \* ALPHABETIC", preserveFormatting:=False
     
     'Selection.MoveRight (3)
   '  Selection.PreviousField
-  Selection.Fields.ToggleShowCodes
-    Selection.NextField
+  'Selection.Fields.ToggleShowCodes
+'    ActiveDocument.Fields.Update
+    
+    Selection.PreviousField
+ '   Selection.Fields.ToggleShowCodes
     
     
     
@@ -133,7 +142,7 @@ Sub AppendixFields_Full()
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
         "A2Z \* ALPHABETIC", preserveFormatting:=False
     Selection.PreviousField
-    'Selection.NextField
+    Selection.NextField
     Selection.Collapse (wdCollapseEnd)
     
     Selection.MoveLeft Unit:=wdCharacter, count:=4, Extend:=wdExtend
@@ -148,11 +157,13 @@ Sub AppendixFields_Full()
     
     i = i + 1
     
-'    Loop
+    Loop
 
-    
+    Application.ScreenUpdating = True
 
-'ActiveDocument.Fields.Update
+ActiveDocument.Fields.Update
+
+
 
 
 
