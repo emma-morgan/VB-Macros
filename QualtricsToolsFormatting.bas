@@ -368,7 +368,7 @@ Sub number_of_respondents()
         Selection.find.Execute
         
         If Selection.find.Found = True Then
-            Selection.Expand wdLine
+            Selection.Expand wdParagraph
             Selection.Font.Size = 10
             Selection.ParagraphFormat.Alignment = wdAlignParagraphCenter
             Selection.Collapse
@@ -491,12 +491,30 @@ Sub Insert_footer()
         Dim oireFooter As String
         Dim analystFooter As String
         Dim internalUse As String
+        Dim reportName As String
+        Dim analystName As String
+        Dim dateText As String
+        
+        'Create defeault settings for all user entry
+        
+        reportName = InputBox("Enter Name of sruvey, Year, Special Population" & Chr(10) _
+            & "Default: NAME OF SURVEY, YEAR, AND SPECIAL POPULATION (IF APPLICABLE)")
+        analystName = InputBox("Analyst Name" & Chr(10) & "Default: ANALYST NAME")
+        dateText = InputBox("Enter Date" & Chr(10) & "Default: INSERT DATE")
+        
+        If reportName = "" Then _
+            reportName = "NAME OF SURVEY, YEAR, AND SPECIAL POPULATION (IF APPLICABLE)"
+        If analystName = "" Then analystName = "ANALYST NAME"
+        If dateText = "" Then dateText = "INSERT DATE"
+        
+        Debug.Print ("ReportName: " & reportName)
+        Debug.Print ("analystName: " & analystName)
+        Debug.Print ("dateText: " & dateText)
         
         oireFooter = "Office of Institutional Research & Evaluation" + _
-            Chr(10) + "NAME OF SURVEY, YEAR, AND SPECIAL POPULATION (IF APPLICABLE)"
-        
-        analystFooter = "Prepared by: ANALYST NAME" + Chr(10) + _
-            "INSERT DATE"
+            Chr(10) + reportName
+        analystFooter = "Prepared by: " & analystName + Chr(10) + _
+            dateText
             
         internalUse = "**This report is intended for internal use only**"
             
@@ -519,10 +537,10 @@ Sub Insert_footer()
             Selection.Collapse
             With Selection
                 .Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
-                "PAGE ", PreserveFormatting:=True
+                "PAGE ", preserveFormatting:=True
                 .TypeText Text:=" of "
                 .Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
-                "NUMPAGES ", PreserveFormatting:=True
+                "NUMPAGES ", preserveFormatting:=True
             End With
             
             .Cell(1, 2).Range.ParagraphFormat.Alignment = wdAlignParagraphCenter
@@ -946,6 +964,9 @@ Sub format_matrix_table(i As Integer)
         
         .Tables(i).Select
         Selection.Cells.VerticalAlignment = wdCellAlignVerticalCenter
+        Selection.ParagraphFormat.leftindent = InchesToPoints(0.08)
+        Selection.ParagraphFormat.RightIndent = InchesToPoints(0.08)
+        
         Selection.Collapse
                     
         .Tables(i).Cell(1, 1).Borders(wdBorderLeft).LineStyle = wdLineStyleNone
@@ -1917,16 +1938,16 @@ Sub NumberingAppendices()
     
     ActiveWindow.View.ShowFieldCodes = True
      Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="QUOTE"
  Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="Set A2Z"
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="=MOD("
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="SEQ ABC"
 'Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
 '    PreserveFormatting:=False
@@ -1935,22 +1956,22 @@ Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.TypeText Text:="-1,26)+1"
 Selection.MoveRight Unit:=wdCharacter, count:=4
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="Set AA2ZZ"
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="=INT(("
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="SEQ ABC \c"
 Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.TypeText Text:="-1)/26)"
 Selection.MoveRight Unit:=wdCharacter, count:=4
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="IF"
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="AA2ZZ \* ALPHABETIC"
 Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.TypeText Text:="= """""
@@ -1959,11 +1980,11 @@ Selection.TypeText Text:=" "
 Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.TypeText Text:=""""""
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="AA2ZZ \* ALPHABETIC"
 Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="A2Z \* ALPHABETIC"
 ActiveWindow.View.ShowFieldCodes = False
     
@@ -2239,16 +2260,16 @@ For i = 1 To ntables
         End With
         With Selection
             If .find.Forward = True Then
-                .Collapse Direction:=wdCollapseStart
+                .Collapse direction:=wdCollapseStart
                 count = count + 1
             Else
-                .Collapse Direction:=wdCollapseEnd
+                .Collapse direction:=wdCollapseEnd
             End If
             .find.Execute Replace:=wdReplaceOne
             If .find.Forward = True Then
-                .Collapse Direction:=wdCollapseEnd
+                .Collapse direction:=wdCollapseEnd
             Else
-                .Collapse Direction:=wdCollapseStart
+                .Collapse direction:=wdCollapseStart
             End If
             .find.Execute
         End With
@@ -2347,13 +2368,13 @@ Sub test_appendix()
 ActiveWindow.View.ShowFieldCodes = True
 
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="Set A2Z"
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="=MOD("
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="SEQ ABC"
 'Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
 '    PreserveFormatting:=False
@@ -2362,22 +2383,22 @@ Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.TypeText Text:="-1,26)+1"
 Selection.MoveRight Unit:=wdCharacter, count:=4
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="Set AA2ZZ"
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="=INT(("
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="SEQ ABC \c"
 Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.TypeText Text:="-1)/26)"
 Selection.MoveRight Unit:=wdCharacter, count:=4
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="IF"
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="AA2ZZ \* ALPHABETIC"
 Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.TypeText Text:="= """""
@@ -2386,21 +2407,21 @@ Selection.TypeText Text:=" "
 Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.TypeText Text:=""""""
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="AA2ZZ \* ALPHABETIC"
 Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="A2Z \* ALPHABETIC"
 
 'Selection.TypeText Text:="T"
 Selection.MoveRight Unit:=wdCharacter, count:=3
 Selection.TypeText Text:=", "
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="COMPARE "
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
 Selection.TypeText Text:="MERGEFIELD Other"
 Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.TypeText Text:=" <> """""
