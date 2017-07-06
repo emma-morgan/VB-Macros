@@ -88,7 +88,7 @@ Sub finish_clean_preview()
 ' These apply ONLY to question info rows, so we can take advantage of this
 
          
-    Call number_questions
+    Call number_questions_field
     Call remove_denominatorRow
     Call Remove_Export_Tag
 
@@ -235,14 +235,14 @@ Sub format_appendix()
      
     End With
     
-    Call Insert_footer
+'    Call Insert_footer
     
     'Make sure the stupid footer is the correct width...
-    With ActiveDocument.Sections(1).Footers(wdHeaderFooterPrimary).Range.Tables(1)
-        .PreferredWidthType = wdPreferredWidthPercent
-        .PreferredWidth = 100
+'    With ActiveDocument.Sections(1).Footers(wdHeaderFooterPrimary).Range.Tables(1)
+'        .PreferredWidthType = wdPreferredWidthPercent
+'        .PreferredWidth = 100
         
-    End With
+'    End With
     
     
 
@@ -254,7 +254,7 @@ Sub finish_clean_appendix()
 
 
     Call Remove_Export_Tag
-    Call Remove_Response_Tag
+    Call Remove_Responses_Tag
 
 
 End Sub
@@ -497,22 +497,26 @@ Sub Insert_footer()
         
         'Create defeault settings for all user entry
         
-        reportName = InputBox("Enter Name of sruvey, Year, Special Population" & Chr(10) _
-            & "Default: NAME OF SURVEY, YEAR, AND SPECIAL POPULATION (IF APPLICABLE)")
+        reportName = InputBox("Enter Name of survey, Year, Special Population" & Chr(10) _
+            & "Default: NAME OF SURVEY AND YEAR")
+        specialPopulation = InputBox("Enter Special Population (if applicable)" _
+            & Chr(10) & "Default:")
         analystName = InputBox("Analyst Name" & Chr(10) & "Default: ANALYST NAME")
         dateText = InputBox("Enter Date" & Chr(10) & "Default: INSERT DATE")
         
         If reportName = "" Then _
-            reportName = "NAME OF SURVEY, YEAR, AND SPECIAL POPULATION (IF APPLICABLE)"
+            reportName = "NAME OF SURVEY AND YEAR"
+        If specialPopulation = "" Then specialPopulation = ""
         If analystName = "" Then analystName = "ANALYST NAME"
         If dateText = "" Then dateText = "INSERT DATE"
         
         Debug.Print ("ReportName: " & reportName)
+        Debug.Print ("Special Population: " & specialPopulation)
         Debug.Print ("analystName: " & analystName)
         Debug.Print ("dateText: " & dateText)
         
         oireFooter = "Office of Institutional Research & Evaluation" + _
-            Chr(10) + reportName
+            Chr(10) + reportName + Chr(10) + specialPopulation
         analystFooter = "Prepared by: " & analystName + Chr(10) + _
             dateText
             
@@ -537,10 +541,10 @@ Sub Insert_footer()
             Selection.Collapse
             With Selection
                 .Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
-                "PAGE ", preserveFormatting:=True
+                "PAGE ", PreserveFormatting:=True
                 .TypeText Text:=" of "
                 .Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
-                "NUMPAGES ", preserveFormatting:=True
+                "NUMPAGES ", PreserveFormatting:=True
             End With
             
             .Cell(1, 2).Range.ParagraphFormat.Alignment = wdAlignParagraphCenter
@@ -608,7 +612,7 @@ End Sub
 
 
 Sub format_preview_tables(i As Integer, ncol As Integer)
-    Dim exportTag As String
+    Dim ExportTag As String
 
     ActiveDocument.Tables(i).Select
     Selection.ClearFormatting
@@ -625,9 +629,9 @@ Sub format_preview_tables(i As Integer, ncol As Integer)
     End If
     
     If i > 1 And ncol >= 3 Then
-        exportTag = ActiveDocument.Tables(i - 1).Cell(1, 1).Range.Text
-        exportTag = Trim(Left(exportTag, Len(exportTag) - 2))
-        Debug.Print "Processed results: " + exportTag + " (" + Str(i) + ")"
+        ExportTag = ActiveDocument.Tables(i - 1).Cell(1, 1).Range.Text
+        ExportTag = Trim(Left(ExportTag, Len(ExportTag) - 2))
+        Debug.Print "Processed results: " + ExportTag + " (" + Str(i) + ")"
     End If
 
 End Sub
@@ -779,12 +783,14 @@ Sub format_question_style(i As Integer)
         .Tables(i).PreferredWidthType = wdPreferredWidthPercent
         .Tables(i).PreferredWidth = 100
         
+        If .Tables(i).Rows.count > 1 Then
+        
         'Bold question text
         .Tables(i).Rows(2).Select
         With Selection
             .Font.Bold = True
         End With
-    
+        End If
         'Make display logic red to highlight
         If nrow >= 3 Then
             Dim r As Long
@@ -1938,16 +1944,16 @@ Sub NumberingAppendices()
     
     ActiveWindow.View.ShowFieldCodes = True
      Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="QUOTE"
  Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="Set A2Z"
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="=MOD("
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="SEQ ABC"
 'Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
 '    PreserveFormatting:=False
@@ -1956,22 +1962,22 @@ Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.TypeText Text:="-1,26)+1"
 Selection.MoveRight Unit:=wdCharacter, count:=4
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="Set AA2ZZ"
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="=INT(("
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="SEQ ABC \c"
 Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.TypeText Text:="-1)/26)"
 Selection.MoveRight Unit:=wdCharacter, count:=4
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="IF"
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="AA2ZZ \* ALPHABETIC"
 Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.TypeText Text:="= """""
@@ -1980,11 +1986,11 @@ Selection.TypeText Text:=" "
 Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.TypeText Text:=""""""
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="AA2ZZ \* ALPHABETIC"
 Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="A2Z \* ALPHABETIC"
 ActiveWindow.View.ShowFieldCodes = False
     
@@ -2368,13 +2374,13 @@ Sub test_appendix()
 ActiveWindow.View.ShowFieldCodes = True
 
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="Set A2Z"
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="=MOD("
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="SEQ ABC"
 'Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
 '    PreserveFormatting:=False
@@ -2383,22 +2389,22 @@ Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.TypeText Text:="-1,26)+1"
 Selection.MoveRight Unit:=wdCharacter, count:=4
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="Set AA2ZZ"
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="=INT(("
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="SEQ ABC \c"
 Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.TypeText Text:="-1)/26)"
 Selection.MoveRight Unit:=wdCharacter, count:=4
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="IF"
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="AA2ZZ \* ALPHABETIC"
 Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.TypeText Text:="= """""
@@ -2407,21 +2413,21 @@ Selection.TypeText Text:=" "
 Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.TypeText Text:=""""""
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="AA2ZZ \* ALPHABETIC"
 Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="A2Z \* ALPHABETIC"
 
 'Selection.TypeText Text:="T"
 Selection.MoveRight Unit:=wdCharacter, count:=3
 Selection.TypeText Text:=", "
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="COMPARE "
 Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    preserveFormatting:=False
+    PreserveFormatting:=False
 Selection.TypeText Text:="MERGEFIELD Other"
 Selection.MoveRight Unit:=wdCharacter, count:=2
 Selection.TypeText Text:=" <> """""
@@ -2481,3 +2487,39 @@ Dim questionRange As Range
 
 End Sub
 
+Sub number_questions_field()
+'
+' Numbers questions in the survey preview
+' Run as part of the final cleaning macro.
+'
+'    With ActiveDocument
+    
+    Dim tbl As Table
+    
+    Selection.find.ClearFormatting
+    With Selection.find
+        .Text = "Export Tag: "
+        .MatchCase = True
+    End With
+    
+    For Each tbl In ActiveDocument.Tables
+        If tbl.Columns.count = 1 Then
+            'identify if the first column says export tag"
+            tbl.Select
+            Selection.find.Execute
+            If Selection.find.Found = True Then
+                qrow = 2
+            Else: qrow = 1
+            End If
+            
+            tbl.Rows(qrow).Select
+            Selection.Collapse (wdCollapseStart)
+            
+            Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
+                "SEQ QNUM", PreserveFormatting:=False
+            Selection.Collapse (wdCollapseEnd)
+            Selection.TypeText (". ")
+        End If
+    Next
+        
+End Sub
