@@ -101,7 +101,9 @@ Sub format_appendix()
 ' Macro that will call all the steps required to format appendix tables
 '   for coded and raw text appendices
 
-    With ActiveDocument
+'    With ActiveDocument
+
+Application.ScreenUpdating = False
     
     Call Preview_Style_Change
        
@@ -109,112 +111,181 @@ Sub format_appendix()
     Call RemoveEmptyParagraphs
        
     Dim ntables As Long
-    ntables = .Tables.count
+    ntables = ActiveDocument.Tables.count
     Debug.Print ntables
     
     Dim i As Integer
-    For i = 1 To ntables
+    Dim noRespondents As Boolean
+    Dim isCodedComment As Boolean
+    Dim responseRow As Integer
+    Dim appendixRow As Integer
+    Dim commentTypeRow As Integer
+    Dim tbl As Table
+    
+    For Each tbl In ActiveDocument.Tables
+    
+'    For i = 1 To ntables
         
-        Dim celltxt As String
-        celltxt = .Tables(i).Cell(4, 1).Range.Text
-        If InStr(1, celltxt, "Coded Comments") Then
+'        tbl = .Tables(i)
+        
+        responseRow = 0
+        appendixRow = 0
+        commentTypeRow = 0
+        
+        tbl.Select
+        Selection.ClearParagraphAllFormatting
+'        Selection.EndOf
+        
+        
+        'flag for coded comment table
+        Selection.find.ClearFormatting
+        Selection.find.Text = "Coded Comments"
+        
+        tbl.Select
+        Selection.find.Execute
+        If Selection.find.Found = True Then
+        
+'        Dim celltxt As String
+'        celltxt = .Tables(i).Cell(4, 1).Range.Text
+'        If InStr(1, celltxt, "Coded Comments") Then
             isCodedComment = True
+            commentTypeRow = Selection.Information(wdStartOfRangeRowNumber)
         Else
             isCodedComment = False
+            tbl.Select
+            Selection.find.Text = "Verbatim"
+            Selection.find.Execute
+            If Selection.find.Found = True Then
+                commentTypeRow = Selection.Information(wdStartOfRangeRowNumber)
+            End If
         End If
-                
-    
-        .Tables(i).Select
-        Selection.ClearParagraphAllFormatting
-        Selection.EndOf
         
-        nrow = .Tables(i).Rows.count
-        ncol = .Tables(i).Columns.count
+        Selection.find.Text = "No respondents answered this question"
+        tbl.Select
+        Selection.find.Execute
+        If Selection.find.Found = True Then
+            noRespondents = True
+        Else: noRespondents = False
+        End If
+        
+        tbl.Select
+        With Selection.find
+            .Text = "Responses"
+            .MatchCase = True
+        End With
+        Selection.find.Execute
+        If Selection.find.Found = True Then
+            responseRow = Selection.Information(wdStartOfRangeRowNumber)
+        End If
+        
+        tbl.Select
+        Selection.find.Text = "Appendix "
+        Selection.find.Execute
+        If Selection.find.Found = True Then
+            appendixRow = Selection.Information(wdStartOfRangeRowNumber)
+        End If
+        
+        Debug.Print ("responseRow: " & responseRow)
+        Debug.Print ("appendixRow: " & appendixRow)
+        Debug.Print ("commentTypeRow: " & commentTypeRow)
+        
+        Selection.Collapse
+        
+        If (responseRow = 6 And appendixRow = 2 And commentTypeRow = 4) Then
+       
+'        Selection.Collapse
+
+        nrow = tbl.Rows.count
+        ncol = tbl.Columns.count
         
         'Remove text from second column of coded comment table header
-        Call duplicateHeaderText(i)
+        If isCodedComment = True Then Call duplicateHeaderText(tbl)
             
-        If (nrow >= 6) Then
+        'Flag for no comments table
+        
+        
+            
+'        If (nrow >= 6) Then
             
          'set widths for each table
-         .Tables(i).PreferredWidthType = wdPreferredWidthPercent
-         .Tables(i).PreferredWidth = 100
+         tbl.PreferredWidthType = wdPreferredWidthPercent
+         tbl.PreferredWidth = 100
          
          'Sort tables alphabetically for plain text, by N then alphabetically for coded
-         Call alphabetize_table(i)
+'         Call alphabetize_table(i)
         
-        .Tables(i).Style = "Appendix_style_table"
+        tbl.Style = "Appendix_style_table"
         
         'Align text vertically to be centered
             'Ideally this would be a part of the table style, but I couldn't find it....
-        .Tables(i).Range.Cells.VerticalAlignment = wdCellAlignVerticalCenter
+        tbl.Range.Cells.VerticalAlignment = wdCellAlignVerticalCenter
         
-        .Tables(i).Rows.HeightRule = wdRowHeightAuto
+'        tbl.Rows.HeightRule = wdRowHeightAuto
                 
-        If ncol = 1 Then
-            .Tables(i).ApplyStyleLastRow = False
-            .Tables(i).ApplyStyleLastColumn = False
-        ElseIf ncol = 2 And isCodedComment = True Then
+'        If ncol = 1 Then
+'        If isCodedComment = False Then
+'            .Tables(i).ApplyStyleLastRow = False
+'            .Tables(i).ApplyStyleLastColumn = False
+'        ElseIf ncol = 2 And isCodedComment = True Then
+        If isCodedComment = True Then
             'Verify that it's a coded comment table
-            .Tables(i).ApplyStyleLastRow = True
-            .Tables(i).ApplyStyleLastColumn = True
-            .Tables(i).Columns(2).Select
-            Selection.Columns.PreferredWidthType = wdPreferredWidthPoints
-            Selection.Columns.PreferredWidth = InchesToPoints(0.55)
-            Selection.EndOf
+            tbl.ApplyStyleLastRow = True
+            tbl.ApplyStyleLastColumn = True
+            With tbl.Columns(2)
+                .PreferredWidthType = wdPreferredWidthPoints
+                .PreferredWidth = InchesToPoints(0.55)
+            End With
         Else
-            .Tables(i).ApplyStyleLastRow = False
-            .Tables(i).ApplyStyleLastColumn = False
+            tbl.ApplyStyleLastRow = False
+            tbl.ApplyStyleLastColumn = False
         
         End If
-                 
-         For j = 1 To 6
-             .Tables(i).Rows(j).Select
-             If j < 4 Then
-                 With Selection
-                     .Font.Bold = True
-                     .ParagraphFormat.Alignment = wdAlignParagraphCenter
-                     .Borders(wdBorderLeft).LineStyle = wdLineStyleNone
-                     .Borders(wdBorderRight).LineStyle = wdLineStyleNone
-                     .Borders(wdBorderTop).LineStyle = wdLineStyleNone
-                     .Borders(wdBorderBottom).LineStyle = wdLineStyleNone
-                 End With
-             ElseIf j = 4 Then
-                 With Selection
-                     .Font.Italic = True
-                     .ParagraphFormat.Alignment = wdAlignParagraphCenter
-                     .Borders(wdBorderLeft).LineStyle = wdLineStyleNone
-                     .Borders(wdBorderRight).LineStyle = wdLineStyleNone
-                     .Borders(wdBorderTop).LineStyle = wdLineStyleNone
-                     .Borders(wdBorderBottom).LineStyle = wdLineStyleNone
-                 End With
-             ElseIf j = 5 Then
-                 Selection.Borders(wdBorderLeft).LineStyle = wdLineStyleNone
-                 Selection.Borders(wdBorderRight).LineStyle = wdLineStyleNone
-                 Selection.Borders(wdBorderTop).LineStyle = wdLineStyleNone
-                 Selection.Borders(wdBorderBottom).LineStyle = wdLineStyleNone
-             ElseIf j = 6 Then
-                 With Selection
-                     .Font.Bold = True
-                     .Borders(wdBorderLeft).LineStyle = wdLineStyleSingle
-                     .Borders(wdBorderRight).LineStyle = wdLineStyleSingle
-                     .Borders(wdBorderTop).LineStyle = wdLineStyleSingle
-                     .Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
-                 End With
-                 
-                 If ncol = 2 Then
-                    .Tables(i).Cell(j, 2).Select
-                    Selection.ParagraphFormat.Alignment = wdAlignParagraphCenter
-                End If
-             
-             End If
-             
-         Next
-         
-        Call Appendix_Merge_Header(i)
         
-        Set rptHeadCells = .Range(Start:=.Tables(i).Cell(1, 1).Range.Start, _
-             End:=.Tables(i).Cell(3, ncol).Range.End)
+'        If Not (appendixRow = 0 Or responseRow = 0 Or commentTypeRow = 0) And _
+'            (appendixRow < commentTypeRow) And (commentTypeRow < responseRow) Then
+                 
+         For j = 1 To responseRow
+             tbl.Rows(j).Select
+             If j = commentTypeRow Then
+                With Selection
+                     .Font.Italic = True
+'                     .ParagraphFormat.Alignment = wdAlignParagraphCenter
+'                     .Borders(wdBorderLeft).LineStyle = wdLineStyleNone
+'                     .Borders(wdBorderRight).LineStyle = wdLineStyleNone
+'                     .Borders(wdBorderTop).LineStyle = wdLineStyleNone
+'                     .Borders(wdBorderBottom).LineStyle = wdLineStyleNone
+                 End With
+             ElseIf j <= responseRow Then
+                 Selection.Font.Bold = True
+'                     .ParagraphFormat.Alignment = wdAlignParagraphCenter
+'                     .Borders(wdBorderLeft).LineStyle = wdLineStyleNone
+'                     .Borders(wdBorderRight).LineStyle = wdLineStyleNone
+'                     .Borders(wdBorderTop).LineStyle = wdLineStyleNone
+'                     .Borders(wdBorderBottom).LineStyle = wdLineStyleNone
+                 'End With
+'             ElseIf j = responseRow Then
+'                 With Selection
+'                     .Font.Bold = True
+''                     .Borders(wdBorderLeft).LineStyle = wdLineStyleSingle
+''                     .Borders(wdBorderRight).LineStyle = wdLineStyleSingle
+''                     .Borders(wdBorderTop).LineStyle = wdLineStyleSingle
+''                     .Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
+'                 End With
+            End If
+'
+             If isCodedComment = True Then
+                tbl.Cell(j, 2).Select
+                Selection.ParagraphFormat.Alignment = wdAlignParagraphCenter
+            End If
+             
+'             End If
+             
+         Next j
+         
+        Call Appendix_Merge_Header(tbl, isCodedComment)
+        
+        Set rptHeadCells = ActiveDocument.Range(Start:=tbl.Cell(1, 1).Range.Start, _
+             End:=tbl.Cell(3, ncol).Range.End)
 
                  'Make the first 6 rows into a header that will repeat across pages
          rptHeadCells.Rows.HeadingFormat = True
@@ -223,17 +294,17 @@ Sub format_appendix()
          'Need to add back side border to "responses" line
          'Also repeat bottom border so that it will exist if the table breaks
             'across multiple pages
-         .Tables(i).Rows(3).Borders(wdBorderLeft).LineStyle = wdLineStyleSingle
-         .Tables(i).Rows(3).Borders(wdBorderRight).LineStyle = wdLineStyleSingle
-         .Tables(i).Rows(3).Borders(wdBorderVertical).LineStyle = wdLineStyleSingle
-         .Tables(i).Rows(3).Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
+         tbl.Rows(3).Borders(wdBorderLeft).LineStyle = wdLineStyleSingle
+         tbl.Rows(3).Borders(wdBorderRight).LineStyle = wdLineStyleSingle
+         tbl.Rows(3).Borders(wdBorderVertical).LineStyle = wdLineStyleSingle
+         tbl.Rows(3).Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
     
         End If
         
             
     Next
      
-    End With
+'    End With
     
 '    Call Insert_footer
     
@@ -243,8 +314,8 @@ Sub format_appendix()
 '        .PreferredWidth = 100
         
 '    End With
-    
-    
+      
+Application.ScreenUpdating = True
 
 End Sub
 
@@ -254,7 +325,7 @@ Sub finish_clean_appendix()
 
 
     Call Remove_Export_Tag
-    Call Remove_Responses_Tag
+    Call Remove_Responses_Count
 
 
 End Sub
@@ -1447,7 +1518,7 @@ Attribute alphabetize_table.VB_ProcData.VB_Invoke_Func = "Normal.NewMacros.alpha
     End With
 End Sub
 
-Sub Appendix_Merge_Header(i As Integer)
+Sub Appendix_Merge_Header(tbl As Table, isCodedComment As Boolean)
 Attribute Appendix_Merge_Header.VB_ProcData.VB_Invoke_Func = "Normal.NewMacros.Appendix_Merge_Header"
 '
 ' Appendix_Merge_Header Macro
@@ -1455,128 +1526,62 @@ Attribute Appendix_Merge_Header.VB_ProcData.VB_Invoke_Func = "Normal.NewMacros.A
 '
 With ActiveDocument
 
-ncol = .Tables(i).Columns.count
-
-If ncol = 2 Then
-    .Tables(i).Rows(1).Select
-    Selection.Cells.Merge
-End If
+'ncol = tbl.Columns.count
 
 
-Set mergeCells = .Tables(i).Rows(2).Range
-mergeCells.End = .Tables(i).Rows(5).Range.End
+
+'If ncol = 2 Then
+'    tbl.Rows(1).Select
+'    Selection.Cells.Merge
+'End If
+
+If isCodedComment = True Then tbl.Rows(1).Cells.Merge
+
+Set mergeCells = tbl.Rows(2).Range
+mergeCells.End = tbl.Rows(5).Range.End
 mergeCells.Select
-Selection.Cells.Merge
 
-With Selection.ParagraphFormat
-    .SpaceBefore = 0
-    .SpaceAfter = 5
+With Selection
+    .Cells.Merge
+    .ParagraphFormat.Alignment = wdAlignParagraphCenter
+    .Borders(wdBorderLeft).LineStyle = wdLineStyleNone
+    .Borders(wdBorderRight).LineStyle = wdLineStyleNone
+    .Borders(wdBorderTop).LineStyle = wdLineStyleNone
+    .Borders(wdBorderBottom).LineStyle = wdLineStyleNone
+    .ParagraphFormat.SpaceBefore = 0
+    .ParagraphFormat.SpaceAfter = 5
 End With
 
-.Tables(i).Rows(2).Height = 1
+'.Tables(i).Rows(2).Height = 1
 
 End With
 
 End Sub
 
-Sub duplicateHeaderText(i As Integer)
+Sub duplicateHeaderText(tbl As Table)
 
 'The program produces coded comment tables with header text printed twice
 'Before we merge the cells, we need to delete the duplicate text
 'This macro will remove the text in the header rows of the second column
 
-With ActiveDocument
+'With ActiveDocument
 
 
-    ncol = .Tables(i).Columns.count
+'    ncol = .Tables(i).Columns.count
 
 'Clear text from coded comment tables; likely, this should be its own macro
-    If ncol = 2 Then
-        Set duplicateHead = .Tables(i).Columns(2).Cells(1).Range
-        duplicateHead.End = .Tables(i).Columns(2).Cells(4).Range.End
+'    If ncol = 2 Then
+        Set duplicateHead = tbl.Columns(2).Cells(1).Range
+        duplicateHead.End = tbl.Columns(2).Cells(4).Range.End
         duplicateHead.Select
         duplicateHead.Delete
-    End If
+'    End If
 
 'Next
 
-End With
+'End With
 
 End Sub
-
-
-Sub fix_page_breaks()
-
-'Macro written by CBB to adjust page breaks in appendix tables
-' Will need to adapt code to work with preview tables as well
-' Version with EM edits
-
-    With ActiveDocument
-        Dim ntables As Long
-        ntables = .Tables.count
-        
-        Selection.find.ClearFormatting
-        Selection.find.Replacement.ClearFormatting
-        
-        With Selection.find
-            .Text = "Responses: "
-            .Forward = True
-            .Wrap = wdFindStop
-            .format = False
-            .MatchCase = True
-            .MatchWholeWord = False
-            .MatchWildcards = False
-            .MatchSoundsLike = False
-            .MatchAllWordForms = False
-        End With
-
-    
-    For i = 1 To ntables
-    
-        nrow = .Tables(i).Rows.count
-        
-        'Determine page of first row in table
-
-        .Tables(i).Rows(1).Select
-        FirstRowPage = Selection.Information(wdActiveEndPageNumber)
-        Debug.Print "FirstRowPage: " + Str(FirstRowPage)
-
-        'Need to determine whether there are actual responses
-        
-        .Tables(i).Select
-        
-        If Selection.find.Execute Then
-            ResponseRow = Selection.Information(wdEndOfRangeRowNumber)
-            ResponseRowPage = Selection.Information(wdActiveEndPageNumber)
-            
-            Debug.Print "ResponseRow: " + Str(ResponseRow)
-            Debug.Print "nrow: " + Str(nrow)
-            Debug.Print "ResponseRowPage: " + Str(ResponseRowPage)
-            
-            If ResponseRow = nrow Then
-                If ResponseRowPage <> FirstRowPage Then
-                    .Tables(i).Rows(1).Select
-                    Selection.InsertBreak (wdPageBreak)
-                End If
-            
-            ElseIf ResponseRow < nrow Then
-                .Tables(i).Rows(ResponseRow + 1).Select
-                FirstCommentPage = Selection.Information(wdActiveEndPageNumber)
-                Debug.Print "FirstCommentPage: " + Str(FirstCommentPage)
-                
-                If FirstRowPage <> FirstCommentPage Then
-                    .Tables(i).Rows(1).Select
-                    Selection.InsertBreak (wdPageBreak)
-                End If
-            End If
-        End If
-                              
-    Next
-    
-    End With
-
-End Sub
-
 
 
 Sub preview_remove_block_titles()
@@ -1618,34 +1623,6 @@ For i = 1 To npar
 
 Next
         
-End Sub
-
-Sub TableCellPadding()
-
-'For Lauren to run after previews have been generated
-'Will adjust cell padding for all tables
-'Need to add this to initial macro for others to run
-
-With ActiveDocument
-    ntables = .Tables.count
-    For i = 1 To ntables
-        ncol = .Tables(i).Columns.count
-        nrow = .Tables(i).Rows.count
-        
-        If ncol > 1 Then
-            With .Tables(i)
-                .LeftPadding = InchesToPoints(0.08)
-                .RightPadding = InchesToPoints(0.08)
-                .TopPadding = InchesToPoints(0.01)
-                .BottomPadding = InchesToPoints(0.01)
-                
-                
-            End With
-        End If
-    Next
-
-End With
-
 End Sub
 
 Sub remove_blockHeaders()
@@ -1932,548 +1909,12 @@ Sub Remove_Export_Tag()
 End Sub
 
 
-
-Sub NumberingAppendices()
-' Working on numbering the appendices
-' Currently Double Prints A. should fix that/one possible method is just go back and look for it and delete it
-'
-    Selection.TypeBackspace
-    Selection.TypeText Text:=" "
-    'Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
-    '    "AUTONUM  \* ALPHABETIC ", PreserveFormatting:=False
-    
-    ActiveWindow.View.ShowFieldCodes = True
-     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="QUOTE"
- Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="Set A2Z"
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="=MOD("
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="SEQ ABC"
-'Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-'    PreserveFormatting:=False
-'Selection.TypeText Text:="MERGEFIELD FHB"
-Selection.MoveRight Unit:=wdCharacter, count:=2
-Selection.TypeText Text:="-1,26)+1"
-Selection.MoveRight Unit:=wdCharacter, count:=4
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="Set AA2ZZ"
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="=INT(("
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="SEQ ABC \c"
-Selection.MoveRight Unit:=wdCharacter, count:=2
-Selection.TypeText Text:="-1)/26)"
-Selection.MoveRight Unit:=wdCharacter, count:=4
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="IF"
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="AA2ZZ \* ALPHABETIC"
-Selection.MoveRight Unit:=wdCharacter, count:=2
-Selection.TypeText Text:="= """""
-Selection.MoveLeft Unit:=wdCharacter, count:=1
-Selection.TypeText Text:=" "
-Selection.MoveRight Unit:=wdCharacter, count:=2
-Selection.TypeText Text:=""""""
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="AA2ZZ \* ALPHABETIC"
-Selection.MoveRight Unit:=wdCharacter, count:=2
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="A2Z \* ALPHABETIC"
-ActiveWindow.View.ShowFieldCodes = False
-    
-    
-    Selection.MoveLeft Unit:=wdCharacter, count:=1, Extend:=wdExtend
-    Selection.Copy
-    Selection.find.ClearFormatting
-    Selection.find.Replacement.ClearFormatting
-    With Selection.find
-        .Text = "See Appendix"
-        .Replacement.Text = "See Appendix ^c"
-        .Forward = True
-        .Wrap = wdFindAsk
-        .format = False
-        .MatchCase = True
-        .MatchWholeWord = False
-        .MatchWildcards = False
-        .MatchSoundsLike = False
-        .MatchAllWordForms = False
-    End With
-    Selection.find.Execute Replace:=wdReplaceAll
-End Sub
-
-
-
-Sub UpdateMultipleFiles()
-Dim file
-Dim path As String
-
-'Change this to the folder with the files that you want to run macros on
-path = "Q:\Student Work\Emma's Student Work\Suneeth\Grad Exit 2015 Program-level Appendices\New folder\"
-
-file = Dir(path & "\" & "*.*")
-
-Application.DisplayAlerts = wdAlertsNone
-
-Do While file <> ""
-    Documents.Open FileName:=path & file
-    
-    ' Call all the macros that you want to run on the files in the folder
-    Call define_table_styles
-    Call format_appendix
-    Call remove_first_row
-    Call Remove_Responses_Tag
-    Call preview_remove_block_titles
-    Call delete_text_brackets
-    
-    ' Saves the file
-    ActiveDocument.Save
-    ActiveDocument.Close
-    ' set file to next in Dir
-    file = Dir()
-Loop
-End Sub
-
-Sub Remove_Responses_Tag()
-
-    Selection.find.ClearFormatting
-    With Selection.find
-        .Text = "Responses: (^?)"
-        .Replacement.Text = "Responses"
-        .Forward = True
-        .Wrap = wdFindAsk
-        .format = False
-        .MatchCase = False
-        .MatchWholeWord = False
-        .MatchWildcards = False
-        .MatchSoundsLike = False
-        .MatchAllWordForms = False
-    End With
-    Selection.find.Execute Replace:=wdReplaceAll
-    
-    Selection.find.ClearFormatting
-    With Selection.find
-        .Text = "Responses: (^?^?)"
-        .Replacement.Text = "Responses"
-        .Forward = True
-        .Wrap = wdFindAsk
-        .format = False
-        .MatchCase = False
-        .MatchWholeWord = False
-        .MatchWildcards = False
-        .MatchSoundsLike = False
-        .MatchAllWordForms = False
-    End With
-    Selection.find.Execute Replace:=wdReplaceAll
-    
-    
-    Selection.find.ClearFormatting
-    With Selection.find
-        .Text = "Responses: (^?^?^?)"
-        .Replacement.Text = "Responses"
-        .Forward = True
-        .Wrap = wdFindAsk
-        .format = False
-        .MatchCase = False
-        .MatchWholeWord = False
-        .MatchWildcards = False
-        .MatchSoundsLike = False
-        .MatchAllWordForms = False
-    End With
-    Selection.find.Execute Replace:=wdReplaceAll
-    
-        Selection.find.ClearFormatting
-    With Selection.find
-        .Text = "Responses: (^?^?^?^?)"
-        .Replacement.Text = "Responses"
-        .Forward = True
-        .Wrap = wdFindAsk
-        .format = False
-        .MatchCase = False
-        .MatchWholeWord = False
-        .MatchWildcards = False
-        .MatchSoundsLike = False
-        .MatchAllWordForms = False
-    End With
-    Selection.find.Execute Replace:=wdReplaceAll
-    
-    
-End Sub
-
-Sub delete_text_brackets()
-' Specifically for Rebecca's Grad Exit Project
-' remove_open_bracket Macro
-'
-'
-    Selection.find.ClearFormatting
-    Selection.find.Replacement.ClearFormatting
-    With Selection.find
-        .Text = "(\[)*(\])"
-        .Replacement.Text = ""
-        .Forward = True
-        .Wrap = wdFindContinue
-        .format = False
-        .MatchCase = False
-        .MatchWholeWord = False
-        .MatchWildcards = True
-        .MatchSoundsLike = False
-        .MatchAllWordForms = False
-    End With
-    Selection.find.Execute Replace:=wdReplaceAll
-End Sub
-
-Sub remove_first_row()
-'
-' Removes question data export tags from the question info tables in the survey preview
-' Called as part of the final cleaning up macro
-'
-    With ActiveDocument
-    
-    Dim ntables As Long
-    ntables = .Tables.count
-    
-    For i = 1 To ntables
-        ncol = .Tables(i).Columns.count
-        
-'        Delete first row of the question info (data export tag)
-'        This will only appear in question info in the preview; all others have 3+ columns
-'        This can be used for appendices to remove first row from coded and full text comments
-        
-        'delete data export tag
-        .Tables(i).Rows(1).Select
-        Selection.Rows.Delete
-                    
-
-    Next
-            
-    End With
-    
-End Sub
-
-Sub renumber_lists()
-
-With ActiveDocument
-
-Dim ntables As Long
-Dim nCols As Integer
-Dim count As Integer
-
-ntables = .Tables.count
-count = 0
-
-For i = 1 To ntables
-    nCols = .Tables(i).Columns.count
-    .Tables(i).Select
-    
-    
-    If nCols = 1 Then
-        With Selection.find
-        .Forward = True
-        .Wrap = wdFindStop
-        .Execute FindText:="^#. ", ReplaceWith:=count & ". ", Replace:=wdReplaceAll
-        .format = False
-        .MatchCase = False
-        .MatchWholeWord = False
-        .MatchWildcards = False
-        .MatchSoundsLike = False
-        .MatchAllWordForms = False
-        End With
-         
-                        
-        With Selection.find
-        .Forward = True
-        .Wrap = wdFindStop
-        .Execute FindText:="^#^#. ", ReplaceWith:=count & ". ", Replace:=wdReplaceAll
-        .format = False
-        .MatchCase = False
-        .MatchWholeWord = False
-        .MatchWildcards = False
-        .MatchSoundsLike = False
-        .MatchAllWordForms = False
-        End With
-        
-        
-        With Selection.find
-        .Forward = True
-        .Wrap = wdFindStop
-        .Execute FindText:="^#^#^#. ", ReplaceWith:=count & ". ", Replace:=wdReplaceAll
-        .format = False
-        .MatchCase = False
-        .MatchWholeWord = False
-        .MatchWildcards = False
-        .MatchSoundsLike = False
-        .MatchAllWordForms = False
-        End With
-        
-        
-        With Selection.find
-        .Forward = True
-        .Wrap = wdFindStop
-        .Execute FindText:="^#^#^#^#. ", ReplaceWith:=count & ". ", Replace:=wdReplaceAll
-        .format = False
-        .MatchCase = False
-        .MatchWholeWord = False
-        .MatchWildcards = False
-        .MatchSoundsLike = False
-        .MatchAllWordForms = False
-        End With
-        
-        count = count + 1
-    End If
-Next
-
-End With
-End Sub
-
-Sub AppendicesNumbering()
-With ActiveDocument
-
-Dim ntables As Long
-Dim nCols As Integer
-Dim count As Integer
-
-ntables = .Tables.count
-count = 0
-
-For i = 1 To ntables
-    nRows = .Tables(i).Rows.count
-    For j = 1 To nRows
-        .Tables(i).Rows(j).Select
-        
-        With Selection.find
-          .Text = "See Appendix"
-            .Replacement.Text = "See Appendix " + count
-            .Forward = True
-            .Wrap = wdFindAsk
-            .format = False
-            .MatchCase = True
-            .MatchWholeWord = False
-            .MatchWildcards = False
-            .MatchSoundsLike = False
-            .MatchAllWordForms = False
-        End With
-        With Selection
-            If .find.Forward = True Then
-                .Collapse direction:=wdCollapseStart
-                count = count + 1
-            Else
-                .Collapse direction:=wdCollapseEnd
-            End If
-            .find.Execute Replace:=wdReplaceOne
-            If .find.Forward = True Then
-                .Collapse direction:=wdCollapseEnd
-            Else
-                .Collapse direction:=wdCollapseStart
-            End If
-            .find.Execute
-        End With
-    Next
-
-Next
-End With
-End Sub
-Sub insert_page_breaks()
-'This macro checks to ensure that a table is not split onto two pages
-'If it is it will push the entire table on to the next page
-'NOT SURE IF THIS CHECKS TO SEE IF THE QUESTION AND RESPONSE ARE ON THE SAME PAGE MIGHT HAVE TO GO BACK AND CHECK
-
-
-With ActiveDocument
-Dim ntables As Long
-ntables = .Tables.count
-
-'If for your purpose you need to start in a later point in the document change i = 1 to i = x where x is the table number you want to start at
-For i = 1 To ntables
-    Dim firstRow As Integer
-    Dim lastRow As Integer
-    Dim nRows As Integer
-    nRows = .Tables(i).Rows.count
-    .Tables(i).Rows(1).Select
-    firstRow = Selection.Information(wdActiveEndPageNumber)
-    .Tables(i).Rows(nRows).Select
-    lastRow = Selection.Information(wdActiveEndPageNumber)
-    
-    If firstRow <> lastRow Then
-        Dim nCols As Integer
-        nCols = .Tables(i).Columns.count
-        If nCols <> 1 Then
-            .Tables(i - 1).Select
-            Selection.InsertBreak Type:=0
-            Else
-            .Tables(i).Select
-            Selection.InsertBreak Type:=0
-        End If
-    End If
-    
-    Next
-    
-    
-End With
-End Sub
-Sub remove_page_breaks()
-'This needs to be run if a table or something was inserted after the insert page breaks macro was run
-'Before re running the insert_page_breaks as the entire document will need to be reformatted not just
-'The seciton that the insertion changes
-
-
-With ActiveDocument
-Selection.find.ClearFormatting
-Selection.find.Replacement.ClearFormatting
-With Selection.find
-.Text = "^m"
-.Replacement.Text = ""
-.Forward = True
-.Wrap = wdFindContinue
-.format = False
-.MatchCase = False
-.MatchWholeWord = False
-.MatchByte = False
-.MatchAllWordForms = False
-.MatchSoundsLike = False
-.MatchWildcards = False
-.MatchFuzzy = False
-End With
-Selection.find.Execute Replace:=wdReplaceAll
-End With
-End Sub
-
-Sub test_appendix()
-'Doesn;t Work But I think its somewhat on the right track maybe?
-
-'{QUOTE
-    '{SET A2Z
-        '{=MOD(
-            '{SEQ ABC}
-        '-1,26)+1}
-    '}
-    '{SET AA2ZZ
-            '{=INT((
-                '{SEQ ABC \c}
-            '-1)/26)}
-    '}
-    '{IF
-        '{AA2ZZ \* ALPHABETIC}
-        '= " " ""
-        '{AA2ZZ \* ALPHABETIC}
-    '}
-        '{A2Z \* ALPHABETIC}
-'}
-
-ActiveWindow.View.ShowFieldCodes = True
-
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="Set A2Z"
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="=MOD("
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="SEQ ABC"
-'Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-'    PreserveFormatting:=False
-'Selection.TypeText Text:="MERGEFIELD FHB"
-Selection.MoveRight Unit:=wdCharacter, count:=2
-Selection.TypeText Text:="-1,26)+1"
-Selection.MoveRight Unit:=wdCharacter, count:=4
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="Set AA2ZZ"
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="=INT(("
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="SEQ ABC \c"
-Selection.MoveRight Unit:=wdCharacter, count:=2
-Selection.TypeText Text:="-1)/26)"
-Selection.MoveRight Unit:=wdCharacter, count:=4
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="IF"
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="AA2ZZ \* ALPHABETIC"
-Selection.MoveRight Unit:=wdCharacter, count:=2
-Selection.TypeText Text:="= """""
-Selection.MoveLeft Unit:=wdCharacter, count:=1
-Selection.TypeText Text:=" "
-Selection.MoveRight Unit:=wdCharacter, count:=2
-Selection.TypeText Text:=""""""
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="AA2ZZ \* ALPHABETIC"
-Selection.MoveRight Unit:=wdCharacter, count:=2
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="A2Z \* ALPHABETIC"
-
-'Selection.TypeText Text:="T"
-Selection.MoveRight Unit:=wdCharacter, count:=3
-Selection.TypeText Text:=", "
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="COMPARE "
-Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
-Selection.TypeText Text:="MERGEFIELD Other"
-Selection.MoveRight Unit:=wdCharacter, count:=2
-Selection.TypeText Text:=" <> """""
-Selection.MoveLeft Unit:=wdCharacter, count:=1
-Selection.TypeText Text:="T"
-Selection.MoveRight Unit:=wdCharacter, count:=3
-Selection.TypeText Text:=")"
-Selection.MoveRight Unit:=wdCharacter, count:=2
-Selection.TypeText Text:=" = 1 """""
-Selection.MoveLeft Unit:=wdCharacter, count:=1
-Selection.TypeText Text:="IfTrue"
-Selection.MoveRight Unit:=wdCharacter, count:=1
-Selection.TypeText Text:=" """""
-Selection.MoveLeft Unit:=wdCharacter, count:=1
-Selection.TypeText Text:="IfFalse"
-
-End Sub
-
-
-
-Sub reset_page_breaks()
-
-Call remove_page_breaks
-Call insert_page_breaks
-
-End Sub
-
-
-
 Sub keepTableWithQuestion(i As Integer)
 
-'Dim tbl As Table
-'Dim i As Integer
-'Dim ntables As Long
-Dim questionRange As Range
-'ntables = ActiveDocument.Tables.count
-'Debug.Print ntables
+    Dim questionRange As Range
 
-'For i = 1 To ntables
     
     If ActiveDocument.Tables(i).Columns.count > 1 And i >= 2 Then
-'        Dim rng As Variant
-'        rng = ActiveDocument.Range(Start:=ActiveDocument.Tables(i - 1).Range.Start, End:=ActiveDocument.Tables(i).Range.End)
-'        Debug.Print "Table index: i=" & i
-'        Debug.Print "Question: " & rng
-'        rng.ParagraphFormat.KeepWithNext = True
 
         Dim qrng As Range
         Set qrng = ActiveDocument.Tables(i - 1).Range
@@ -2483,7 +1924,6 @@ Dim questionRange As Range
         qrng.ParagraphFormat.KeepWithNext = True
         
     End If
-'Next
 
 End Sub
 
@@ -2523,3 +1963,33 @@ Sub number_questions_field()
     Next
         
 End Sub
+
+Sub Remove_Responses_Count()
+
+    Selection.find.ClearFormatting
+    With Selection.find
+        .Text = "Responses: "
+'        .Replacement.Text = "Responses"
+        .Forward = True
+        .Wrap = wdFindStop
+        .format = False
+        .MatchCase = False
+        .MatchWholeWord = False
+        .MatchWildcards = False
+        .MatchSoundsLike = False
+        .MatchAllWordForms = False
+    End With
+    
+    'Move to the top of the document
+    Selection.HomeKey Unit:=wdStory
+    Selection.find.Execute
+    Do While Selection.find.Found = True
+        Selection.Expand (wdLine)
+        Selection.TypeText ("Responses")
+        Selection.Collapse (wdCollapseEnd)
+        Selection.find.Execute
+    Loop
+    
+End Sub
+
+
