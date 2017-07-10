@@ -124,9 +124,9 @@ Application.ScreenUpdating = False
     
     For Each tbl In ActiveDocument.Tables
     
-'    For i = 1 To ntables
+    '    For i = 1 To ntables
         
-'        tbl = .Tables(i)
+    '        tbl = .Tables(i)
         
         responseRow = 0
         appendixRow = 0
@@ -134,7 +134,7 @@ Application.ScreenUpdating = False
         
         tbl.Select
         Selection.ClearParagraphAllFormatting
-'        Selection.EndOf
+    '        Selection.EndOf
         
         
         'flag for coded comment table
@@ -145,9 +145,9 @@ Application.ScreenUpdating = False
         Selection.find.Execute
         If Selection.find.Found = True Then
         
-'        Dim celltxt As String
-'        celltxt = .Tables(i).Cell(4, 1).Range.Text
-'        If InStr(1, celltxt, "Coded Comments") Then
+    '        Dim celltxt As String
+    '        celltxt = .Tables(i).Cell(4, 1).Range.Text
+    '        If InStr(1, celltxt, "Coded Comments") Then
             isCodedComment = True
             commentTypeRow = Selection.Information(wdStartOfRangeRowNumber)
         Else
@@ -183,6 +183,7 @@ Application.ScreenUpdating = False
         Selection.find.Execute
         If Selection.find.Found = True Then
             appendixRow = Selection.Information(wdStartOfRangeRowNumber)
+            tbl.Rows(appendixRow).Range.Style = ActiveDocument.Styles("Heading 8")
         End If
         
         Debug.Print ("responseRow: " & responseRow)
@@ -193,26 +194,26 @@ Application.ScreenUpdating = False
         
         If (responseRow = 6 And appendixRow = 2 And commentTypeRow = 4) Then
        
-'        Selection.Collapse
-
+    '        Selection.Collapse
+    
         nrow = tbl.Rows.count
         ncol = tbl.Columns.count
         
         'Remove text from second column of coded comment table header
-        If isCodedComment = True Then Call duplicateHeaderText(tbl)
+        If isCodedComment = True Then Call duplicateHeaderText(tbl, commentTypeRow)
             
         'Flag for no comments table
         
         
             
-'        If (nrow >= 6) Then
+    '        If (nrow >= 6) Then
             
          'set widths for each table
          tbl.PreferredWidthType = wdPreferredWidthPercent
          tbl.PreferredWidth = 100
          
          'Sort tables alphabetically for plain text, by N then alphabetically for coded
-'         Call alphabetize_table(i)
+    '         Call alphabetize_table(i)
         
         tbl.Style = "Appendix_style_table"
         
@@ -220,13 +221,13 @@ Application.ScreenUpdating = False
             'Ideally this would be a part of the table style, but I couldn't find it....
         tbl.Range.Cells.VerticalAlignment = wdCellAlignVerticalCenter
         
-'        tbl.Rows.HeightRule = wdRowHeightAuto
+    '        tbl.Rows.HeightRule = wdRowHeightAuto
                 
-'        If ncol = 1 Then
-'        If isCodedComment = False Then
-'            .Tables(i).ApplyStyleLastRow = False
-'            .Tables(i).ApplyStyleLastColumn = False
-'        ElseIf ncol = 2 And isCodedComment = True Then
+    '        If ncol = 1 Then
+    '        If isCodedComment = False Then
+    '            .Tables(i).ApplyStyleLastRow = False
+    '            .Tables(i).ApplyStyleLastColumn = False
+    '        ElseIf ncol = 2 And isCodedComment = True Then
         If isCodedComment = True Then
             'Verify that it's a coded comment table
             tbl.ApplyStyleLastRow = True
@@ -241,44 +242,44 @@ Application.ScreenUpdating = False
         
         End If
         
-'        If Not (appendixRow = 0 Or responseRow = 0 Or commentTypeRow = 0) And _
-'            (appendixRow < commentTypeRow) And (commentTypeRow < responseRow) Then
+    '        If Not (appendixRow = 0 Or responseRow = 0 Or commentTypeRow = 0) And _
+    '            (appendixRow < commentTypeRow) And (commentTypeRow < responseRow) Then
                  
          For j = 1 To responseRow
              tbl.Rows(j).Select
              If j = commentTypeRow Then
                 With Selection
                      .Font.Italic = True
-'                     .ParagraphFormat.Alignment = wdAlignParagraphCenter
-'                     .Borders(wdBorderLeft).LineStyle = wdLineStyleNone
-'                     .Borders(wdBorderRight).LineStyle = wdLineStyleNone
-'                     .Borders(wdBorderTop).LineStyle = wdLineStyleNone
-'                     .Borders(wdBorderBottom).LineStyle = wdLineStyleNone
+    '                     .ParagraphFormat.Alignment = wdAlignParagraphCenter
+    '                     .Borders(wdBorderLeft).LineStyle = wdLineStyleNone
+    '                     .Borders(wdBorderRight).LineStyle = wdLineStyleNone
+    '                     .Borders(wdBorderTop).LineStyle = wdLineStyleNone
+    '                     .Borders(wdBorderBottom).LineStyle = wdLineStyleNone
                  End With
              ElseIf j <= responseRow Then
                  Selection.Font.Bold = True
-'                     .ParagraphFormat.Alignment = wdAlignParagraphCenter
-'                     .Borders(wdBorderLeft).LineStyle = wdLineStyleNone
-'                     .Borders(wdBorderRight).LineStyle = wdLineStyleNone
-'                     .Borders(wdBorderTop).LineStyle = wdLineStyleNone
-'                     .Borders(wdBorderBottom).LineStyle = wdLineStyleNone
+    '                     .ParagraphFormat.Alignment = wdAlignParagraphCenter
+    '                     .Borders(wdBorderLeft).LineStyle = wdLineStyleNone
+    '                     .Borders(wdBorderRight).LineStyle = wdLineStyleNone
+    '                     .Borders(wdBorderTop).LineStyle = wdLineStyleNone
+    '                     .Borders(wdBorderBottom).LineStyle = wdLineStyleNone
                  'End With
-'             ElseIf j = responseRow Then
-'                 With Selection
-'                     .Font.Bold = True
-''                     .Borders(wdBorderLeft).LineStyle = wdLineStyleSingle
-''                     .Borders(wdBorderRight).LineStyle = wdLineStyleSingle
-''                     .Borders(wdBorderTop).LineStyle = wdLineStyleSingle
-''                     .Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
-'                 End With
+    '             ElseIf j = responseRow Then
+    '                 With Selection
+    '                     .Font.Bold = True
+    ''                     .Borders(wdBorderLeft).LineStyle = wdLineStyleSingle
+    ''                     .Borders(wdBorderRight).LineStyle = wdLineStyleSingle
+    ''                     .Borders(wdBorderTop).LineStyle = wdLineStyleSingle
+    ''                     .Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
+    '                 End With
             End If
-'
+    '
              If isCodedComment = True Then
                 tbl.Cell(j, 2).Select
                 Selection.ParagraphFormat.Alignment = wdAlignParagraphCenter
             End If
              
-'             End If
+    '             End If
              
          Next j
          
@@ -286,10 +287,10 @@ Application.ScreenUpdating = False
         
         Set rptHeadCells = ActiveDocument.Range(Start:=tbl.Cell(1, 1).Range.Start, _
              End:=tbl.Cell(3, ncol).Range.End)
-
+    
                  'Make the first 6 rows into a header that will repeat across pages
          rptHeadCells.Rows.HeadingFormat = True
-
+    
          
          'Need to add back side border to "responses" line
          'Also repeat bottom border so that it will exist if the table breaks
@@ -389,6 +390,20 @@ Sub Preview_Style_Change()
         With .Styles("Heading 5").ParagraphFormat
             .SpaceAfter = 0
             .SpaceBefore = 0
+        End With
+        
+        With .Styles("Heading 8")
+            With .Font
+                .Size = 10
+                .Name = "Arial"
+                .ColorIndex = wdAuto
+                .Italic = False
+                .Bold = True
+                .Underline = False
+            End With
+            .ParagraphFormat.SpaceBefore = 0
+            .ParagraphFormat.SpaceAfter = 0
+            
         End With
         
         With .Styles("Compact").Font
@@ -1558,7 +1573,7 @@ End With
 
 End Sub
 
-Sub duplicateHeaderText(tbl As Table)
+Sub duplicateHeaderText(tbl As Table, commentTypeRow As Integer)
 
 'The program produces coded comment tables with header text printed twice
 'Before we merge the cells, we need to delete the duplicate text
@@ -1572,7 +1587,7 @@ Sub duplicateHeaderText(tbl As Table)
 'Clear text from coded comment tables; likely, this should be its own macro
 '    If ncol = 2 Then
         Set duplicateHead = tbl.Columns(2).Cells(1).Range
-        duplicateHead.End = tbl.Columns(2).Cells(4).Range.End
+        duplicateHead.End = tbl.Columns(2).Cells(commentTypeRow).Range.End
         duplicateHead.Select
         duplicateHead.Delete
 '    End If
