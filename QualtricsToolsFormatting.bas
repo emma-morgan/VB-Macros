@@ -121,6 +121,11 @@ Application.ScreenUpdating = False
     Dim appendixRow As Integer
     Dim commentTypeRow As Integer
     Dim tbl As Table
+    Dim exportTag As String
+    Dim priorExportTag As String
+    Dim secondAppendix As Boolean
+    
+    priorExportTag = ""
     
     For Each tbl In ActiveDocument.Tables
     
@@ -131,6 +136,7 @@ Application.ScreenUpdating = False
         responseRow = 0
         appendixRow = 0
         commentTypeRow = 0
+        exportTag = ""
         
         tbl.Select
         Selection.ClearParagraphAllFormatting
@@ -139,6 +145,20 @@ Application.ScreenUpdating = False
         
         'flag for coded comment table
         Selection.find.ClearFormatting
+        
+        Selection.find.Text = "Export Tag: "
+        tbl.Select
+        Selection.find.Execute
+        If Selection.find.Found = True Then
+            Selection.Collapse (wdCollapseEnd)
+            Selection.Expand (wdLine)
+            exportTag = Selection.Range.Text
+            exportTag = Trim(Mid(exportTag, 13, Len(exportTag) - 14))
+            Debug.Print exportTag
+            If exportTag = previousExportTag Then secondAppendix = True
+        End If
+        
+
         Selection.find.Text = "Coded Comments"
         
         tbl.Select
@@ -158,6 +178,11 @@ Application.ScreenUpdating = False
             If Selection.find.Found = True Then
                 commentTypeRow = Selection.Information(wdStartOfRangeRowNumber)
             End If
+            
+            'Check for has coded comment table
+'            tbl.Select
+ '           Selection.GoToPrevious(wdGoToTable).Select
+            
         End If
         
         Selection.find.Text = "No respondents answered this question"
@@ -302,7 +327,13 @@ Application.ScreenUpdating = False
     
         End If
         
+        Debug.Print ("Current Export Tag: " & exportTag)
+        Debug.Print ("Prior Export Tag: " & priorExportTag)
             
+        priorExportTag = exportTag
+        
+        Debug.Print ("Update prior: " & priorExportTag)
+    
     Next
      
 '    End With
@@ -698,7 +729,7 @@ End Sub
 
 
 Sub format_preview_tables(i As Integer, ncol As Integer)
-    Dim ExportTag As String
+    Dim exportTag As String
 
     ActiveDocument.Tables(i).Select
     Selection.ClearFormatting
@@ -715,9 +746,9 @@ Sub format_preview_tables(i As Integer, ncol As Integer)
     End If
     
     If i > 1 And ncol >= 3 Then
-        ExportTag = ActiveDocument.Tables(i - 1).Cell(1, 1).Range.Text
-        ExportTag = Trim(Left(ExportTag, Len(ExportTag) - 2))
-        Debug.Print "Processed results: " + ExportTag + " (" + Str(i) + ")"
+        exportTag = ActiveDocument.Tables(i - 1).Cell(1, 1).Range.Text
+        exportTag = Trim(Left(exportTag, Len(exportTag) - 2))
+        Debug.Print "Processed results: " + exportTag + " (" + Str(i) + ")"
     End If
 
 End Sub
