@@ -96,12 +96,12 @@ End Sub
 
 Sub format_appendix()
 
-Application.ScreenUpdating = False
+Application.ScreenUpdating = True
 '
-'    Call Preview_Style_Change
-'
-'    Call replace_newline
-'    Call RemoveEmptyParagraphs
+    Call Preview_Style_Change
+
+    Call replace_newline
+    Call RemoveEmptyParagraphs
        
     Dim ntables As Long
     ntables = ActiveDocument.Tables.count
@@ -112,7 +112,8 @@ Application.ScreenUpdating = False
     Dim isCodedComment As Boolean
     Dim responseRow As Integer
     Dim appendixRow As Integer
-    Dim commentTypeRow As Integer
+    Dim appendixType As String
+    Dim typeRow As Integer
     Dim tbl As Table
     Dim exportTagInfo As Variant
     Dim exportTag As String
@@ -126,36 +127,25 @@ Application.ScreenUpdating = False
     Selection.EndKey Unit:=wdStory
     Selection.TypeText (Chr(10))
     Call Appendix_Fields.AppendixFields_Full
-    
+    ActiveDocument.ActiveWindow.View.ShowFieldCodes = False
+
     Selection.Collapse (wdCollapseStart)
     
     Selection.MoveRight Unit:=wdCharacter, count:=1, Extend:=wdExtend
     Selection.Copy
     Selection.Delete
     
-'    Call Appendix_Fields.RedoAppendixNumbering
+'   Don't need to do this anymore since we are replacing the contents of the cell with the paste option
+'    Call Appendix_Fields.clear_appendix_numbers
     
     For Each tbl In ActiveDocument.Tables
     
-'        responseRow = 0
-'        appendixRow = 0
-'        commentTypeRow = 0
-'        exportTag = ""
-        
         'Identify the export tag
         exportTagInfo = identifyExportTag(tbl)
         exportTag = exportTagInfo(0)
         exportRow = exportTagInfo(1)
         Debug.Print exportTag
-        
-        If exportTag = priorExportTag Then
-            secondAppendix = True
-            appendixFieldMain = "SEQ ABC \c"
-        Else
-            secondAppendix = False
-            appendixFieldMain = "SEQ ABC"
-        End If
-        
+                
         'Identify whether this is a coded or verbatim table
         appendixTypeInfo = identifyAppendType(tbl)
         appendixType = appendixTypeInfo(0)
@@ -164,28 +154,69 @@ Application.ScreenUpdating = False
         
         'Identify rows responses
         responseRow = identifyResponseRow(tbl)
+        
         Debug.Print ("Response row: " & responseRow)
         
         'Identify Appendix Row, bookmark appendix, replace field
         
         appendixRow = identifyAppendixRow(tbl)
+        Debug.Print ("Appendix Row: " & appendixRow)
         If appendixRow > 0 Then
 '            Call bookmarkAppendix(tbl, appendixRow)
             tbl.Rows(appendixRow).Cells(1).Select
             Selection.TypeText ("Appendix ")
-'            Selection.Collapse (wdCollapseEnd)
-'            Selection.TypeText (" ")
             Selection.Paste
+            
+            'Need to repeat the preior field code if we have a repeated export tag
+            If exportTag = priorExportTag Then
+                Selection.Expand (wdCell)
+                ActiveDocument.ActiveWindow.View.ShowFieldCodes = True
+                Selection.find.Text = "SEQ Append1"
+                Selection.find.Replacement.Text = "SEQ Append1 \c"
+                Selection.find.Execute Replace:=wdReplaceAll
+                Selection.find.Text = "SEQ Append2"
+                Selection.find.Replacement.Text = "SEQ Append2 \c"
+                Selection.find.Execute Replace:=wdReplaceAll
+                ActiveDocument.ActiveWindow.View.ShowFieldCodes = False
+            Else:
+                Selection.StartOf (wdLine)
+                Selection.MoveRight Unit:=wdWord, count:=2, Extend:=True
+                
+                On Error Resume Next
+                
+                ActiveDocument.Bookmarks.Add Range:=Selection.Range, Name:=exportTag
+                Selection.Style = "Heading 8"
+            End If
             
         End If
         
+        If (responseRow = 6 And appendixRow = 2 And typeRow = 4) Then
+            Call apply_appendix_style(tbl, appendixType, _
+                responseRow, typeRow)
+            Call Appendix_Merge_Header(tbl, appendixType)
+            
+            Set rptHeadCells = ActiveDocument.Range(Start:=tbl.Cell(1, 1).Range.Start, _
+                End:=tbl.Cell(3, ncol).Range.End)
+    
+                 'Make the first 6 rows into a header that will repeat across pages
+            rptHeadCells.Rows.HeadingFormat = True
+    
+         
+         'Need to add back side border to "responses" line
+         'Also repeat bottom border so that it will exist if the table breaks
+            'across multiple pages
+            tbl.Rows(3).Borders(wdBorderLeft).LineStyle = wdLineStyleSingle
+            tbl.Rows(3).Borders(wdBorderRight).LineStyle = wdLineStyleSingle
+            tbl.Rows(3).Borders(wdBorderVertical).LineStyle = wdLineStyleSingle
+            tbl.Rows(3).Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
+
+        End If
         
-        
-        'Style table - ONLY FOR ORIG ROUND
+        priorExportTag = exportTag
         
     Next tbl
         
-
+ActiveDocument.Fields.Update
 Application.ScreenUpdating = True
 
 End Sub
@@ -235,6 +266,10 @@ Function identifyAppendType(tbl As Table)
     If Selection.find.Found = True Then
         typeRow = Selection.Information(wdStartOfRangeRowNumber)
         appendType = "coded"
+        Set duplicateHead = tbl.Columns(2).Cells(1).Range
+        duplicateHead.End = tbl.Columns(2).Cells(typeRow).Range.End
+        duplicateHead.Select
+        duplicateHead.Delete
     Else:
         Selection.find.Text = "Verbatim"
         Selection.find.Execute
@@ -282,6 +317,52 @@ Function identifyAppendixRow(tbl As Table) As Integer
 
 End Function
 
+Sub apply_appendix_style(tbl As Table, appendixType As String, responseRow As Integer, _
+    typeRow As Integer)
+
+    tbl.PreferredWidthType = wdPreferredWidthPercent
+    tbl.PreferredWidth = 100
+    
+    'Sort tables alphabetically for plain text, by N then alphabetically for coded
+'    If tbl.Rows.count > responseRow Then Call alphabetize_table(i)
+    
+    tbl.Style = "Appendix_style_table"
+    
+    'Align text vertically to be centered
+       'Ideally this would be a part of the table style, but I couldn't find it....
+    tbl.Range.Cells.VerticalAlignment = wdCellAlignVerticalCenter
+    
+    If appendixType = "coded" Then
+        tbl.ApplyStyleLastRow = True
+        tbl.ApplyStyleLastColumn = True
+        With tbl.Columns(2)
+           .PreferredWidthType = wdPreferredWidthPoints
+           .PreferredWidth = InchesToPoints(0.55)
+        End With
+        
+    Else
+       tbl.ApplyStyleLastRow = False
+       tbl.ApplyStyleLastColumn = False
+    
+    End If
+    
+    For j = 1 To responseRow
+        If j = typeRow Then
+           tbl.Rows(j).Range.Font.Italic = True
+        ElseIf j < responseRow Then
+            tbl.Rows(j).Range.Font.Bold = True
+        ElseIf j = responseRow Then
+            tbl.Rows(j).Range.Font.Bold = True
+       End If
+    '
+        If j = responseRow And isCodedComment = True Then
+           tbl.Rows(j).Cells(2).Range.ParagraphFormat.Alignment = wdAlignParagraphCenter
+       End If
+
+    Next j
+
+End Sub
+
 Sub format_appendix_OLD()
 '
 ' Macro that will call all the steps required to format appendix tables
@@ -305,7 +386,7 @@ Application.ScreenUpdating = False
     Dim isCodedComment As Boolean
     Dim responseRow As Integer
     Dim appendixRow As Integer
-    Dim commentTypeRow As Integer
+    Dim commenttypeRow As Integer
     Dim tbl As Table
     Dim exportTag As String
     Dim priorExportTag As String
@@ -321,7 +402,7 @@ Application.ScreenUpdating = False
         
         responseRow = 0
         appendixRow = 0
-        commentTypeRow = 0
+        commenttypeRow = 0
         exportTag = ""
         
         tbl.Select
@@ -355,14 +436,14 @@ Application.ScreenUpdating = False
     '        celltxt = .Tables(i).Cell(4, 1).Range.Text
     '        If InStr(1, celltxt, "Coded Comments") Then
             isCodedComment = True
-            commentTypeRow = Selection.Information(wdStartOfRangeRowNumber)
+            commenttypeRow = Selection.Information(wdStartOfRangeRowNumber)
         Else
             isCodedComment = False
             tbl.Select
             Selection.find.Text = "Verbatim"
             Selection.find.Execute
             If Selection.find.Found = True Then
-                commentTypeRow = Selection.Information(wdStartOfRangeRowNumber)
+                commenttypeRow = Selection.Information(wdStartOfRangeRowNumber)
             End If
             
             'Check for has coded comment table
@@ -399,11 +480,11 @@ Application.ScreenUpdating = False
         
         Debug.Print ("responseRow: " & responseRow)
         Debug.Print ("appendixRow: " & appendixRow)
-        Debug.Print ("commentTypeRow: " & commentTypeRow)
+        Debug.Print ("commentTypeRow: " & commenttypeRow)
         
         Selection.Collapse
         
-        If (responseRow = 6 And appendixRow = 2 And commentTypeRow = 4) Then
+        If (responseRow = 6 And appendixRow = 2 And commenttypeRow = 4) Then
        
     '        Selection.Collapse
     
@@ -411,7 +492,7 @@ Application.ScreenUpdating = False
         ncol = tbl.Columns.count
         
         'Remove text from second column of coded comment table header
-        If isCodedComment = True Then Call duplicateHeaderText(tbl, commentTypeRow)
+        If isCodedComment = True Then Call duplicateHeaderText(tbl, commenttypeRow)
             
         'Flag for no comments table
         
@@ -458,7 +539,7 @@ Application.ScreenUpdating = False
                  
          For j = 1 To responseRow
              tbl.Rows(j).Select
-             If j = commentTypeRow Then
+             If j = commenttypeRow Then
                 With Selection
                      .Font.Italic = True
     '                     .ParagraphFormat.Alignment = wdAlignParagraphCenter
@@ -615,11 +696,9 @@ Sub Preview_Style_Change()
                 .Name = "Arial"
                 .ColorIndex = wdAuto
                 .Italic = False
-                .Bold = True
+                .Bold = False
                 .Underline = False
             End With
-            .ParagraphFormat.SpaceBefore = 0
-            .ParagraphFormat.SpaceAfter = 0
             
         End With
         
@@ -1610,6 +1689,7 @@ Sub define_appendix_table_style()
             .Alignment = wdAlignParagraphLeft
             .RightIndent = InchesToPoints(0.1)
             .leftindent = InchesToPoints(0.1)
+            .KeepWithNext = True
         End With
         
         With .Table
@@ -1750,7 +1830,7 @@ Attribute alphabetize_table.VB_ProcData.VB_Invoke_Func = "Normal.NewMacros.alpha
     End With
 End Sub
 
-Sub Appendix_Merge_Header(tbl As Table, isCodedComment As Boolean)
+Sub Appendix_Merge_Header(tbl As Table, appendixType As String)
 Attribute Appendix_Merge_Header.VB_ProcData.VB_Invoke_Func = "Normal.NewMacros.Appendix_Merge_Header"
 '
 ' Appendix_Merge_Header Macro
@@ -1767,7 +1847,7 @@ With ActiveDocument
 '    Selection.Cells.Merge
 'End If
 
-If isCodedComment = True Then tbl.Rows(1).Cells.Merge
+If appendixType = "coded" Then tbl.Rows(1).Cells.Merge
 
 Set mergeCells = tbl.Rows(2).Range
 mergeCells.End = tbl.Rows(5).Range.End
@@ -1789,32 +1869,6 @@ End With
 End With
 
 End Sub
-
-Sub duplicateHeaderText(tbl As Table, commentTypeRow As Integer)
-
-'The program produces coded comment tables with header text printed twice
-'Before we merge the cells, we need to delete the duplicate text
-'This macro will remove the text in the header rows of the second column
-
-'With ActiveDocument
-
-
-'    ncol = .Tables(i).Columns.count
-
-'Clear text from coded comment tables; likely, this should be its own macro
-'    If ncol = 2 Then
-        Set duplicateHead = tbl.Columns(2).Cells(1).Range
-        duplicateHead.End = tbl.Columns(2).Cells(commentTypeRow).Range.End
-        duplicateHead.Select
-        duplicateHead.Delete
-'    End If
-
-'Next
-
-'End With
-
-End Sub
-
 
 Sub preview_remove_block_titles()
 
