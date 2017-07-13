@@ -94,9 +94,195 @@ Sub finish_clean_preview()
 
 End Sub
 
-
-
 Sub format_appendix()
+
+Application.ScreenUpdating = False
+'
+'    Call Preview_Style_Change
+'
+'    Call replace_newline
+'    Call RemoveEmptyParagraphs
+       
+    Dim ntables As Long
+    ntables = ActiveDocument.Tables.count
+    Debug.Print ntables
+    
+    Dim i As Integer
+    Dim noRespondents As Boolean
+    Dim isCodedComment As Boolean
+    Dim responseRow As Integer
+    Dim appendixRow As Integer
+    Dim commentTypeRow As Integer
+    Dim tbl As Table
+    Dim exportTagInfo As Variant
+    Dim exportTag As String
+    Dim priorExportTag As String
+    Dim secondAppendix As Boolean
+    
+    priorExportTag = ""
+    
+    'Define appendix label and save it for insertion elsewhere in the document
+    
+    Selection.EndKey Unit:=wdStory
+    Selection.TypeText (Chr(10))
+    Call Appendix_Fields.AppendixFields_Full
+    
+    Selection.Collapse (wdCollapseStart)
+    
+    Selection.MoveRight Unit:=wdCharacter, count:=1, Extend:=wdExtend
+    Selection.Copy
+    Selection.Delete
+    
+'    Call Appendix_Fields.RedoAppendixNumbering
+    
+    For Each tbl In ActiveDocument.Tables
+    
+'        responseRow = 0
+'        appendixRow = 0
+'        commentTypeRow = 0
+'        exportTag = ""
+        
+        'Identify the export tag
+        exportTagInfo = identifyExportTag(tbl)
+        exportTag = exportTagInfo(0)
+        exportRow = exportTagInfo(1)
+        Debug.Print exportTag
+        
+        If exportTag = priorExportTag Then
+            secondAppendix = True
+            appendixFieldMain = "SEQ ABC \c"
+        Else
+            secondAppendix = False
+            appendixFieldMain = "SEQ ABC"
+        End If
+        
+        'Identify whether this is a coded or verbatim table
+        appendixTypeInfo = identifyAppendType(tbl)
+        appendixType = appendixTypeInfo(0)
+        typeRow = appendixTypeInfo(1)
+        Debug.Print ("Type: " & appendixType & ", Row: " & typeRow)
+        
+        'Identify rows responses
+        responseRow = identifyResponseRow(tbl)
+        Debug.Print ("Response row: " & responseRow)
+        
+        'Identify Appendix Row, bookmark appendix, replace field
+        
+        appendixRow = identifyAppendixRow(tbl)
+        If appendixRow > 0 Then
+'            Call bookmarkAppendix(tbl, appendixRow)
+            tbl.Rows(appendixRow).Cells(1).Select
+            Selection.TypeText ("Appendix ")
+'            Selection.Collapse (wdCollapseEnd)
+'            Selection.TypeText (" ")
+            Selection.Paste
+            
+        End If
+        
+        
+        
+        'Style table - ONLY FOR ORIG ROUND
+        
+    Next tbl
+        
+
+Application.ScreenUpdating = True
+
+End Sub
+
+Function identifyExportTag(tbl As Table) As Variant
+
+    Selection.find.ClearFormatting
+    Dim exportTag As String
+    Dim rowNum As Integer
+        
+    With Selection.find
+        .Text = "Export Tag: "
+        .MatchCase = True
+    End With
+    
+    tbl.Select
+    Selection.find.Execute
+    
+    If Selection.find.Found = True Then
+        rowNum = Selection.Information(wdStartOfRangeRowNumber)
+        Selection.Collapse (wdCollapseEnd)
+        Selection.Expand (wdLine)
+        exportTag = Selection.Range.Text
+        exportTag = Trim(Mid(exportTag, 13, Len(exportTag) - 14))
+    Else:
+        exportTag = ""
+        rowNum = 0
+    End If
+    
+    identifyExportTag = Array(exportTag, rowNum)
+    Debug.Print ("Export Tag: " & exportTag _
+        & Chr(10) & "Export Row: " & rowNum)
+
+End Function
+
+Function identifyAppendType(tbl As Table)
+
+    Selection.find.ClearFormatting
+    Dim appendType As String
+    Dim typeRow As Integer
+        
+    Selection.find.Text = "Coded Comments"
+    
+    tbl.Select
+    Selection.find.Execute
+    
+    If Selection.find.Found = True Then
+        typeRow = Selection.Information(wdStartOfRangeRowNumber)
+        appendType = "coded"
+    Else:
+        Selection.find.Text = "Verbatim"
+        Selection.find.Execute
+        If Selection.find.Found = True Then
+            typeRow = Selection.Information(wdStartOfRangeRowNumber)
+            appendType = "verbatim"
+        Else:
+            typeRow = 0
+            appendType = ""
+        End If
+    End If
+    
+    identifyAppendType = Array(appendType, typeRow)
+    Debug.Print ("Appendix Type: " & appendType _
+        & Chr(10) & "Type Row: " & typeRow)
+
+End Function
+
+Function identifyResponseRow(tbl As Table) As Integer
+
+    Selection.find.ClearFormatting
+    Selection.find.Text = "Responses"
+    Selection.find.MatchCase = True
+    tbl.Select
+    Selection.find.Execute
+    If Selection.find.Found = True Then
+        identifyResponseRow = Selection.Information(wdStartOfRangeRowNumber)
+    Else: indentifyResponseRow = 0
+    
+    End If
+
+End Function
+
+Function identifyAppendixRow(tbl As Table) As Integer
+
+    Selection.find.ClearFormatting
+    Selection.find.Text = "Appendix"
+    tbl.Select
+    Selection.find.Execute
+    If Selection.find.Found = True Then
+        identifyAppendixRow = Selection.Information(wdStartOfRangeRowNumber)
+    Else: indentifyAppendixRow = 0
+    
+    End If
+
+End Function
+
+Sub format_appendix_OLD()
 '
 ' Macro that will call all the steps required to format appendix tables
 '   for coded and raw text appendices
