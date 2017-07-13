@@ -2,15 +2,17 @@ Attribute VB_Name = "Appendix_Fields"
 Sub AppendixFields_Full()
 
     Application.ScreenUpdating = False
+    
+    ActiveDocument.ActiveWindow.View.ShowFieldCodes = True
 
     Dim i As Integer
     
-    i = 1
-    
-'    Do While i <= 100
-    
+'    i = 1
+'
+'    Do While i <= 50
+'
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
-    "SEQ ABC", PreserveFormatting:=False
+    "SEQ Append1", PreserveFormatting:=False
     Selection.PreviousField
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
     PreserveFormatting:=False
@@ -33,7 +35,7 @@ Sub AppendixFields_Full()
     Selection.Collapse (wdCollapseEnd)
     
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
-        "SEQ ABC \c", PreserveFormatting:=False
+        "SEQ Append2", PreserveFormatting:=False
     Selection.PreviousField
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
     PreserveFormatting:=False
@@ -65,14 +67,14 @@ Sub AppendixFields_Full()
     Selection.NextField
     Selection.Collapse (wdCollapseStart)
     Selection.MoveRight Unit:=wdCharacter, count:=4
-    Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+
     
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
         "AA2ZZ \* ALPHABETIC", PreserveFormatting:=False
     
     
     Selection.PreviousField
+    Selection.NextField
     Selection.Collapse (wdCollapseEnd)
     
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
@@ -86,16 +88,20 @@ Sub AppendixFields_Full()
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
         PreserveFormatting:=False
     Selection.TypeText ("QUOTE")
-    
+'
 '    Selection.Expand (wdParagraph)
 '    Selection.Collapse (wdCollapseEnd)
 '    Selection.TypeText (Chr(10))
-    
-    i = i + 1
-    
+'
+'    i = i + 1
+'
+'   ActiveDocument.ActiveWindow.View.ShowFieldCodes = False
+'
 '    Loop
 
-    Application.ScreenUpdating = True
+'    Application.ScreenUpdating = True
+
+
 
 ActiveDocument.Fields.Update
 
@@ -203,9 +209,9 @@ Sub AddFieldsAppendices_EM()
     With Selection.find
        .Text = "Appendix"
         .Forward = True
-        .Wrap = wdFindAsk
+        .Wrap = wdFindStop
 '        .format = False
-        .MatchCase = False
+        .MatchCase = True
         .MatchWholeWord = False
 '        .MatchKashida = False
 '        .MatchDiacritics = False
@@ -308,10 +314,12 @@ End Sub
 Sub RedoAppendixNumbering()
 'Find and replace all the current appendix numbering
 
+    Selection.HomeKey Unit:=wdStory
+    
     Selection.find.ClearFormatting
     Selection.find.Replacement.ClearFormatting
     With Selection.find
-       .Text = "Appendix ^$"
+       .Text = "Appendix^$"
         .Replacement.Text = "Appendix"
         .Forward = True
         .Wrap = wdFindAsk
@@ -392,8 +400,8 @@ End Sub
 Sub Appendix_bookmarks_tag()
 
 Dim tbl As Table
-Dim ExportTag As String
-ExportTag = ""
+Dim exportTag As String
+exportTag = ""
 
 For Each tbl In ActiveDocument.Sections(2).Range.Tables
     Selection.find.ClearFormatting
@@ -403,19 +411,19 @@ For Each tbl In ActiveDocument.Sections(2).Range.Tables
     If Selection.find.Found = True Then
         Selection.Collapse (wdCollapseEnd)
         Selection.MoveRight Unit:=wdWord, count:=1, Extend:=True
-        ExportTag = Selection.Range.Text
-        Debug.Print ExportTag
+        exportTag = Selection.Range.Text
+        Debug.Print exportTag
     End If
     Selection.find.ClearFormatting
     Selection.find.Text = "Appendix "
     tbl.Select
     Selection.find.Execute
-    If Selection.find.Found = True And Not ExportTag = "" Then
+    If Selection.find.Found = True And Not exportTag = "" Then
         Selection.Collapse (wdCollapseStart)
         Selection.MoveRight Unit:=wdWord, count:=2, Extend:=True
-        ActiveDocument.Bookmarks.Add Range:=Selection.Range, Name:=ExportTag
+        ActiveDocument.Bookmarks.Add Range:=Selection.Range, Name:=exportTag
     End If
-    ExportTag = ""
+    exportTag = ""
     
 Next
 
@@ -424,11 +432,11 @@ End Sub
 Sub add_appendix_ref_to_body()
 
 Dim hasAppendix As Boolean
-Dim ExportTag As String
+Dim exportTag As String
 
 For Each tbl In ActiveDocument.Sections(1).Range.Tables
     hasAppendix = False
-    ExportTag = ""
+    exportTag = ""
     Selection.find.ClearFormatting
     Selection.find.Text = "See Appendix"
     tbl.Select
@@ -444,8 +452,8 @@ For Each tbl In ActiveDocument.Sections(1).Range.Tables
         If Selection.find.Found = True Then
             Selection.Collapse (wdCollapseEnd)
             Selection.MoveRight Unit:=wdWord, count:=1, Extend:=True
-            ExportTag = Selection.Range.Text
-            Debug.Print ExportTag
+            exportTag = Selection.Range.Text
+            Debug.Print exportTag
         End If
         
     ElseIf hasAppendix = True And tbl.Columns.count > 1 Then
@@ -455,17 +463,17 @@ For Each tbl In ActiveDocument.Sections(1).Range.Tables
         If Selection.find.Found = True Then
         Selection.Collapse
             Selection.MoveRight Unit:=wdWord, count:=1, Extend:=True
-            ExportTag = Selection.Range.Text
-            Debug.Print ExportTag
+            exportTag = Selection.Range.Text
+            Debug.Print exportTag
         End If
         
     End If
-    If Not ExportTag = "" Then
+    If Not exportTag = "" Then
         tbl.Select
         Selection.find.Text = "Appendix"
         Selection.find.Execute
         Selection.InsertCrossReference ReferenceType:="Bookmark", ReferenceKind:= _
-            wdContentText, ReferenceItem:=ExportTag, InsertAsHyperlink:=True, _
+            wdContentText, ReferenceItem:=exportTag, InsertAsHyperlink:=True, _
             IncludePosition:=False, SeparateNumbers:=False, SeparatorString:=" "
     End If
     
