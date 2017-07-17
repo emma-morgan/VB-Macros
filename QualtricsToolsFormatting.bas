@@ -74,6 +74,8 @@ Sub format_survey_preview()
 
     Next
     
+    Call number_questions_field
+    
     End With
     
 '    Application.ScreenUpdating = True
@@ -83,12 +85,11 @@ End Sub
 Sub finish_clean_preview()
 
 ' This macro should be run AFTER the human components are finished
-' This will number questions and delete question export tags from each table
+' This will delete question export tags from each table
+' Previously this numbered questions, but we are now doing this with a field in the prelim macros
 ' These macros can also easily be run separately, as long as the numbering is run first
 ' These apply ONLY to question info rows, so we can take advantage of this
 
-         
-    Call number_questions_field
     Call remove_denominatorRow
     Call Remove_Export_Tag
 
@@ -181,11 +182,12 @@ Application.ScreenUpdating = True
             Else:
                 Selection.StartOf (wdLine)
                 Selection.MoveRight Unit:=wdWord, count:=2, Extend:=True
-                
-                On Error Resume Next
-                
-                ActiveDocument.Bookmarks.Add Range:=Selection.Range, Name:=exportTag
                 Selection.Style = "Heading 8"
+                
+'                On Error Resume Next
+                
+'                ActiveDocument.Bookmarks.Add Range:=Selection.Range, Name:=exportTag
+'                Selection.Style = "Heading 8"
             End If
             
         End If
@@ -209,8 +211,24 @@ Application.ScreenUpdating = True
             tbl.Rows(3).Borders(wdBorderRight).LineStyle = wdLineStyleSingle
             tbl.Rows(3).Borders(wdBorderVertical).LineStyle = wdLineStyleSingle
             tbl.Rows(3).Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
+            tbl.Rows(3).Borders(wdBorderTop).LineStyle = wdLineStyleSingle
 
         End If
+        
+        Selection.find.ClearFormatting
+        With Selection.find
+            .Text = "Appendix"
+            .Style = "Heading 8"
+        End With
+        
+        tbl.Select
+        Selection.find.Execute
+        If Selection.find.Found = True Then
+            Selection.StartOf (wdLine)
+            Selection.MoveRight Unit:=wdWord, count:=1, Extend:=wdExtend
+            ActiveDocument.Bookmarks.Add Range:=Selection.Range, Name:=exportTag
+        End If
+        
         
         priorExportTag = exportTag
         
@@ -238,7 +256,7 @@ Function identifyExportTag(tbl As Table) As Variant
     If Selection.find.Found = True Then
         rowNum = Selection.Information(wdStartOfRangeRowNumber)
         Selection.Collapse (wdCollapseEnd)
-        Selection.Expand (wdLine)
+        Selection.Expand (wdCell)
         exportTag = Selection.Range.Text
         exportTag = Trim(Mid(exportTag, 13, Len(exportTag) - 14))
     Else:
@@ -247,8 +265,8 @@ Function identifyExportTag(tbl As Table) As Variant
     End If
     
     identifyExportTag = Array(exportTag, rowNum)
-    Debug.Print ("Export Tag: " & exportTag _
-        & Chr(10) & "Export Row: " & rowNum)
+'    Debug.Print ("Export Tag: " & exportTag _
+'        & Chr(10) & "Export Row: " & rowNum)
 
 End Function
 
@@ -372,6 +390,14 @@ Sub finish_clean_appendix()
     Call Remove_Export_Tag
     Call Remove_Responses_Count
 
+
+End Sub
+
+Sub finish_merged_preview()
+
+    Call Remove_Responses_Count
+    Call remove_denominatorRow
+    Call Remove_Export_Tag
 
 End Sub
 Sub Preview_Style_Change()
@@ -1129,7 +1155,7 @@ Sub format_matrix_table(i As Integer)
             Selection.find.Execute
             
             If Selection.find.Found = True Then
-                .Tables(i).Columns(j).PreferredWidth = InchesToPoints(0.51)
+                .Tables(i).Columns(j).PreferredWidth = InchesToPoints(0.47)
                                  
                 .Tables(i).Columns(j).Select
                 With Selection
@@ -1184,7 +1210,7 @@ Sub format_NA_table(tbl As Table)
     iHeadingsRowIndex = 1                  'Set heading row to 1st row.  Best way to determine this for now.
     iNAColumnIndexMin = 4
     
-'    isTableTypeNA = False
+    isTableTypeNA = False
     Set rowHeadings = tbl.Rows(iHeadingsRowIndex)
     
     For Each cellHeading In rowHeadings.Cells
@@ -1205,13 +1231,11 @@ Sub format_NA_table(tbl As Table)
 '    With tbl.Cell(Row:=1, Column:=2).Range
 '        .Text = "Of those NOT selecting " & Chr(34) & NAText & Chr(34)
 '        .Font.Bold = True
-'        .FitTextWidth = True
 '    End With
 '
 '    With tbl.Cell(Row:=1, Column:=iNAColumnIndex).Range
 '        .Text = "Of all respondents"
 '        .Font.Bold = True
-'        .FitTextWidth = True
 '    End With
     
     Set validRange = tbl.Cell(1, 2).Range
@@ -1242,7 +1266,8 @@ Sub format_NA_table(tbl As Table)
         .Font.Bold = True
     End With
 
-    
+
+
     
 End Sub
 
@@ -1314,53 +1339,6 @@ Sub Replace_NaN(i As Integer)
     
 End Sub
 
-Sub number_questions()
-'
-' Numbers questions in the survey preview
-' Run as part of the final cleaning macro.
-'
-    With ActiveDocument
-    
-    Dim Q As Long
-    Q = 1
-    
-    Dim ntables As Long
-    ntables = .Tables.count
-
-    For i = 1 To ntables
-        ncol = .Tables(i).Columns.count
-        
-    If ncol = 1 Then
-        'delete data export tag
-        qText = .Tables(i).Cell(2, 1).Range.Text
-        qNum = CStr(Q)
-        qTextNum = qNum + ". " + qText
-        .Tables(i).Cell(2, 1).Range.Select
-        Selection.Delete
-        .Tables(i).Cell(2, 1).Range.Text = Left(qTextNum, Len(qTextNum) - 2)
-        .Tables(i).Cell(2, 1).Range.Select
-        With Selection.find
-            .Text = "^p"
-            .Replacement.Text = ""
-            .Forward = True
-            .Wrap = wdFindStop
-            .format = False
-            .MatchCase = False
-            .MatchWholeWord = False
-            .MatchWildcards = False
-            .MatchSoundsLike = False
-            .MatchAllWordForms = False
-        End With
-        Selection.find.Execute
-
-    Q = Q + 1
-     
-    End If
-    Next
-    
-    End With
-
-End Sub
 
 Sub remove_denominatorRow()
 
@@ -1804,7 +1782,7 @@ Sub format_UserNote(i)
         Selection.Font.Italic = True
         Selection.Font.Bold = False
         Selection.ParagraphFormat.leftindent = InchesToPoints(0.5)
-'        Selection.find.Execute Replace:=wdReplaceAll
+        Selection.find.Execute Replace:=wdReplaceOne
     End If
     Selection.Collapse
     
@@ -1974,7 +1952,8 @@ End Sub
 Sub number_questions_field()
 '
 ' Numbers questions in the survey preview
-' Run as part of the final cleaning macro.
+' Run as part of the format_survey_preview macro.
+
 '
 '    With ActiveDocument
     
@@ -2036,4 +2015,33 @@ Sub Remove_Responses_Count()
     
 End Sub
 
-
+Sub clearText_sidebyside_displaypanel()
+    
+    Dim sText1 As String
+    Dim sText2 As String
+    
+    sText1 = "Refer to the Display Logic panel for this question's logic."
+    sText2 = "This question was split from a side-by-side question."
+    Selection.find.ClearFormatting
+    With Selection.find
+        .Text = sText1
+        .Wrap = wdFindContinue
+    End With
+    Do While Selection.find.Execute
+        If Selection.Information(wdWithInTable) Then
+            Selection.Rows.Delete
+        End If
+    Loop
+    
+    With Selection.find
+        .Text = sText2
+        .Wrap = wdFindContinue
+    End With
+    Do While Selection.find.Execute
+        If Selection.Information(wdWithInTable) Then
+            Selection.Rows.Delete
+        End If
+    Loop
+    
+    
+End Sub
