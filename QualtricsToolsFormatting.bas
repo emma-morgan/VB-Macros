@@ -363,260 +363,6 @@ Sub apply_appendix_style(tbl As Table, appendixType As String, responseRow As In
 
 End Sub
 
-Sub format_appendix_OLD()
-'
-' Macro that will call all the steps required to format appendix tables
-'   for coded and raw text appendices
-
-'    With ActiveDocument
-
-Application.ScreenUpdating = False
-    
-    Call Preview_Style_Change
-       
-    Call replace_newline
-    Call RemoveEmptyParagraphs
-       
-    Dim ntables As Long
-    ntables = ActiveDocument.Tables.count
-    Debug.Print ntables
-    
-    Dim i As Integer
-    Dim noRespondents As Boolean
-    Dim isCodedComment As Boolean
-    Dim responseRow As Integer
-    Dim appendixRow As Integer
-    Dim commenttypeRow As Integer
-    Dim tbl As Table
-    Dim exportTag As String
-    Dim priorExportTag As String
-    Dim secondAppendix As Boolean
-    
-    priorExportTag = ""
-    
-    For Each tbl In ActiveDocument.Tables
-    
-    '    For i = 1 To ntables
-        
-    '        tbl = .Tables(i)
-        
-        responseRow = 0
-        appendixRow = 0
-        commenttypeRow = 0
-        exportTag = ""
-        
-        tbl.Select
-        Selection.ClearParagraphAllFormatting
-    '        Selection.EndOf
-        
-        
-        'flag for coded comment table
-        Selection.find.ClearFormatting
-        
-        Selection.find.Text = "Export Tag: "
-        tbl.Select
-        Selection.find.Execute
-        If Selection.find.Found = True Then
-            Selection.Collapse (wdCollapseEnd)
-            Selection.Expand (wdLine)
-            exportTag = Selection.Range.Text
-            exportTag = Trim(Mid(exportTag, 13, Len(exportTag) - 14))
-            Debug.Print exportTag
-            If exportTag = previousExportTag Then secondAppendix = True
-        End If
-        
-
-        Selection.find.Text = "Coded Comments"
-        
-        tbl.Select
-        Selection.find.Execute
-        If Selection.find.Found = True Then
-        
-    '        Dim celltxt As String
-    '        celltxt = .Tables(i).Cell(4, 1).Range.Text
-    '        If InStr(1, celltxt, "Coded Comments") Then
-            isCodedComment = True
-            commenttypeRow = Selection.Information(wdStartOfRangeRowNumber)
-        Else
-            isCodedComment = False
-            tbl.Select
-            Selection.find.Text = "Verbatim"
-            Selection.find.Execute
-            If Selection.find.Found = True Then
-                commenttypeRow = Selection.Information(wdStartOfRangeRowNumber)
-            End If
-            
-            'Check for has coded comment table
-'            tbl.Select
- '           Selection.GoToPrevious(wdGoToTable).Select
-            
-        End If
-        
-        Selection.find.Text = "No respondents answered this question"
-        tbl.Select
-        Selection.find.Execute
-        If Selection.find.Found = True Then
-            noRespondents = True
-        Else: noRespondents = False
-        End If
-        
-        tbl.Select
-        With Selection.find
-            .Text = "Responses"
-            .MatchCase = True
-        End With
-        Selection.find.Execute
-        If Selection.find.Found = True Then
-            responseRow = Selection.Information(wdStartOfRangeRowNumber)
-        End If
-        
-        tbl.Select
-        Selection.find.Text = "Appendix "
-        Selection.find.Execute
-        If Selection.find.Found = True Then
-            appendixRow = Selection.Information(wdStartOfRangeRowNumber)
-            tbl.Rows(appendixRow).Range.Style = ActiveDocument.Styles("Heading 8")
-        End If
-        
-        Debug.Print ("responseRow: " & responseRow)
-        Debug.Print ("appendixRow: " & appendixRow)
-        Debug.Print ("commentTypeRow: " & commenttypeRow)
-        
-        Selection.Collapse
-        
-        If (responseRow = 6 And appendixRow = 2 And commenttypeRow = 4) Then
-       
-    '        Selection.Collapse
-    
-        nrow = tbl.Rows.count
-        ncol = tbl.Columns.count
-        
-        'Remove text from second column of coded comment table header
-        If isCodedComment = True Then Call duplicateHeaderText(tbl, commenttypeRow)
-            
-        'Flag for no comments table
-        
-        
-            
-    '        If (nrow >= 6) Then
-            
-         'set widths for each table
-         tbl.PreferredWidthType = wdPreferredWidthPercent
-         tbl.PreferredWidth = 100
-         
-         'Sort tables alphabetically for plain text, by N then alphabetically for coded
-    '         Call alphabetize_table(i)
-        
-        tbl.Style = "Appendix_style_table"
-        
-        'Align text vertically to be centered
-            'Ideally this would be a part of the table style, but I couldn't find it....
-        tbl.Range.Cells.VerticalAlignment = wdCellAlignVerticalCenter
-        
-    '        tbl.Rows.HeightRule = wdRowHeightAuto
-                
-    '        If ncol = 1 Then
-    '        If isCodedComment = False Then
-    '            .Tables(i).ApplyStyleLastRow = False
-    '            .Tables(i).ApplyStyleLastColumn = False
-    '        ElseIf ncol = 2 And isCodedComment = True Then
-        If isCodedComment = True Then
-            'Verify that it's a coded comment table
-            tbl.ApplyStyleLastRow = True
-            tbl.ApplyStyleLastColumn = True
-            With tbl.Columns(2)
-                .PreferredWidthType = wdPreferredWidthPoints
-                .PreferredWidth = InchesToPoints(0.55)
-            End With
-        Else
-            tbl.ApplyStyleLastRow = False
-            tbl.ApplyStyleLastColumn = False
-        
-        End If
-        
-    '        If Not (appendixRow = 0 Or responseRow = 0 Or commentTypeRow = 0) And _
-    '            (appendixRow < commentTypeRow) And (commentTypeRow < responseRow) Then
-                 
-         For j = 1 To responseRow
-             tbl.Rows(j).Select
-             If j = commenttypeRow Then
-                With Selection
-                     .Font.Italic = True
-    '                     .ParagraphFormat.Alignment = wdAlignParagraphCenter
-    '                     .Borders(wdBorderLeft).LineStyle = wdLineStyleNone
-    '                     .Borders(wdBorderRight).LineStyle = wdLineStyleNone
-    '                     .Borders(wdBorderTop).LineStyle = wdLineStyleNone
-    '                     .Borders(wdBorderBottom).LineStyle = wdLineStyleNone
-                 End With
-             ElseIf j <= responseRow Then
-                 Selection.Font.Bold = True
-    '                     .ParagraphFormat.Alignment = wdAlignParagraphCenter
-    '                     .Borders(wdBorderLeft).LineStyle = wdLineStyleNone
-    '                     .Borders(wdBorderRight).LineStyle = wdLineStyleNone
-    '                     .Borders(wdBorderTop).LineStyle = wdLineStyleNone
-    '                     .Borders(wdBorderBottom).LineStyle = wdLineStyleNone
-                 'End With
-    '             ElseIf j = responseRow Then
-    '                 With Selection
-    '                     .Font.Bold = True
-    ''                     .Borders(wdBorderLeft).LineStyle = wdLineStyleSingle
-    ''                     .Borders(wdBorderRight).LineStyle = wdLineStyleSingle
-    ''                     .Borders(wdBorderTop).LineStyle = wdLineStyleSingle
-    ''                     .Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
-    '                 End With
-            End If
-    '
-             If isCodedComment = True Then
-                tbl.Cell(j, 2).Select
-                Selection.ParagraphFormat.Alignment = wdAlignParagraphCenter
-            End If
-             
-    '             End If
-             
-         Next j
-         
-        Call Appendix_Merge_Header(tbl, isCodedComment)
-        
-        Set rptHeadCells = ActiveDocument.Range(Start:=tbl.Cell(1, 1).Range.Start, _
-             End:=tbl.Cell(3, ncol).Range.End)
-    
-                 'Make the first 6 rows into a header that will repeat across pages
-         rptHeadCells.Rows.HeadingFormat = True
-    
-         
-         'Need to add back side border to "responses" line
-         'Also repeat bottom border so that it will exist if the table breaks
-            'across multiple pages
-         tbl.Rows(3).Borders(wdBorderLeft).LineStyle = wdLineStyleSingle
-         tbl.Rows(3).Borders(wdBorderRight).LineStyle = wdLineStyleSingle
-         tbl.Rows(3).Borders(wdBorderVertical).LineStyle = wdLineStyleSingle
-         tbl.Rows(3).Borders(wdBorderBottom).LineStyle = wdLineStyleSingle
-    
-        End If
-        
-        Debug.Print ("Current Export Tag: " & exportTag)
-        Debug.Print ("Prior Export Tag: " & priorExportTag)
-            
-        priorExportTag = exportTag
-        
-        Debug.Print ("Update prior: " & priorExportTag)
-    
-    Next
-     
-'    End With
-    
-'    Call Insert_footer
-    
-    'Make sure the stupid footer is the correct width...
-'    With ActiveDocument.Sections(1).Footers(wdHeaderFooterPrimary).Range.Tables(1)
-'        .PreferredWidthType = wdPreferredWidthPercent
-'        .PreferredWidth = 100
-        
-'    End With
-      
-Application.ScreenUpdating = True
-
-End Sub
 
 Sub finish_clean_appendix()
 'This macro should be run AFTER the human components are finished
@@ -1383,7 +1129,7 @@ Sub format_matrix_table(i As Integer)
             Selection.find.Execute
             
             If Selection.find.Found = True Then
-                .Tables(i).Columns(j).PreferredWidth = InchesToPoints(0.47)
+                .Tables(i).Columns(j).PreferredWidth = InchesToPoints(0.51)
                                  
                 .Tables(i).Columns(j).Select
                 With Selection
@@ -1438,7 +1184,7 @@ Sub format_NA_table(tbl As Table)
     iHeadingsRowIndex = 1                  'Set heading row to 1st row.  Best way to determine this for now.
     iNAColumnIndexMin = 4
     
-    isTableTypeNA = False
+'    isTableTypeNA = False
     Set rowHeadings = tbl.Rows(iHeadingsRowIndex)
     
     For Each cellHeading In rowHeadings.Cells
@@ -1456,15 +1202,17 @@ Sub format_NA_table(tbl As Table)
     tbl.Rows.Add BeforeRow:=tbl.Rows(1)
     tbl.Cell(1, 1).Borders(wdBorderBottom).LineStyle = wdLineStyleNone
     
-    With tbl.Cell(Row:=1, Column:=2).Range
-        .Text = "Of those NOT selecting " & Chr(34) & NAText & Chr(34)
-        .Font.Bold = True
-    End With
-    
-    With tbl.Cell(Row:=1, Column:=iNAColumnIndex).Range
-        .Text = "Of all respondents"
-        .Font.Bold = True
-    End With
+'    With tbl.Cell(Row:=1, Column:=2).Range
+'        .Text = "Of those NOT selecting " & Chr(34) & NAText & Chr(34)
+'        .Font.Bold = True
+'        .FitTextWidth = True
+'    End With
+'
+'    With tbl.Cell(Row:=1, Column:=iNAColumnIndex).Range
+'        .Text = "Of all respondents"
+'        .Font.Bold = True
+'        .FitTextWidth = True
+'    End With
     
     Set validRange = tbl.Cell(1, 2).Range
     validRange.SetRange Start:=validRange.Start, _
@@ -1483,8 +1231,18 @@ Sub format_NA_table(tbl As Table)
     End If
     iLast = tbl.Rows(1).Cells.count
     tbl.Cell(Row:=1, Column:=3).Merge MergeTo:=tbl.Cell(Row:=1, Column:=iLast)
+    
+    With tbl.Cell(Row:=1, Column:=2).Range
+        .Text = "Of those NOT selecting " & Chr(34) & NAText & Chr(34)
+        .Font.Bold = True
+    End With
 
+    With tbl.Cell(Row:=1, Column:=3).Range
+        .Text = "Of all respondents"
+        .Font.Bold = True
+    End With
 
+    
     
 End Sub
 
