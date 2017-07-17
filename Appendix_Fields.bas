@@ -431,8 +431,12 @@ End Sub
 
 Sub add_appendix_ref_to_body()
 
+'Use this after combining the documents; the appendix should be inserted
+'   as section 2 of the document
+
 Dim hasAppendix As Boolean
 Dim exportTag As String
+Dim tbl As Table
 
 For Each tbl In ActiveDocument.Sections(1).Range.Tables
     hasAppendix = False
@@ -443,42 +447,50 @@ For Each tbl In ActiveDocument.Sections(1).Range.Tables
     Selection.find.Execute
     If Selection.find.Found = True Then
         hasAppendix = True
+    Else: GoTo Next_tbl
     End If
     
     If hasAppendix = True And tbl.Columns.count = 1 Then
-        Selection.find.Text = "Export Tag: "
-        tbl.Select
-        Selection.find.Execute
-        If Selection.find.Found = True Then
-            Selection.Collapse (wdCollapseEnd)
-            Selection.MoveRight Unit:=wdWord, count:=1, Extend:=True
-            exportTag = Selection.Range.Text
-            Debug.Print exportTag
-        End If
+        exportTagInfo = identifyExportTag(tbl)
+        exportTag = exportTagInfo(0)
+        exportRow = exportTagInfo(1)
         
     ElseIf hasAppendix = True And tbl.Columns.count > 1 Then
-        Selection.Previous(wdTable, 1).Select
-        Selection.find.Text = "Export Tag: "
-        Selection.find.Execute
-        If Selection.find.Found = True Then
-        Selection.Collapse
-            Selection.MoveRight Unit:=wdWord, count:=1, Extend:=True
-            exportTag = Selection.Range.Text
-            Debug.Print exportTag
-        End If
-        
+'        Selection.Previous(wdTable, 1).Select
+        exportTagInfo = identifyExportTag(Selection.Previous(wdTable, 1))
+        exportTag = exportTagInfo(0)
+        exportRow = exportTagInfo(1)
     End If
-    If Not exportTag = "" Then
+    
+'    Debug.Print (exportTag)
+'    Debug.Print (ActiveDocument.Bookmarks.Exists(exportTag))
+        
+    If (Not exportTag = "") And (ActiveDocument.Bookmarks.Exists(exportTag) = True) Then
         tbl.Select
         Selection.find.Text = "Appendix"
         Selection.find.Execute
-        Selection.InsertCrossReference ReferenceType:="Bookmark", ReferenceKind:= _
-            wdContentText, ReferenceItem:=exportTag, InsertAsHyperlink:=True, _
-            IncludePosition:=False, SeparateNumbers:=False, SeparatorString:=" "
+        If Selection.find.Found = True Then
+            Selection.Expand (wdCell)
+'            On Error {GoTo Next_tbl
+            Selection.InsertCrossReference ReferenceType:="Bookmark", ReferenceKind:= _
+                wdContentText, ReferenceItem:=exportTag, InsertAsHyperlink:=True, _
+                IncludePosition:=False, SeparateNumbers:=False, SeparatorString:=" "
+            Selection.StartOf (wdLine)
+            Selection.TypeText ("See ")
+            Selection.Expand (wdCell)
+            With Selection.Font
+                .Bold = True
+                .Italic = True
+                .ColorIndex = wdAuto
+            End With
+        End If
+    Else: Debug.Print ("Error with cross-reference: Export Tag = " & exportTag)
+    
     End If
     
-       
-    Next
+    Selection.Collapse
+   
+Next_tbl:     Next
     
  '       On Error Resume Next
         
