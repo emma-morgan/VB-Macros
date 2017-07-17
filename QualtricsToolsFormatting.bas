@@ -82,19 +82,6 @@ Sub format_survey_preview()
     
 End Sub
 
-Sub finish_clean_preview()
-
-' This macro should be run AFTER the human components are finished
-' This will delete question export tags from each table
-' Previously this numbered questions, but we are now doing this with a field in the prelim macros
-' These macros can also easily be run separately, as long as the numbering is run first
-' These apply ONLY to question info rows, so we can take advantage of this
-
-    Call remove_denominatorRow
-    Call Remove_Export_Tag
-
-End Sub
-
 Sub format_appendix()
 
 Application.ScreenUpdating = True
@@ -120,6 +107,7 @@ Application.ScreenUpdating = True
     Dim exportTag As String
     Dim priorExportTag As String
     Dim secondAppendix As Boolean
+    Dim responseRow_info As Variant
     
     priorExportTag = ""
     
@@ -127,7 +115,7 @@ Application.ScreenUpdating = True
     
     Selection.EndKey Unit:=wdStory
     Selection.TypeText (Chr(10))
-    Call Appendix_Fields.AppendixFields_Full
+    Call AppendixFields_Full
     ActiveDocument.ActiveWindow.View.ShowFieldCodes = False
 
     Selection.Collapse (wdCollapseStart)
@@ -154,9 +142,13 @@ Application.ScreenUpdating = True
         Debug.Print ("Type: " & appendixType & ", Row: " & typeRow)
         
         'Identify rows responses
-        responseRow = identifyResponseRow(tbl)
+        responseRow_info = identifyResponseRow(tbl)
+        responseRow = responseRow_info(0)
+        noRespondents = responseRow_info(1)
+              
         
-        Debug.Print ("Response row: " & responseRow)
+        Debug.Print ("Response row: " & responseRow_info(0) & Chr(10) _
+            & "No respondents: " & noRespondents)
         
         'Identify Appendix Row, bookmark appendix, replace field
         
@@ -264,9 +256,15 @@ Function identifyExportTag(tbl As Table) As Variant
         rowNum = 0
     End If
     
+    hashtag_pos = InStr(1, exportTag, Chr(35))
+    If hashtag_pos > 1 Then
+        exportTag = Replace(Expression:=exportTag, find:=Chr(35), Replace:=Chr(95))
+    End If
+        
+    
     identifyExportTag = Array(exportTag, rowNum)
-'    Debug.Print ("Export Tag: " & exportTag _
-'        & Chr(10) & "Export Row: " & rowNum)
+    Debug.Print ("Export Tag: " & exportTag _
+        & Chr(10) & "Export Row: " & rowNum)
 
 End Function
 
@@ -306,18 +304,35 @@ Function identifyAppendType(tbl As Table)
 
 End Function
 
-Function identifyResponseRow(tbl As Table) As Integer
+Function identifyResponseRow(tbl As Table)
 
+    Dim responseRow As Integer
+    Dim noRespondents As Boolean
+    
     Selection.find.ClearFormatting
     Selection.find.Text = "Responses"
     Selection.find.MatchCase = True
     tbl.Select
     Selection.find.Execute
     If Selection.find.Found = True Then
-        identifyResponseRow = Selection.Information(wdStartOfRangeRowNumber)
-    Else: indentifyResponseRow = 0
+        responseRow = Selection.Information(wdStartOfRangeRowNumber)
+        noRespondents = False
+    Else
+        Selection.find.Text = "No respondents answered this question"
+        tbl.Select
+        Selection.find.Execute
+        If Selection.find.Found = True Then
+            responseRow = Selection.Information(wdStartOfRangeRowNumber)
+            noRespondents = True
+        Else
+            responseRow = 0
+            noRespondents = False
+        
+        End If
     
     End If
+    
+    identifyResponseRow = Array(responseRow, noRespondents)
 
 End Function
 
@@ -381,20 +396,9 @@ Sub apply_appendix_style(tbl As Table, appendixType As String, responseRow As In
 
 End Sub
 
-
-Sub finish_clean_appendix()
-'This macro should be run AFTER the human components are finished
-'Removes the Export and Response Tags
-
-
-    Call Remove_Export_Tag
-    Call Remove_Responses_Count
-
-
-End Sub
-
 Sub finish_merged_preview()
 
+    Call clearText_sidebyside_displaypanel
     Call Remove_Responses_Count
     Call remove_denominatorRow
     Call Remove_Export_Tag
@@ -2045,3 +2049,178 @@ Sub clearText_sidebyside_displaypanel()
     
     
 End Sub
+
+
+Sub AppendixFields_Full()
+
+    Application.ScreenUpdating = False
+    
+    ActiveDocument.ActiveWindow.View.ShowFieldCodes = True
+
+    Dim i As Integer
+    
+'    i = 1
+'
+'    Do While i <= 50
+'
+    Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
+    "SEQ Append1", PreserveFormatting:=False
+    Selection.PreviousField
+    Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+    Selection.TypeText Text:="=MOD("
+    Selection.NextField
+    Selection.Collapse direction:=wdCollapseEnd
+    Selection.TypeText Text:="-1,26)+1"
+    
+    Selection.MoveRight (3)
+    Selection.PreviousField
+    Selection.PreviousField
+    
+    Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+        PreserveFormatting:=False
+    Selection.TypeText Text:="SET A2Z"
+    
+    Selection.NextField
+    Selection.PreviousField
+    
+    Selection.Collapse (wdCollapseEnd)
+    
+    Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
+        "SEQ Append2", PreserveFormatting:=False
+    Selection.PreviousField
+    Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+    PreserveFormatting:=False
+    Selection.TypeText Text:="=INT(("
+    Selection.NextField
+    Selection.Collapse direction:=wdCollapseEnd
+    Selection.TypeText Text:="-1)/26)"
+    
+    Selection.MoveRight (3)
+    Selection.PreviousField
+    Selection.PreviousField
+
+    Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+        PreserveFormatting:=False
+    Selection.TypeText Text:="SET AA2ZZ"
+    
+    Selection.PreviousField
+    Selection.NextField
+    
+    Selection.Collapse (wdCollapseEnd)
+    
+    Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+        PreserveFormatting:=False
+    Selection.TypeText ("IF=" & Chr(34) & Chr(34) & " " & Chr(34) & Chr(34))
+    Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
+        "AA2ZZ \* ALPHABETIC", PreserveFormatting:=False
+'    Selection.Fields.ToggleShowCodes
+    Selection.PreviousField
+    Selection.NextField
+    Selection.Collapse (wdCollapseStart)
+    Selection.MoveRight Unit:=wdCharacter, count:=4
+
+    
+    Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
+        "AA2ZZ \* ALPHABETIC", PreserveFormatting:=False
+    
+    
+    Selection.PreviousField
+    Selection.NextField
+    Selection.Collapse (wdCollapseEnd)
+    
+    Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
+        "A2Z \* ALPHABETIC", PreserveFormatting:=False
+    Selection.PreviousField
+    Selection.NextField
+    Selection.Collapse (wdCollapseEnd)
+    
+    Selection.MoveLeft Unit:=wdCharacter, count:=4, Extend:=wdExtend
+    
+    Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
+        PreserveFormatting:=False
+    Selection.TypeText ("QUOTE")
+'
+'    Selection.Expand (wdParagraph)
+'    Selection.Collapse (wdCollapseEnd)
+'    Selection.TypeText (Chr(10))
+'
+'    i = i + 1
+'
+'   ActiveDocument.ActiveWindow.View.ShowFieldCodes = False
+'
+'    Loop
+
+'    Application.ScreenUpdating = True
+
+
+
+ActiveDocument.Fields.Update
+
+End Sub
+
+Sub add_appendix_ref_to_body()
+
+'Use this after combining the documents; the appendix should be inserted
+'   as section 2 of the document
+
+Dim hasAppendix As Boolean
+Dim exportTag As String
+Dim tbl As Table
+
+For Each tbl In ActiveDocument.Sections(1).Range.Tables
+    hasAppendix = False
+    exportTag = ""
+    Selection.find.ClearFormatting
+    Selection.find.Text = "See Appendix"
+    tbl.Select
+    Selection.find.Execute
+    If Selection.find.Found = True Then
+        hasAppendix = True
+    Else: GoTo Next_tbl
+    End If
+    
+    If hasAppendix = True And tbl.Columns.count = 1 Then
+        exportTagInfo = identifyExportTag(tbl)
+        exportTag = exportTagInfo(0)
+        exportRow = exportTagInfo(1)
+        
+    ElseIf hasAppendix = True And tbl.Columns.count > 1 Then
+'        Selection.Previous(wdTable, 1).Select
+        exportTagInfo = identifyExportTag(Selection.Previous(wdTable, 1))
+        exportTag = exportTagInfo(0)
+        exportRow = exportTagInfo(1)
+    End If
+    
+'    Debug.Print (exportTag)
+'    Debug.Print (ActiveDocument.Bookmarks.Exists(exportTag))
+        
+    If (Not exportTag = "") And (ActiveDocument.Bookmarks.Exists(exportTag) = True) Then
+        tbl.Select
+        Selection.find.Text = "Appendix"
+        Selection.find.Execute
+        If Selection.find.Found = True Then
+            Selection.Expand (wdCell)
+'            On Error {GoTo Next_tbl
+            Selection.InsertCrossReference ReferenceType:="Bookmark", ReferenceKind:= _
+                wdContentText, ReferenceItem:=exportTag, InsertAsHyperlink:=True, _
+                IncludePosition:=False, SeparateNumbers:=False, SeparatorString:=" "
+            Selection.StartOf (wdLine)
+            Selection.TypeText ("See ")
+            Selection.Expand (wdCell)
+            With Selection.Font
+                .Bold = True
+                .Italic = True
+                .ColorIndex = wdAuto
+            End With
+        End If
+    Else: Debug.Print ("Error with cross-reference: Export Tag = " & exportTag)
+    
+    End If
+    
+    Selection.Collapse
+   
+Next_tbl:     Next
+    
+End Sub
+
