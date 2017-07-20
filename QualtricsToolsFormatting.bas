@@ -225,7 +225,7 @@ Application.ScreenUpdating = True
         Selection.find.Execute
         If Selection.find.Found = True Then
             Selection.StartOf (wdLine)
-            Selection.MoveRight Unit:=wdWord, count:=1, Extend:=wdExtend
+            Selection.MoveRight Unit:=wdWord, count:=2, Extend:=wdExtend
             ActiveDocument.Bookmarks.Add Range:=Selection.Range, Name:=exportTag
         End If
         
@@ -2200,15 +2200,7 @@ For Each tbl In ActiveDocument.Sections(1).Range.Tables
         exportTag = exportTagInfo(0)
         exportRow = exportTagInfo(1)
         
-'    ElseIf hasAppendix = True And tbl.Columns.count > 1 Then
-''        Selection.Previous(wdTable, 1).Select
-''        exportTagInfo = identifyExportTag(Selection.Previous(wdTable, 1))
-''        exportTag = exportTagInfo(0)
-''        exportRow = exportTagInfo(1)
     End If
-    
-'    Debug.Print (exportTag)
-'    Debug.Print (ActiveDocument.Bookmarks.Exists(exportTag))
         
     If (Not exportTag = "") And (ActiveDocument.Bookmarks.Exists(exportTag) = True) Then
         tbl.Select
@@ -2244,13 +2236,11 @@ For Each tbl In ActiveDocument.Sections(1).Range.Tables
             Dim appendBookmark As String
             
             Selection.Font.Bold = True
-            Selection.Font.Italic = True
             Selection.Font.ColorIndex = wdDarkRed
             
             appendRef_row = Selection.Information(wdStartOfRangeRowNumber)
             appendRef_col = Selection.Information(wdStartOfRangeColumnNumber)
             
-'            appendRefCell = tbl.Cell(appendRef_row, appendRef_col).Range
             appendRefCell_text_full = tbl.Cell(appendRef_row, appendRef_col).Range.Text
             seeAppend_index = InStr(appendRefCell_text_full, "See Appendix ")
             itemText = Left(appendRefCell_text_full, seeAppend_index - 1)
@@ -2282,8 +2272,6 @@ For Each tbl In ActiveDocument.Sections(1).Range.Tables
             Selection.find.Execute
         Loop
 
-'    Else: Debug.Print ("Error with cross-reference: Export Tag = " & exportTag)
-    
     End If
     
     Selection.Collapse
