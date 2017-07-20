@@ -29,7 +29,7 @@ End Sub
 
 Sub format_survey_preview()
 
-'    Application.ScreenUpdating = False
+    Application.ScreenUpdating = False
 
     'This macro should be used BEFORE any manual updates to the survey preview
     
@@ -78,7 +78,7 @@ Sub format_survey_preview()
     
     End With
     
-'    Application.ScreenUpdating = True
+    Application.ScreenUpdating = True
     
 End Sub
 
@@ -187,6 +187,14 @@ Application.ScreenUpdating = True
         If (responseRow = 6 And appendixRow = 2 And typeRow = 4) Then
             Call apply_appendix_style(tbl, appendixType, _
                 responseRow, typeRow)
+                
+            If tbl.Columns.count > 1 Then
+                Set duplicateHead = tbl.Columns(2).Cells(1).Range
+                duplicateHead.End = tbl.Columns(tbl.Columns.count).Cells(typeRow).Range.End
+                duplicateHead.Select
+                duplicateHead.Delete
+            End If
+            
             Call Appendix_Merge_Header(tbl, appendixType)
             
             Set rptHeadCells = ActiveDocument.Range(Start:=tbl.Cell(1, 1).Range.Start, _
@@ -270,6 +278,9 @@ End Function
 
 Function identifyAppendType(tbl As Table)
 
+'Identify whether this is a coded or verbatim comment table
+'Delete extra header rows if this is relevent
+
     Selection.find.ClearFormatting
     Dim appendType As String
     Dim typeRow As Integer
@@ -282,16 +293,17 @@ Function identifyAppendType(tbl As Table)
     If Selection.find.Found = True Then
         typeRow = Selection.Information(wdStartOfRangeRowNumber)
         appendType = "coded"
-        Set duplicateHead = tbl.Columns(2).Cells(1).Range
-        duplicateHead.End = tbl.Columns(2).Cells(typeRow).Range.End
-        duplicateHead.Select
-        duplicateHead.Delete
+'        Set duplicateHead = tbl.Columns(2).Cells(1).Range
+'        duplicateHead.End = tbl.Columns(2).Cells(typeRow).Range.End
+'        duplicateHead.Select
+'        duplicateHead.Delete
     Else:
         Selection.find.Text = "Verbatim"
         Selection.find.Execute
         If Selection.find.Found = True Then
             typeRow = Selection.Information(wdStartOfRangeRowNumber)
             appendType = "verbatim"
+            
         Else:
             typeRow = 0
             appendType = ""
@@ -2111,7 +2123,7 @@ Sub AppendixFields_Full()
     
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
         PreserveFormatting:=False
-    Selection.TypeText ("IF=" & Chr(34) & Chr(34) & " " & Chr(34) & Chr(34))
+    Selection.TypeText ("IF=" & Chr(34) & " " & Chr(34) & " " & Chr(34) & Chr(34))
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
         "AA2ZZ \* ALPHABETIC", PreserveFormatting:=False
 '    Selection.Fields.ToggleShowCodes
@@ -2168,9 +2180,12 @@ Dim hasAppendix As Boolean
 Dim exportTag As String
 Dim tbl As Table
 
+Dim exportTag_col As String
+
 For Each tbl In ActiveDocument.Sections(1).Range.Tables
     hasAppendix = False
     exportTag = ""
+    exportTag_col = ""
     Selection.find.ClearFormatting
     Selection.find.Text = "See Appendix"
     tbl.Select
@@ -2185,11 +2200,11 @@ For Each tbl In ActiveDocument.Sections(1).Range.Tables
         exportTag = exportTagInfo(0)
         exportRow = exportTagInfo(1)
         
-    ElseIf hasAppendix = True And tbl.Columns.count > 1 Then
-'        Selection.Previous(wdTable, 1).Select
-        exportTagInfo = identifyExportTag(Selection.Previous(wdTable, 1))
-        exportTag = exportTagInfo(0)
-        exportRow = exportTagInfo(1)
+'    ElseIf hasAppendix = True And tbl.Columns.count > 1 Then
+''        Selection.Previous(wdTable, 1).Select
+''        exportTagInfo = identifyExportTag(Selection.Previous(wdTable, 1))
+''        exportTag = exportTagInfo(0)
+''        exportRow = exportTagInfo(1)
     End If
     
 '    Debug.Print (exportTag)
@@ -2197,24 +2212,77 @@ For Each tbl In ActiveDocument.Sections(1).Range.Tables
         
     If (Not exportTag = "") And (ActiveDocument.Bookmarks.Exists(exportTag) = True) Then
         tbl.Select
+        Selection.find.ClearFormatting
         Selection.find.Text = "Appendix"
         Selection.find.Execute
-        If Selection.find.Found = True Then
             Selection.Expand (wdCell)
-'            On Error {GoTo Next_tbl
+            Selection.TypeText ("See ")
             Selection.InsertCrossReference ReferenceType:="Bookmark", ReferenceKind:= _
                 wdContentText, ReferenceItem:=exportTag, InsertAsHyperlink:=True, _
                 IncludePosition:=False, SeparateNumbers:=False, SeparatorString:=" "
-            Selection.StartOf (wdLine)
-            Selection.TypeText ("See ")
             Selection.Expand (wdCell)
             With Selection.Font
                 .Bold = True
                 .Italic = True
                 .ColorIndex = wdAuto
             End With
-        End If
-    Else: Debug.Print ("Error with cross-reference: Export Tag = " & exportTag)
+    ElseIf Not exportTag = "" Then GoTo Next_tbl
+        
+    Else
+        Selection.find.ClearFormatting
+        Selection.find.Text = "See Appendix "
+        Selection.find.Font.Bold = False
+        Selection.find.Font.Italic = False
+        tbl.Select
+        Selection.find.Execute
+        Do While Selection.find.Found = True
+            
+            Dim appendRef_row As Integer
+            Dim appendRef_col As Integer
+            Dim appendRef_text As String
+            Dim appendRefCell As Range
+            Dim appendBookmark As String
+            
+            Selection.Font.Bold = True
+            Selection.Font.Italic = True
+            Selection.Font.ColorIndex = wdDarkRed
+            
+            appendRef_row = Selection.Information(wdStartOfRangeRowNumber)
+            appendRef_col = Selection.Information(wdStartOfRangeColumnNumber)
+            
+'            appendRefCell = tbl.Cell(appendRef_row, appendRef_col).Range
+            appendRefCell_text_full = tbl.Cell(appendRef_row, appendRef_col).Range.Text
+            seeAppend_index = InStr(appendRefCell_text_full, "See Appendix ")
+            itemText = Left(appendRefCell_text_full, seeAppend_index - 1)
+            
+            appendBookmark = Mid(appendRefCell_text_full, seeAppend_index + 13, _
+                Len(appendRefCell_text_full) - (seeAppend_index + 14))
+            Debug.Print ("Item text: " & itemText & Chr(10) & "Bookmark: " & appendBookmark)
+            
+            If ActiveDocument.Bookmarks.Exists(appendBookmark) = True Then
+            
+                Selection.Expand (wdCell)
+                
+                Selection.TypeText ("See ")
+                Selection.InsertCrossReference ReferenceType:="Bookmark", ReferenceKind:= _
+                    wdContentText, ReferenceItem:=appendBookmark, InsertAsHyperlink:=True, _
+                    IncludePosition:=False, SeparateNumbers:=False, SeparatorString:=" "
+                
+                Selection.Expand (wdCell)
+                Selection.Font.Bold = True
+                Selection.Font.Italic = True
+                Selection.Collapse (wdCollapseStart)
+                Selection.Font.Bold = False
+                Selection.Font.Italic = False
+                Selection.TypeText (itemText)
+                
+            End If
+            
+            tbl.Select
+            Selection.find.Execute
+        Loop
+
+'    Else: Debug.Print ("Error with cross-reference: Export Tag = " & exportTag)
     
     End If
     
