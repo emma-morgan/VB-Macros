@@ -29,7 +29,7 @@ End Sub
 
 Sub format_survey_preview()
 
-    Application.ScreenUpdating = False
+    Application.ScreenUpdating = True
 
     'This macro should be used BEFORE any manual updates to the survey preview
     
@@ -75,6 +75,8 @@ Sub format_survey_preview()
     Next
     
     Call number_questions_field
+    
+    Call na_table_formatting_separate
     
     End With
     
@@ -1192,13 +1194,13 @@ Sub format_matrix_table(i As Integer)
              
         Next
         
-        Selection.find.ClearFormatting
-        Selection.find.Text = "Total N"
-        .Tables(i).Select
-        Selection.find.Execute
-        If Selection.find.Found = True Then isNATable = True
-        
-        If isNATable Then Call format_NA_table(.Tables(i))
+'        Selection.find.ClearFormatting
+'        Selection.find.Text = "Total N"
+'        .Tables(i).Select
+'        Selection.find.Execute
+'        If Selection.find.Found = True Then isNATable = True
+'
+'        If isNATable Then Call format_NA_table(.Tables(i))
         
         Selection.Collapse
 
@@ -1232,6 +1234,7 @@ Sub format_NA_table(tbl As Table)
     For Each cellHeading In rowHeadings.Cells
         If InStr(1, cellHeading.Range.Text, "Total N") Then ' And cellHeading.ColumnIndex > iNAColumnIndexMin Then
             iNAColumnIndex = cellHeading.ColumnIndex
+            Debug.Print ("Column index: " & iNAColumnIndex)
             Exit For
         End If
     Next cellHeading
@@ -1241,7 +1244,9 @@ Sub format_NA_table(tbl As Table)
     NAText = Trim(Left(NAText, Len(NAText) - 2))
     Debug.Print NAText
 
-    tbl.Rows.Add BeforeRow:=tbl.Rows(1)
+    tbl.Rows(1).Select
+    Selection.InsertRowsAbove 1
+    Selection.Collapse
     tbl.Cell(1, 1).Borders(wdBorderBottom).LineStyle = wdLineStyleNone
     
 '    With tbl.Cell(Row:=1, Column:=2).Range
@@ -2278,5 +2283,45 @@ For Each tbl In ActiveDocument.Sections(1).Range.Tables
    
 Next_tbl:     Next
     
+End Sub
+
+Sub na_table_formatting_separate()
+    
+    Dim na_table As Table
+    Dim n As Integer
+    Dim i As Integer
+    Dim t As Integer
+    
+    n = ActiveDocument.Tables.count
+    i = 1
+    
+    Selection.HomeKey Unit:=wdStory
+
+    Selection.find.ClearFormatting
+    With Selection.find
+        .Text = "Total N"
+        .Font.Italic = True
+        .Font.ColorIndex = wdGray50
+        .Forward = True
+    End With
+    
+    Selection.find.Execute
+    
+    Do While Selection.find.Found = True And i <= n
+    
+        t = ActiveDocument.Range(0, Selection.Tables(1).Range.End).Tables.count
+        Debug.Print ("Table index: " & t)
+'        na_table = ActiveDocument.Tables(t)
+        
+        Call format_NA_table(ActiveDocument.Tables(t))
+        
+        ActiveDocument.Tables(t).Select
+        Selection.Collapse (wdCollapseEnd)
+        
+        i = i + 1
+        Selection.find.Execute
+    Loop
+
+
 End Sub
 
