@@ -10,6 +10,7 @@ Sub define_table_styles()
     Call define_appendix_table_style
     Call define_mc_table_style
     Call define_question_style
+    Call define_preview_text_styles
 
 
 End Sub
@@ -29,7 +30,7 @@ End Sub
 
 Sub format_survey_preview()
 
-    Application.ScreenUpdating = True
+    Application.ScreenUpdating = False
 
     'This macro should be used BEFORE any manual updates to the survey preview
     
@@ -80,13 +81,13 @@ Sub format_survey_preview()
     
     End With
     
-    Application.ScreenUpdating = True
+'    Application.ScreenUpdating = True
     
 End Sub
 
 Sub format_appendix()
 
-Application.ScreenUpdating = True
+Application.ScreenUpdating = False
 '
     Call Preview_Style_Change
 
@@ -176,8 +177,11 @@ Application.ScreenUpdating = True
             Else:
                 Selection.StartOf (wdLine)
                 Selection.MoveRight Unit:=wdWord, count:=2, Extend:=True
-                Selection.Style = "Heading 8"
+                Selection.Style = "AppendixName_style"
                 
+                'Apply a heading style for the question text that can be used in the table of contents
+                tbl.Rows(3).Range.Style = "AppendixQ_style"
+            
 '                On Error Resume Next
                 
 '                ActiveDocument.Bookmarks.Add Range:=Selection.Range, Name:=exportTag
@@ -220,7 +224,7 @@ Application.ScreenUpdating = True
         Selection.find.ClearFormatting
         With Selection.find
             .Text = "Appendix"
-            .Style = "Heading 8"
+            .Style = "AppendixName_style"
         End With
         
         tbl.Select
@@ -371,7 +375,7 @@ Sub apply_appendix_style(tbl As Table, appendixType As String, responseRow As In
     tbl.PreferredWidth = 100
     
     'Sort tables alphabetically for plain text, by N then alphabetically for coded
-'    If tbl.Rows.count > responseRow Then Call alphabetize_table(i)
+    If tbl.Rows.count > responseRow Then Call alphabetize_table(tbl, responseRow)
     
     tbl.Style = "Appendix_style_table"
     
@@ -478,18 +482,6 @@ Sub Preview_Style_Change()
         With .Styles("Heading 5").ParagraphFormat
             .SpaceAfter = 0
             .SpaceBefore = 0
-        End With
-        
-        With .Styles("Heading 8")
-            With .Font
-                .Size = 10
-                .Name = "Arial"
-                .ColorIndex = wdAuto
-                .Italic = False
-                .Bold = False
-                .Underline = False
-            End With
-            
         End With
         
         With .Styles("Compact").Font
@@ -713,10 +705,10 @@ Sub Insert_footer()
             Selection.Collapse
             With Selection
                 .Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
-                "PAGE ", PreserveFormatting:=True
+                "PAGE ", preserveFormatting:=True
                 .TypeText Text:=" of "
                 .Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
-                "NUMPAGES ", PreserveFormatting:=True
+                "NUMPAGES ", preserveFormatting:=True
             End With
             
             .Cell(1, 2).Range.ParagraphFormat.Alignment = wdAlignParagraphCenter
@@ -1539,7 +1531,7 @@ Sub define_appendix_table_style()
 
 End Sub
 
-Sub alphabetize_table(i As Integer)
+Sub alphabetize_table(tbl As Table, responseRow As Integer)
 Attribute alphabetize_table.VB_ProcData.VB_Invoke_Func = "Normal.NewMacros.alphabetize_table"
 '
 ' alphabetize_table Macro
@@ -1547,44 +1539,39 @@ Attribute alphabetize_table.VB_ProcData.VB_Invoke_Func = "Normal.NewMacros.alpha
 '
 
 'Sort verbatim text appendices alphabetically
-    With ActiveDocument
+    nrow = tbl.Rows.count
+    ncol = tbl.Columns.count
     
-        Dim ntables As Long
-        ntables = .Tables.count
-    
-            nrow = .Tables(i).Rows.count
-            ncol = .Tables(i).Columns.count
-            
-            If (nrow > 6) Then
-                With .Tables(i)
-                    Set responseRows = .Rows(7).Range
-                    If ncol = 1 Then
-                        responseRows.End = .Rows(nrow).Range.End
-                    ElseIf ncol = 2 Then
-                        responseRows.End = .Rows(nrow - 1).Range.End
-                    End If
-                End With
-                
-                responseRows.Select
-                If (ncol = 1) Then
-                    Selection.Sort ExcludeHeader:=False, _
-                        FieldNumber:="Column 1", _
-                        SortFieldType:=wdSortFieldAlphanumeric, _
-                        SortOrder:=wdSortOrderAscending, _
-                        LanguageID:=wdEnglishUS, subFieldNumber:="Paragraphs"
-                ElseIf (ncol = 2) Then
-                    Selection.Sort ExcludeHeader:=False, _
-                        FieldNumber:="Column 2", _
-                        SortFieldType:=wdSortFieldNumeric, _
-                        SortOrder:=wdSortOrderDescending, _
-                        FieldNumber2:="Column 1", _
-                        SortFieldType2:=wdSortFieldAlphanumeric, _
-                        SortOrder2:=wdSortOrderAscending, _
-                        LanguageID:=wdEnglishUS, subFieldNumber:="Paragraphs"
-                End If
-            
+    If (nrow > responseRow) Then
+        With tbl
+            Set responseRows = .Rows(responseRow + 1).Range
+            If ncol = 1 Then
+                responseRows.End = .Rows(nrow).Range.End
+            ElseIf ncol = 2 Then
+                responseRows.End = .Rows(nrow - 1).Range.End
             End If
-    End With
+        End With
+        
+        responseRows.Select
+        If (ncol = 1) Then
+            Selection.Sort ExcludeHeader:=False, _
+                FieldNumber:="Column 1", _
+                SortFieldType:=wdSortFieldAlphanumeric, _
+                SortOrder:=wdSortOrderAscending, _
+                LanguageID:=wdEnglishUS, subFieldNumber:="Paragraphs"
+        ElseIf (ncol = 2) Then
+            Selection.Sort ExcludeHeader:=False, _
+                FieldNumber:="Column 2", _
+                SortFieldType:=wdSortFieldNumeric, _
+                SortOrder:=wdSortOrderDescending, _
+                FieldNumber2:="Column 1", _
+                SortFieldType2:=wdSortFieldAlphanumeric, _
+                SortOrder2:=wdSortOrderAscending, _
+                LanguageID:=wdEnglishUS, subFieldNumber:="Paragraphs"
+        End If
+    
+    End If
+
 End Sub
 
 Sub Appendix_Merge_Header(tbl As Table, appendixType As String)
@@ -2000,7 +1987,7 @@ Sub number_questions_field()
             Selection.Collapse (wdCollapseStart)
             
             Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
-                "SEQ QNUM", PreserveFormatting:=False
+                "SEQ QNUM", preserveFormatting:=False
             Selection.Collapse (wdCollapseEnd)
             Selection.TypeText (". ")
         End If
@@ -2081,10 +2068,10 @@ Sub AppendixFields_Full()
 '    Do While i <= 50
 '
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
-    "SEQ Append1", PreserveFormatting:=False
+    "SEQ Append1", preserveFormatting:=False
     Selection.PreviousField
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
     Selection.TypeText Text:="=MOD("
     Selection.NextField
     Selection.Collapse direction:=wdCollapseEnd
@@ -2095,7 +2082,7 @@ Sub AppendixFields_Full()
     Selection.PreviousField
     
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-        PreserveFormatting:=False
+        preserveFormatting:=False
     Selection.TypeText Text:="SET A2Z"
     
     Selection.NextField
@@ -2104,10 +2091,10 @@ Sub AppendixFields_Full()
     Selection.Collapse (wdCollapseEnd)
     
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
-        "SEQ Append2", PreserveFormatting:=False
+        "SEQ Append2", preserveFormatting:=False
     Selection.PreviousField
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-    PreserveFormatting:=False
+    preserveFormatting:=False
     Selection.TypeText Text:="=INT(("
     Selection.NextField
     Selection.Collapse direction:=wdCollapseEnd
@@ -2118,7 +2105,7 @@ Sub AppendixFields_Full()
     Selection.PreviousField
 
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-        PreserveFormatting:=False
+        preserveFormatting:=False
     Selection.TypeText Text:="SET AA2ZZ"
     
     Selection.PreviousField
@@ -2127,10 +2114,10 @@ Sub AppendixFields_Full()
     Selection.Collapse (wdCollapseEnd)
     
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-        PreserveFormatting:=False
+        preserveFormatting:=False
     Selection.TypeText ("IF=" & Chr(34) & " " & Chr(34) & " " & Chr(34) & Chr(34))
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
-        "AA2ZZ \* ALPHABETIC", PreserveFormatting:=False
+        "AA2ZZ \* ALPHABETIC", preserveFormatting:=False
 '    Selection.Fields.ToggleShowCodes
     Selection.PreviousField
     Selection.NextField
@@ -2139,7 +2126,7 @@ Sub AppendixFields_Full()
 
     
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
-        "AA2ZZ \* ALPHABETIC", PreserveFormatting:=False
+        "AA2ZZ \* ALPHABETIC", preserveFormatting:=False
     
     
     Selection.PreviousField
@@ -2147,7 +2134,7 @@ Sub AppendixFields_Full()
     Selection.Collapse (wdCollapseEnd)
     
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
-        "A2Z \* ALPHABETIC", PreserveFormatting:=False
+        "A2Z \* ALPHABETIC", preserveFormatting:=False
     Selection.PreviousField
     Selection.NextField
     Selection.Collapse (wdCollapseEnd)
@@ -2155,7 +2142,7 @@ Sub AppendixFields_Full()
     Selection.MoveLeft Unit:=wdCharacter, count:=4, Extend:=wdExtend
     
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
-        PreserveFormatting:=False
+        preserveFormatting:=False
     Selection.TypeText ("QUOTE")
 '
 '    Selection.Expand (wdParagraph)
@@ -2325,3 +2312,41 @@ Sub na_table_formatting_separate()
 
 End Sub
 
+Sub define_preview_text_styles()
+
+    On Error Resume Next
+    ActiveDocument.Styles("AppendixQ_style").Delete
+    
+    ActiveDocument.Styles.Add Name:="AppendixQ_style", Type:=wdStyleTypeParagraph
+    
+    With ActiveDocument.Styles("AppendixQ_style").Font
+        .Name = "Arial"
+        .Size = 10
+        .Color = wdColorAutomatic
+    End With
+    
+    On Error Resume Next
+    ActiveDocument.Styles("AppendixName_style").Delete
+    
+    ActiveDocument.Styles.Add Name:="AppendixName_style", Type:=wdStyleTypeParagraph
+    
+    With ActiveDocument.Styles("AppendixName_style").Font
+        .Name = "Arial"
+        .Size = 10
+        .Color = wdColorAutomatic
+    End With
+    
+    
+End Sub
+
+Sub insert_appendix_TOC_at_cursor()
+
+    Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
+                "TOC \n 2-2 \t " & Chr(34) & _
+                "AppendixQ_style,2,AppendixName_style,1" & Chr(34), _
+                preserveFormatting:=False
+
+    Selection.Collapse
+ActiveDocument.Fields.Update
+
+End Sub
