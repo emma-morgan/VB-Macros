@@ -2188,6 +2188,8 @@ End Sub
 
 Sub add_appendix_ref_to_body()
 
+Application.ScreenUpdating = True
+
 'Use this after combining the documents; the appendix should be inserted
 '   as section 2 of the document
 
@@ -2197,7 +2199,7 @@ Dim tbl As Table
 
 Dim exportTag_col As String
 
-For Each tbl In ActiveDocument.Sections(1).Range.Tables
+For Each tbl In ActiveDocument.Sections(1 - 3).Range.Tables
     hasAppendix = False
     exportTag = ""
     exportTag_col = ""
@@ -2426,3 +2428,121 @@ With ActiveDocument
 End With
 
 End Sub
+
+
+Sub add_appendix_ref_to_body_multipleSection()
+
+Application.ScreenUpdating = True
+
+'Use this after combining the documents; the appendix should be inserted
+'   as the last section of the document
+
+Dim hasAppendix As Boolean
+Dim exportTag As String
+Dim tbl As Table
+Dim i As Integer
+
+Dim exportTag_col As String
+
+For i = 1 To ActiveDocument.Sections.count - 1
+    
+For Each tbl In ActiveDocument.Sections(i).Range.Tables
+    hasAppendix = False
+    exportTag = ""
+    exportTag_col = ""
+    Selection.find.ClearFormatting
+    Selection.find.Text = "See Appendix"
+    tbl.Select
+    Selection.find.Execute
+    If Selection.find.Found = True Then
+        hasAppendix = True
+    Else: GoTo Next_tbl
+    End If
+    
+    If hasAppendix = True And tbl.Columns.count = 1 Then
+        exportTagInfo = identifyExportTag(tbl)
+        exportTag = exportTagInfo(0)
+        exportRow = exportTagInfo(1)
+        
+    End If
+        
+    If (Not exportTag = "") And (ActiveDocument.Bookmarks.Exists(exportTag) = True) Then
+        tbl.Select
+        Selection.find.ClearFormatting
+        Selection.find.Text = "Appendix"
+        Selection.find.Execute
+            Selection.Expand (wdCell)
+            Selection.TypeText ("See ")
+            Selection.InsertCrossReference ReferenceType:="Bookmark", ReferenceKind:= _
+                wdContentText, ReferenceItem:=exportTag, InsertAsHyperlink:=True, _
+                IncludePosition:=False, SeparateNumbers:=False, SeparatorString:=" "
+            Selection.Expand (wdCell)
+            With Selection.Font
+                .Bold = True
+                .Italic = True
+                .ColorIndex = wdAuto
+            End With
+    ElseIf Not exportTag = "" Then GoTo Next_tbl
+        
+    Else
+        Selection.find.ClearFormatting
+        Selection.find.Text = "See Appendix "
+        Selection.find.Font.Bold = False
+        Selection.find.Font.Italic = False
+        tbl.Select
+        Selection.find.Execute
+        Do While Selection.find.Found = True
+            
+            Dim appendRef_row As Integer
+            Dim appendRef_col As Integer
+            Dim appendRef_text As String
+            Dim appendRefCell As Range
+            Dim appendBookmark As String
+            
+            Selection.Font.Bold = True
+            Selection.Font.ColorIndex = wdDarkRed
+            
+            appendRef_row = Selection.Information(wdStartOfRangeRowNumber)
+            appendRef_col = Selection.Information(wdStartOfRangeColumnNumber)
+            
+            appendRefCell_text_full = tbl.Cell(appendRef_row, appendRef_col).Range.Text
+            seeAppend_index = InStr(appendRefCell_text_full, "See Appendix ")
+            itemText = Left(appendRefCell_text_full, seeAppend_index - 1)
+            
+            appendBookmark = Mid(appendRefCell_text_full, seeAppend_index + 13, _
+                Len(appendRefCell_text_full) - (seeAppend_index + 14))
+            Debug.Print ("Item text: " & itemText & Chr(10) & "Bookmark: " & appendBookmark)
+            
+            If ActiveDocument.Bookmarks.Exists(appendBookmark) = True Then
+            
+                Selection.Expand (wdCell)
+                
+                Selection.TypeText ("See ")
+                Selection.InsertCrossReference ReferenceType:="Bookmark", ReferenceKind:= _
+                    wdContentText, ReferenceItem:=appendBookmark, InsertAsHyperlink:=True, _
+                    IncludePosition:=False, SeparateNumbers:=False, SeparatorString:=" "
+                
+                Selection.Expand (wdCell)
+                Selection.Font.Bold = True
+                Selection.Font.Italic = True
+                Selection.Collapse (wdCollapseStart)
+                Selection.Font.Bold = False
+                Selection.Font.Italic = False
+                Selection.TypeText (itemText)
+                
+            End If
+            
+            tbl.Select
+            Selection.find.Execute
+        Loop
+
+    End If
+    
+    Selection.Collapse
+   
+Next_tbl:     Next tbl
+
+Next i
+    
+End Sub
+
