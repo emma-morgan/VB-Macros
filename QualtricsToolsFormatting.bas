@@ -2365,11 +2365,64 @@ End Sub
 Sub insert_appendix_TOC_at_cursor()
 
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
-                "TOC \n 2-2 \t " & Chr(34) & _
-                "AppendixQ_style,2,AppendixName_style,1" & Chr(34), _
+                "TOC \n 4-4 \t " & Chr(34) & _
+                "AppendixQ_style,4,AppendixName_style,3" & Chr(34), _
                 preserveFormatting:=False
 
     Selection.Collapse
 ActiveDocument.Fields.Update
+
+End Sub
+
+Sub insert_blocks_TOC_at_cursor()
+
+    Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
+                "TOC \t " & Chr(34) & _
+                "Heading 5,1" & Chr(34), _
+                preserveFormatting:=False
+
+    Selection.Collapse
+ActiveDocument.Fields.Update
+
+End Sub
+
+Sub format_TOC_styles()
+
+With ActiveDocument
+    
+    'First level regular TOC
+    
+    With .Styles("TOC 1")
+        .Font.Name = Arial
+        .Font.Bold = True
+        .Font.Italic = False
+        .ParagraphFormat.leftindent = 0
+    End With
+    
+    'Second level regular TOC
+    With .Styles("TOC 2")
+        .Font.Name = Arial
+        .Font.Bold = False
+        .Font.Italic = True
+        .ParagraphFormat.leftindent = InchesToPoints(0.15)
+    End With
+    
+    'First level appendices
+    
+    With .Styles("TOC 3")
+        .Font.Name = Arial
+        .Font.Bold = True
+        .Font.Italic = False
+        .ParagraphFormat.leftindent = 0
+    End With
+    
+    'Second level regular TOC
+    With .Styles("TOC 4")
+        .Font.Name = Arial
+        .Font.Bold = False
+        .Font.Italic = True
+        .ParagraphFormat.leftindent = InchesToPoints(0.15)
+    End With
+End With
 
 End Sub
