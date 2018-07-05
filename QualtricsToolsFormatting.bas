@@ -2234,21 +2234,44 @@ Sub define_preview_text_styles()
     
     ActiveDocument.Styles.Add Name:="AppendixQ_style", Type:=wdStyleTypeParagraph
     
-    With ActiveDocument.Styles("AppendixQ_style").Font
-        .Name = "Arial"
-        .Size = 10
-        .Color = wdColorAutomatic
+    With ActiveDocument.Styles("AppendixQ_style")
+    
+        With .Font
+            .Name = "Arial"
+            .Size = 10
+            .Color = wdColorAutomatic
+        End With
+        
+        With .ParagraphFormat
+            .SpaceAfterAuto = False
+            .SpaceAfter = 5
+            .SpaceBeforeAuto = False
+            .SpaceBefore = 5
+        End With
+        
     End With
+    
+    
     
     On Error Resume Next
     ActiveDocument.Styles("AppendixName_style").Delete
     
     ActiveDocument.Styles.Add Name:="AppendixName_style", Type:=wdStyleTypeParagraph
     
-    With ActiveDocument.Styles("AppendixName_style").Font
-        .Name = "Arial"
-        .Size = 10
-        .Color = wdColorAutomatic
+    With ActiveDocument.Styles("AppendixName_style")
+        With .Font
+            .Name = "Arial"
+            .Size = 10
+            .Color = wdColorAutomatic
+        End With
+        
+        With .ParagraphFormat
+            .SpaceAfterAuto = False
+            .SpaceAfter = 5
+            .SpaceBeforeAuto = False
+            .SpaceBefore = 5
+        End With
+        
     End With
     
     
