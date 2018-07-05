@@ -2395,6 +2395,21 @@ For Each tbl In ActiveDocument.Sections(i).Range.Tables
                 .Italic = True
                 .ColorIndex = wdAuto
             End With
+            
+        'This has been added to fix issue with appendix cross ref formatting disappearing
+            'after fields are updated. Thanks to Rebecca Hatch for initially finding the solution
+            'in her work with grad exit
+            'Macro taken from this online posting:
+                'http://www.msofficeforums.com/word-vba/34181-vba-code-search-field-codes-certain-text.html
+            
+        For Each Fld In tbl.Range.Fields
+            Set Rng = Fld.Code.Words.First.Previous.Previous
+          Rng.MoveStart wdWord, -1
+          If Rng.Text = "See" Then
+            Fld.Code.Text = Fld.Code.Text & "\* Charformat "
+          End If
+        Next
+            
     ElseIf Not exportTag = "" Then GoTo Next_tbl
         
     Else
@@ -2458,4 +2473,3 @@ Next_tbl:     Next tbl
 Next i
     
 End Sub
-
