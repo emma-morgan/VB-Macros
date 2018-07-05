@@ -437,20 +437,20 @@ Sub apply_appendix_style(tbl As Table, appendixType As String, responseRow As In
     
     End If
     
-    For j = 1 To responseRow
-        If j = typeRow Then
-           tbl.Rows(j).Range.Font.Italic = True
-        ElseIf j < responseRow Then
-            tbl.Rows(j).Range.Font.Bold = True
-        ElseIf j = responseRow Then
-            tbl.Rows(j).Range.Font.Bold = True
+    For J = 1 To responseRow
+        If J = typeRow Then
+           tbl.Rows(J).Range.Font.Italic = True
+        ElseIf J < responseRow Then
+            tbl.Rows(J).Range.Font.Bold = True
+        ElseIf J = responseRow Then
+            tbl.Rows(J).Range.Font.Bold = True
        End If
     '
-        If j = responseRow And isCodedComment = True Then
-           tbl.Rows(j).Cells(2).Range.ParagraphFormat.Alignment = wdAlignParagraphCenter
+        If J = responseRow And isCodedComment = True Then
+           tbl.Rows(J).Cells(2).Range.ParagraphFormat.Alignment = wdAlignParagraphCenter
        End If
 
-    Next j
+    Next J
 
 End Sub
 
@@ -641,7 +641,7 @@ Sub Insert_logo()
         Selection.HomeKey Unit:=wdStory
         'Pick an image via its path and insert it
         Selection.InlineShapes.AddPicture FileName:= _
-        "Q:\Student Work\Emma's Student Work\Report Generation\Report Macros_Adam\tufts_logo_black.png" _
+        "Q:\Student Work\QualtricsTools\tufts_logo_black.png" _
         , LinkToFile:=False, SaveWithDocument:=True
         'Select the image
         ActiveDocument.InlineShapes(1).Select
@@ -1192,9 +1192,9 @@ Sub format_matrix_table(i As Integer)
         Dim nColumns As Long
         nColumns = .Tables(i).Columns.count
 
-        For j = 2 To nColumns
+        For J = 2 To nColumns
     
-            .Tables(i).Columns(j).Select
+            .Tables(i).Columns(J).Select
             
             Selection.find.ClearFormatting
             
@@ -1205,9 +1205,9 @@ Sub format_matrix_table(i As Integer)
             Selection.find.Execute
             
             If Selection.find.Found = True Then
-                .Tables(i).Columns(j).PreferredWidth = InchesToPoints(0.47)
+                .Tables(i).Columns(J).PreferredWidth = InchesToPoints(0.47)
                                  
-                .Tables(i).Columns(j).Select
+                .Tables(i).Columns(J).Select
                 With Selection
                      .Font.Italic = True
                      .Font.ColorIndex = wdGray50
@@ -1247,7 +1247,7 @@ Sub format_NA_table(tbl As Table)
 'Adapted from Rebecca's macro
 'Adjusted by Emma to be called in sequence with the macros rather than separate
 
-    Dim rowHeadings As Row
+    Dim rowHeadings As row
     Dim cellHeading As Cell
     Dim iHeadingsRowIndex As Integer
     Dim iNAColumnIndex As Integer
@@ -1304,17 +1304,17 @@ Sub format_NA_table(tbl As Table)
     tbl.Rows(2).Range.Borders(wdBorderBottom).LineWidth = wdLineWidth050pt
                 
     If iNAColumnIndex >= 4 Then
-        tbl.Cell(Row:=1, Column:=2).Merge MergeTo:=tbl.Cell(Row:=1, Column:=iNAColumnIndex - 1)
+        tbl.Cell(row:=1, Column:=2).Merge MergeTo:=tbl.Cell(row:=1, Column:=iNAColumnIndex - 1)
     End If
     iLast = tbl.Rows(1).Cells.count
-    tbl.Cell(Row:=1, Column:=3).Merge MergeTo:=tbl.Cell(Row:=1, Column:=iLast)
+    tbl.Cell(row:=1, Column:=3).Merge MergeTo:=tbl.Cell(row:=1, Column:=iLast)
     
-    With tbl.Cell(Row:=1, Column:=2).Range
+    With tbl.Cell(row:=1, Column:=2).Range
         .Text = "Of those NOT selecting " & Chr(34) & NAText & Chr(34)
         .Font.Bold = True
     End With
 
-    With tbl.Cell(Row:=1, Column:=3).Range
+    With tbl.Cell(row:=1, Column:=3).Range
         .Text = "Of all respondents"
         .Font.Bold = True
     End With
