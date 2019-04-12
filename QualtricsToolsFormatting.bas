@@ -11,7 +11,7 @@ Sub define_table_styles()
     Call define_mc_table_style
     Call define_question_style
     Call define_preview_text_styles
-
+    Call define_infoTable_style
 
 End Sub
 
@@ -20,8 +20,7 @@ Sub insert_header_footer()
 
 With ActiveDocument
 
-    Call Insert_OIRE
-    Call Insert_logo
+    Call Insert_header
     Call Insert_footer
     
 End With
@@ -52,11 +51,11 @@ Sub format_survey_preview()
     
     With ActiveDocument
 
-    ntables = .Tables.count
+    ntables = .Tables.Count
     
     For i = 1 To ntables
-        ncol = .Tables(i).Columns.count
-        nrow = .Tables(i).Rows.count
+        ncol = .Tables(i).Columns.Count
+        nrow = .Tables(i).Rows.Count
 '        Debug.Print ncol
 
 '        .Tables(i).AllowPageBreaks = False
@@ -78,6 +77,8 @@ Sub format_survey_preview()
     Call number_questions_field
     
     Call na_table_formatting_separate
+    
+    Call insert_background_table_placeholder
     
     End With
     
@@ -139,7 +140,7 @@ Application.ScreenUpdating = False
 
     Selection.Collapse (wdCollapseStart)
     
-    Selection.MoveRight Unit:=wdCharacter, count:=1, Extend:=wdExtend
+    Selection.MoveRight Unit:=wdCharacter, Count:=1, Extend:=wdExtend
     Selection.Copy
     Selection.Delete
     
@@ -198,16 +199,16 @@ Application.ScreenUpdating = False
             If exportTag = priorExportTag Then
                 Selection.Expand (wdCell)
                 ActiveDocument.ActiveWindow.View.ShowFieldCodes = True
-                Selection.find.Text = "SEQ Append1"
-                Selection.find.Replacement.Text = "SEQ Append1 \c"
-                Selection.find.Execute Replace:=wdReplaceAll
-                Selection.find.Text = "SEQ Append2"
-                Selection.find.Replacement.Text = "SEQ Append2 \c"
-                Selection.find.Execute Replace:=wdReplaceAll
+                Selection.Find.Text = "SEQ Append1"
+                Selection.Find.Replacement.Text = "SEQ Append1 \c"
+                Selection.Find.Execute Replace:=wdReplaceAll
+                Selection.Find.Text = "SEQ Append2"
+                Selection.Find.Replacement.Text = "SEQ Append2 \c"
+                Selection.Find.Execute Replace:=wdReplaceAll
                 ActiveDocument.ActiveWindow.View.ShowFieldCodes = False
             Else:
                 Selection.StartOf (wdLine)
-                Selection.MoveRight Unit:=wdWord, count:=2, Extend:=True
+                Selection.MoveRight Unit:=wdWord, Count:=2, Extend:=True
                 Selection.Style = "AppendixName_style"
                 
                 'Apply a heading style for the question text that can be used in the table of contents
@@ -231,9 +232,9 @@ Application.ScreenUpdating = False
             'Tables with multiple columns (coded comments or text entry with multiple components)
                 'will appear with header info repeated in each column. Before merging, remove
                 'the extraneous info so it won't appear in the final tables
-            If tbl.Columns.count > 1 Then
+            If tbl.Columns.Count > 1 Then
                 Set duplicateHead = tbl.Columns(2).Cells(1).Range
-                duplicateHead.End = tbl.Columns(tbl.Columns.count).Cells(typeRow).Range.End
+                duplicateHead.End = tbl.Columns(tbl.Columns.Count).Cells(typeRow).Range.End
                 duplicateHead.Select
                 duplicateHead.Delete
             End If
@@ -261,17 +262,17 @@ Application.ScreenUpdating = False
         
         'Use AppendixName_style (previously applied) to create bookmarks for appendices
             'with a "new" export tag
-        Selection.find.ClearFormatting
-        With Selection.find
+        Selection.Find.ClearFormatting
+        With Selection.Find
             .Text = "Appendix"
             .Style = "AppendixName_style"
         End With
         
         tbl.Select
-        Selection.find.Execute
-        If Selection.find.Found = True Then
+        Selection.Find.Execute
+        If Selection.Find.Found = True Then
             Selection.StartOf (wdLine)
-            Selection.MoveRight Unit:=wdWord, count:=2, Extend:=wdExtend
+            Selection.MoveRight Unit:=wdWord, Count:=2, Extend:=wdExtend
             ActiveDocument.Bookmarks.Add Range:=Selection.Range, Name:=exportTag
         End If
         
@@ -287,19 +288,19 @@ End Sub
 
 Function identifyExportTag(tbl As Table) As Variant
 
-    Selection.find.ClearFormatting
+    Selection.Find.ClearFormatting
     Dim exportTag As String
     Dim rowNum As Integer
         
-    With Selection.find
+    With Selection.Find
         .Text = "Export Tag: "
         .MatchCase = True
     End With
     
     tbl.Select
-    Selection.find.Execute
+    Selection.Find.Execute
     
-    If Selection.find.Found = True Then
+    If Selection.Find.Found = True Then
         rowNum = Selection.Information(wdStartOfRangeRowNumber)
         Selection.Collapse (wdCollapseEnd)
         Selection.Expand (wdCell)
@@ -312,7 +313,7 @@ Function identifyExportTag(tbl As Table) As Variant
     
     hashtag_pos = InStr(1, exportTag, Chr(35))
     If hashtag_pos > 1 Then
-        exportTag = Replace(Expression:=exportTag, find:=Chr(35), Replace:=Chr(95))
+        exportTag = Replace(Expression:=exportTag, Find:=Chr(35), Replace:=Chr(95))
     End If
         
     
@@ -327,16 +328,16 @@ Function identifyAppendType(tbl As Table)
 'Identify whether this is a coded or verbatim comment table
 'Delete extra header rows if this is relevent
 
-    Selection.find.ClearFormatting
+    Selection.Find.ClearFormatting
     Dim appendType As String
     Dim typeRow As Integer
         
-    Selection.find.Text = "Coded Comments"
+    Selection.Find.Text = "Coded Comments"
     
     tbl.Select
-    Selection.find.Execute
+    Selection.Find.Execute
     
-    If Selection.find.Found = True Then
+    If Selection.Find.Found = True Then
         typeRow = Selection.Information(wdStartOfRangeRowNumber)
         appendType = "coded"
 '        Set duplicateHead = tbl.Columns(2).Cells(1).Range
@@ -344,9 +345,9 @@ Function identifyAppendType(tbl As Table)
 '        duplicateHead.Select
 '        duplicateHead.Delete
     Else:
-        Selection.find.Text = "Verbatim"
-        Selection.find.Execute
-        If Selection.find.Found = True Then
+        Selection.Find.Text = "Verbatim"
+        Selection.Find.Execute
+        If Selection.Find.Found = True Then
             typeRow = Selection.Information(wdStartOfRangeRowNumber)
             appendType = "verbatim"
             
@@ -367,19 +368,19 @@ Function identifyResponseRow(tbl As Table)
     Dim responseRow As Integer
     Dim noRespondents As Boolean
     
-    Selection.find.ClearFormatting
-    Selection.find.Text = "Responses"
-    Selection.find.MatchCase = True
+    Selection.Find.ClearFormatting
+    Selection.Find.Text = "Responses"
+    Selection.Find.MatchCase = True
     tbl.Select
-    Selection.find.Execute
-    If Selection.find.Found = True Then
+    Selection.Find.Execute
+    If Selection.Find.Found = True Then
         responseRow = Selection.Information(wdStartOfRangeRowNumber)
         noRespondents = False
     Else
-        Selection.find.Text = "No respondents answered this question"
+        Selection.Find.Text = "No respondents answered this question"
         tbl.Select
-        Selection.find.Execute
-        If Selection.find.Found = True Then
+        Selection.Find.Execute
+        If Selection.Find.Found = True Then
             responseRow = Selection.Information(wdStartOfRangeRowNumber)
             noRespondents = True
         Else
@@ -396,11 +397,11 @@ End Function
 
 Function identifyAppendixRow(tbl As Table) As Integer
 
-    Selection.find.ClearFormatting
-    Selection.find.Text = "Appendix"
+    Selection.Find.ClearFormatting
+    Selection.Find.Text = "Appendix"
     tbl.Select
-    Selection.find.Execute
-    If Selection.find.Found = True Then
+    Selection.Find.Execute
+    If Selection.Find.Found = True Then
         identifyAppendixRow = Selection.Information(wdStartOfRangeRowNumber)
     Else: indentifyAppendixRow = 0
     
@@ -415,7 +416,7 @@ Sub apply_appendix_style(tbl As Table, appendixType As String, responseRow As In
     tbl.PreferredWidth = 100
     
     'Sort tables alphabetically for plain text, by N then alphabetically for coded
-    If tbl.Rows.count > responseRow Then Call alphabetize_table(tbl, responseRow)
+    If tbl.Rows.Count > responseRow Then Call alphabetize_table(tbl, responseRow)
     
     tbl.Style = "Appendix_style_table"
     
@@ -558,10 +559,10 @@ Sub number_of_respondents()
     'This currently will format only overall reports
     'We will need to add an addition search for "Size of respondent group"
         'if we would like to add formatting for split reports
-
+    
     With ActiveDocument
     
-        With Selection.find
+        With Selection.Find
             .Text = "Number of Respondents: "
             .Forward = True
             .Wrap = wdFindContinue
@@ -569,33 +570,200 @@ Sub number_of_respondents()
             .MatchCase = True
         End With
         
-        Selection.find.Execute
+        Selection.Find.Execute
         
-        If Selection.find.Found = True Then
-            Selection.Expand wdParagraph
-            Selection.Font.Size = 10
-            Selection.ParagraphFormat.Alignment = wdAlignParagraphCenter
-            Selection.Collapse
+        If Selection.Find.Found = True Then
+            Selection.Expand wdLine
+            
         Else
-            Selection.find.Text = "Size of Respondent Group: "
-            Selection.find.Execute
-            If Selection.find.Found = True Then
+            Selection.Find.Text = "Size of Respondent Group: "
+            Selection.Find.Execute
+            If Selection.Find.Found = True Then
                 Selection.Expand wdLine
-                Selection.Font.Size = 10
-                Selection.ParagraphFormat.Alignment = wdAlignParagraphCenter
-                Selection.Collapse
+                
             End If
             
         End If
         
-        
+        Selection.Font.Size = 10
+        With Selection.ParagraphFormat
+            .Alignment = wdAlignParagraphCenter
+            .Borders(wdBorderLeft).LineStyle = wdLineStyleNone
+            .Borders(wdBorderRight).LineStyle = wdLineStyleNone
+            .Borders(wdBorderTop).LineStyle = wdLineStyleNone
+            With .Borders(wdBorderBottom)
+                .LineStyle = wdLineStyleDouble
+                .LineWidth = wdLineWidth050pt
+                .Color = wdColorAutomatic
+            End With
+            
+            .Borders.DistanceFromBottom = 6
+            .Borders.Shadow = False
+        End With
+
+        Selection.Collapse (wdCollapseEnd)
+        Selection.Move Unit:=wdCharacter, Count:=-1
+        Selection.TypeText (", Response Rate: XX.X%*,**")
         
     End With
 
 End Sub
 
+Sub insert_background_table_placeholder()
 
-Sub Insert_OIRE()
+    Dim response_completeness As Table
+    Dim demographics_table As Table
+    Dim example_tables As String
+    
+
+'Insert placeholder tables for response completeness and demographics
+ With ActiveDocument
+ 
+        With Selection.Find
+            .Text = "Number of Respondents: "
+            .Forward = True
+            .Wrap = wdFindContinue
+            .format = False
+            .MatchCase = True
+        End With
+        
+        Selection.Find.Execute
+        
+        If Selection.Find.Found = True Then
+            Selection.Expand wdParagraph
+            Selection.Collapse (wdCollapseEnd)
+        
+         Else
+            Selection.Find.Text = "Size of Respondent Group: "
+            Selection.Find.Execute
+            If Selection.Find.Found = True Then
+                Selection.Expand wdLine
+                Selection.Collapse (wdCollapseEnd)
+            End If
+        
+        End If
+        
+    Selection.TypeParagraph
+    Selection.ParagraphFormat.SpaceAfter = 0
+    Selection.ParagraphFormat.SpaceBefore = 0
+    
+    .Hyperlinks.Add Anchor:=Selection.Range, Address:= _
+        "Q:\Staff\0 Documentation Collection\QualtricsTools & Survey Reports\Demographics and Response Completeness Tables_Example.docx" _
+        , SubAddress:="", ScreenTip:="", TextToDisplay:= _
+        "See Example: Demographics and Response Completeness Tables"
+    
+    Set response_completeness = .Tables.Add(Selection.Range, 5, 1, _
+        AutoFitBehavior:=wdAutoFitContents)
+    response_completeness.Select
+    Selection.Collapse (wdCollapseEnd)
+    Selection.TypeParagraph
+    Selection.Collapse (wdCollapseEnd)
+    Set demographics_table = .Tables.Add(Selection.Range, 4, 3, _
+        AutoFitBehavior:=wdAutoFitContents)
+        
+    demographics_table.Style = "infoTable_style"
+    response_completeness.Style = "infoTable_style"
+    
+    demographics_table.ApplyStyleHeadingRows = True
+    response_completeness.ApplyStyleHeadingRows = True
+        
+    With response_completeness.Cell(1, 1).Range
+        .Text = "Response Completeness: FILL IN TABLE"
+        .Font.Bold = True
+        .Font.ColorIndex = wdAuto
+    End With
+    
+    With demographics_table.Cell(1, 1).Range
+        .Text = "Respondent Demographics: FILL IN TABLE"
+        .Font.Bold = True
+        .Font.ColorIndex = wdAuto
+    End With
+    
+    Set demographics_mrg = demographics_table.Cell(1, 1).Range
+        demographics_mrg.End = demographics_table.Cell(1, 3).Range.End
+        demographics_mrg.Cells.Merge
+    
+    demographics_table.Range.ParagraphFormat.SpaceAfter = 0
+    demographics_table.Range.ParagraphFormat.SpaceBefore = 0
+    
+    response_completeness.Range.ParagraphFormat.SpaceAfter = 0
+    response_completeness.Range.ParagraphFormat.SpaceBefore = 0
+    
+    .Hyperlinks(1).Range.Bold = True
+    .Hyperlinks(1).Range.Italic = True
+    .Hyperlinks(1).Range.Underline = True
+        
+        
+End With
+
+
+End Sub
+
+
+Sub Insert_header()
+
+    Dim headerTable As Table
+
+'Added January 2019 to change name to OIR and adjust spacing
+With ActiveDocument
+
+   
+    'Move to the top of the document. Insert a new line, then return to the start and insert table.
+    Selection.HomeKey Unit:=wdStory
+    Selection.TypeParagraph
+    Selection.HomeKey Unit:=wdStory
+    
+    .Tables.Add Range:=Selection.Range, NumRows:=1, NumColumns:= _
+        2, AutoFitBehavior:=wdAutoFitWindow
+    
+    Set headerTable = .Tables(1)
+        
+    With headerTable
+        .LeftPadding = 0
+        .RightPadding = 0
+        .TopPadding = 0
+        .BottomPadding = 0
+        .AutoFitBehavior (wdAutoFitContent)
+    End With
+    
+    With headerTable.Cell(1, 2).Range
+        .Text = "Office of Institutional Research"
+        .Font.Size = 18
+        .Font.Bold = True
+        .ParagraphFormat.Alignment = wdAlignParagraphRight
+        .Cells.VerticalAlignment = wdCellAlignVerticalBottom
+    End With
+    
+    
+    'Insert logo from its saved place on the Q drive
+    headerTable.Cell(1, 1).Range.InlineShapes.AddPicture FileName:= _
+        "Q:\Student Work\QualtricsTools\tufts_logo_black.png" _
+        , LinkToFile:=False, SaveWithDocument:=True
+    
+    .InlineShapes(1).ConvertToShape
+    .Tables(1).Cell(1, 1).Range.ParagraphFormat.Alignment = wdAlignParagraphLeft
+    
+    With .Shapes(1)
+        .WrapFormat.Type = wdWrapInline
+        .LockAspectRatio = msoTrue
+        .Height = 35
+
+    End With
+
+   
+    headerTable.AutoFitBehavior (wdAutoFitContent)
+    headerTable.AutoFitBehavior (wdAutoFitWindow)
+    
+    headerTable.Columns.PreferredWidthType = wdPreferredWidthAuto
+    headerTable.Columns.PreferredWidth = 0
+    
+End With
+    
+End Sub
+    
+
+
+Sub OLD_Insert_OIRE()
 
 ' Moves to the upper right hand corner and inserts, then formats, text
 ' This is inserted with its own formatting and can be used with any document;
@@ -630,7 +798,7 @@ End With
 End Sub
 
 
-Sub Insert_logo()
+Sub OLD_Insert_logo()
 '
 ' Inserts the Tufts logo in the upper left hand corner
 ' Created by Adam Kaminski, summer 2016
@@ -719,7 +887,7 @@ Sub Insert_footer()
         Debug.Print ("analystName: " & analystName)
         Debug.Print ("dateText: " & dateText)
         
-        oireFooter = "Office of Institutional Research & Evaluation" + _
+        oireFooter = "Office of Institutional Research" + _
             Chr(10) + reportName + Chr(10) + specialPopulation
         analystFooter = "Prepared by: " & analystName + Chr(10) + _
             dateText
@@ -808,7 +976,7 @@ Sub Insert_footer()
         .Cell(1, 3).PreferredWidthType = wdPreferredWidthPercent
         .Cell(1, 3).PreferredWidth = 44
         
-        .Rows.leftindent = InchesToPoints(0)
+        .Rows.LeftIndent = InchesToPoints(0)
     End With
 
     
@@ -850,7 +1018,7 @@ Sub define_mc_table_style()
     With ActiveDocument.Styles("mc_table_style")
     
         With .ParagraphFormat
-            .leftindent = InchesToPoints(0.08)
+            .LeftIndent = InchesToPoints(0.08)
             .RightIndent = InchesToPoints(0.08)
             .Alignment = wdAlignParagraphRight
             .SpaceAfter = 0
@@ -971,6 +1139,78 @@ Sub define_question_style()
     
 End Sub
 
+Sub define_infoTable_style()
+
+    On Error Resume Next
+    ActiveDocument.Styles("infoTable_style").Delete
+    
+    ActiveDocument.Styles.Add Name:="infoTable_style", Type:=wdStyleTypeTable
+    
+    With ActiveDocument.Styles("infoTable_style")
+        With .Table
+
+            .AllowBreakAcrossPage = False
+            .TopPadding = InchesToPoints(0)
+            .BottomPadding = InchesToPoints(0)
+            .LeftPadding = InchesToPoints(0)
+            .RightPadding = InchesToPoints(0)
+            
+                    With .Borders(wdBorderLeft)
+            .LineStyle = wdLineStyleSingle
+            .LineWidth = wdLineWidth150pt
+            .Color = wdColorAutomatic
+        End With
+        
+        With .Borders(wdBorderRight)
+            .LineStyle = wdLineStyleSingle
+            .LineWidth = wdLineWidth150pt
+            .Color = wdColorAutomatic
+        End With
+        
+        With .Borders(wdBorderTop)
+            .LineStyle = wdLineStyleSingle
+            .LineWidth = wdLineWidth150pt
+            .Color = wdColorAutomatic
+        End With
+        
+        With .Borders(wdBorderBottom)
+            .LineStyle = wdLineStyleSingle
+            .LineWidth = wdLineWidth150pt
+            .Color = wdColorAutomatic
+        End With
+        
+        With .Shading
+            .Texture = wdTextureNone
+            .ForegroundPatternColor = wdColorAutomatic
+            .BackgroundPatternColor = wdColorGray10
+        End With
+   
+        End With
+        
+        
+        
+        With .ParagraphFormat
+            .KeepWithNext = True
+            .LineSpacingRule = wdLineSpaceSingle
+            .SpaceAfter = 0
+            .SpaceBefore = 0
+            .Alignment = wdAlignParagraphLeft
+            .LeftIndent = InchesToPoints(0.08)
+            .RightIndent = InchesToPoints(0.08)
+        End With
+        
+        .Font.Name = "Arial"
+        .Font.Size = 10
+        .Font.ColorIndex = wdAuto
+        .Font.Bold = False
+        
+        .Table.Condition(wdFirstRow).Font.Bold = True
+        
+    End With
+        
+    
+End Sub
+
 Sub format_question_style(i As Integer)
 
 'Format question text and information
@@ -978,7 +1218,7 @@ Sub format_question_style(i As Integer)
     Dim nrow As Integer
         
     With ActiveDocument
-        nrow = .Tables(i).Rows.count
+        nrow = .Tables(i).Rows.Count
 
         .Tables(i).Style = "question_style"
         
@@ -987,7 +1227,7 @@ Sub format_question_style(i As Integer)
         .Tables(i).PreferredWidthType = wdPreferredWidthPercent
         .Tables(i).PreferredWidth = 100
         
-        If .Tables(i).Rows.count > 1 Then
+        If .Tables(i).Rows.Count > 1 Then
         
         'Bold question text
         .Tables(i).Rows(2).Select
@@ -1057,7 +1297,7 @@ Sub Define_Matrix_Style()
             With .Condition(wdFirstColumn)
                 .Font.Bold = False
                 .ParagraphFormat.Alignment = wdAlignParagraphLeft
-                .ParagraphFormat.leftindent = InchesToPoints(0.08)
+                .ParagraphFormat.LeftIndent = InchesToPoints(0.08)
                 .ParagraphFormat.RightIndent = InchesToPoints(0.08)
 
             End With
@@ -1161,7 +1401,7 @@ Sub format_matrix_table(i As Integer)
     
     'For reproducability - if we have already formatted the NA style type, delete the first row and start again
     
-    If .Tables(i).Rows(1).Cells.count <> .Tables(i).Rows(.Tables(i).Rows.count).Cells.count _
+    If .Tables(i).Rows(1).Cells.Count <> .Tables(i).Rows(.Tables(i).Rows.Count).Cells.Count _
         And InStr(1, .Tables(i).Cell(1, 2).Range.Text, "Of those NOT selecting") Then
         .Tables(i).Rows(1).Delete
     End If
@@ -1174,7 +1414,7 @@ Sub format_matrix_table(i As Integer)
         
         .Tables(i).Select
         Selection.Cells.VerticalAlignment = wdCellAlignVerticalCenter
-        Selection.ParagraphFormat.leftindent = InchesToPoints(0.08)
+        Selection.ParagraphFormat.LeftIndent = InchesToPoints(0.08)
         Selection.ParagraphFormat.RightIndent = InchesToPoints(0.08)
         
         Selection.Collapse
@@ -1190,21 +1430,21 @@ Sub format_matrix_table(i As Integer)
         'Format N columns
 
         Dim nColumns As Long
-        nColumns = .Tables(i).Columns.count
+        nColumns = .Tables(i).Columns.Count
 
         For J = 2 To nColumns
     
             .Tables(i).Columns(J).Select
             
-            Selection.find.ClearFormatting
+            Selection.Find.ClearFormatting
             
-            With Selection.find
+            With Selection.Find
                 .Text = "N"
                 .MatchWholeWord = True
             End With
-            Selection.find.Execute
+            Selection.Find.Execute
             
-            If Selection.find.Found = True Then
+            If Selection.Find.Found = True Then
                 .Tables(i).Columns(J).PreferredWidth = InchesToPoints(0.47)
                                  
                 .Tables(i).Columns(J).Select
@@ -1213,12 +1453,12 @@ Sub format_matrix_table(i As Integer)
                      .Font.ColorIndex = wdGray50
                  End With
                  
-                 With Selection.find
+                 With Selection.Find
                     .Text = "total_N"
                     .Replacement.Text = "Total N"
                 End With
 
-                Selection.find.Execute Replace:=wdReplaceOne
+                Selection.Find.Execute Replace:=wdReplaceOne
                                 
                 Selection.Collapse
       
@@ -1272,7 +1512,7 @@ Sub format_NA_table(tbl As Table)
     Next cellHeading
     
 
-    NAText = tbl.Cell(1, tbl.Columns.count).Range.Text
+    NAText = tbl.Cell(1, tbl.Columns.Count).Range.Text
     NAText = Trim(Left(NAText, Len(NAText) - 2))
     Debug.Print NAText
 
@@ -1293,7 +1533,7 @@ Sub format_NA_table(tbl As Table)
     
     Set validRange = tbl.Cell(1, 2).Range
     validRange.SetRange Start:=validRange.Start, _
-    End:=tbl.Cell(tbl.Rows.count, iNAColumnIndex - 1).Range.End
+    End:=tbl.Cell(tbl.Rows.Count, iNAColumnIndex - 1).Range.End
 
     validRange.Borders(wdBorderBottom).LineWidth = wdLineWidth150pt
     validRange.Borders(wdBorderTop).LineWidth = wdLineWidth150pt
@@ -1306,7 +1546,7 @@ Sub format_NA_table(tbl As Table)
     If iNAColumnIndex >= 4 Then
         tbl.Cell(row:=1, Column:=2).Merge MergeTo:=tbl.Cell(row:=1, Column:=iNAColumnIndex - 1)
     End If
-    iLast = tbl.Rows(1).Cells.count
+    iLast = tbl.Rows(1).Cells.Count
     tbl.Cell(row:=1, Column:=3).Merge MergeTo:=tbl.Cell(row:=1, Column:=iLast)
     
     With tbl.Cell(row:=1, Column:=2).Range
@@ -1336,9 +1576,9 @@ Sub Replace_zeros(i As Integer)
     
     
     ActiveDocument.Tables(i).Range.Select
-    Selection.find.ClearFormatting
-    Selection.find.Replacement.ClearFormatting
-    With Selection.find
+    Selection.Find.ClearFormatting
+    Selection.Find.Replacement.ClearFormatting
+    With Selection.Find
         .Text = "0.0%"
         .Replacement.Text = "--"
         .Forward = True
@@ -1352,7 +1592,7 @@ Sub Replace_zeros(i As Integer)
         .MatchPrefix = True
     End With
     
-    Selection.find.Execute Replace:=wdReplaceAll
+    Selection.Find.Execute Replace:=wdReplaceAll
 
 '    Next
 
@@ -1370,9 +1610,9 @@ Sub Replace_NaN(i As Integer)
     
   
     ActiveDocument.Tables(i).Range.Select
-    Selection.find.ClearFormatting
-    Selection.find.Replacement.ClearFormatting
-    With Selection.find
+    Selection.Find.ClearFormatting
+    Selection.Find.Replacement.ClearFormatting
+    With Selection.Find
         .Text = "NaN%"
         .Replacement.Text = "--"
         .Forward = True
@@ -1386,7 +1626,7 @@ Sub Replace_NaN(i As Integer)
         .MatchPrefix = False
     End With
     
-    Selection.find.Execute Replace:=wdReplaceAll
+    Selection.Find.Execute Replace:=wdReplaceAll
     
 
     
@@ -1400,12 +1640,12 @@ Sub remove_denominatorRow()
     
     With ActiveDocument
     
-    ntables = .Tables.count
+    ntables = .Tables.Count
 
-    Selection.find.ClearFormatting
-    Selection.find.Replacement.ClearFormatting
+    Selection.Find.ClearFormatting
+    Selection.Find.Replacement.ClearFormatting
     
-    With Selection.find
+    With Selection.Find
             .Text = "Denominator Used:"
             .Replacement.Text = ""
             .Forward = True
@@ -1419,10 +1659,10 @@ Sub remove_denominatorRow()
     End With
     
     For i = 1 To ntables
-        If .Tables(i).Columns.count = 1 Then
+        If .Tables(i).Columns.Count = 1 Then
             .Tables(i).Select
 
-            If Selection.find.Execute Then Selection.Rows.Delete
+            If Selection.Find.Execute Then Selection.Rows.Delete
         End If
     Next
     
@@ -1438,10 +1678,10 @@ Sub remove_questionInfo_row()
     With ActiveDocument
     
     Dim ntables As Long
-    ntables = .Tables.count
+    ntables = .Tables.Count
     
     For i = 1 To ntables
-        ncol = .Tables(i).Columns.count
+        ncol = .Tables(i).Columns.Count
         
 '        Delete first row of the question info (data export tag)
 '        This will only appear in question info in the preview; all others have 3+ columns
@@ -1477,7 +1717,7 @@ Sub define_appendix_table_style()
         With .ParagraphFormat
             .Alignment = wdAlignParagraphLeft
             .RightIndent = InchesToPoints(0.1)
-            .leftindent = InchesToPoints(0.1)
+            .LeftIndent = InchesToPoints(0.1)
             .KeepWithNext = True
         End With
         
@@ -1579,8 +1819,8 @@ Attribute alphabetize_table.VB_ProcData.VB_Invoke_Func = "Normal.NewMacros.alpha
 '
 
 'Sort verbatim text appendices alphabetically
-    nrow = tbl.Rows.count
-    ncol = tbl.Columns.count
+    nrow = tbl.Rows.Count
+    ncol = tbl.Columns.Count
     
     If (nrow > responseRow) Then
         With tbl
@@ -1642,7 +1882,7 @@ Sub preview_remove_block_titles()
 'They are currently input into the document as heading 5
 'We want to delete the row of text with heading 5 and the next row
 
-With Selection.find
+With Selection.Find
     .ClearFormatting
     .Style = ActiveDocument.Styles("Heading 5")
     .Replacement.ClearFormatting
@@ -1659,17 +1899,17 @@ With Selection.find
 End With
 
 
-npar = ActiveDocument.Paragraphs.count
+npar = ActiveDocument.Paragraphs.Count
 Debug.Print (npar)
 For i = 1 To npar
     Debug.Print "Paragraph" + Str(i)
     ActiveDocument.Paragraphs(i).Range.Select
     Selection.HomeKey Unit:=wdLine
-    Selection.find.Execute
+    Selection.Find.Execute
 
-    If Selection.find.Found = True Then
-        Selection.find.Parent.MoveDown Unit:=wdLine, count:=2, Extend:=wdExtend
-        Selection.find.Parent.Delete
+    If Selection.Find.Found = True Then
+        Selection.Find.Parent.MoveDown Unit:=wdLine, Count:=2, Extend:=wdExtend
+        Selection.Find.Parent.Delete
     Else: Exit For
     End If
 
@@ -1685,9 +1925,9 @@ Sub remove_blockHeaders()
     loopCount = 1
     
     
-    Selection.find.ClearFormatting
-    Selection.find.Style = .Styles("Heading 5")
-    With Selection.find
+    Selection.Find.ClearFormatting
+    Selection.Find.Style = .Styles("Heading 5")
+    With Selection.Find
      .Text = ""
         .Replacement.Text = ""
         .Forward = True
@@ -1701,23 +1941,24 @@ Sub remove_blockHeaders()
         .MatchAllWordForms = False
     End With
     Selection.HomeKey Unit:=wdStory
-    Selection.find.Execute
+    Selection.Find.Execute
     
-    Do While Selection.find.Found = True And loopCount < 1000
+    Do While Selection.Find.Found = True And loopCount < 1000
     
         Debug.Print iCount
         Selection.Expand wdParagraph
         Selection.Delete
         Selection.EndOf
+        Selection.Delete
         Selection.HomeKey Unit:=wdStory
-        Selection.find.Execute
+        Selection.Find.Execute
     Loop
     
     
     
     End With
 
-    Call RemoveEmptyParagraphs
+'    Call RemoveEmptyParagraphs
 
 End Sub
 
@@ -1729,10 +1970,10 @@ Sub replace_newline()
     wrdDoc.Content.Select
 
 'Replace new line character (^l) with carraige return (^p)
-    Selection.find.ClearFormatting
-    Selection.find.Replacement.ClearFormatting
+    Selection.Find.ClearFormatting
+    Selection.Find.Replacement.ClearFormatting
 
-    With Selection.find
+    With Selection.Find
         'oryginal
         .Text = "^l"
         .Replacement.Text = "^p"
@@ -1741,9 +1982,9 @@ Sub replace_newline()
     End With
 
 GoHere:
-    Selection.find.Execute Replace:=wdReplaceAll
+    Selection.Find.Execute Replace:=wdReplaceAll
 
-    If Selection.find.Execute = True Then
+    If Selection.Find.Execute = True Then
         GoTo GoHere
     End If
 
@@ -1753,10 +1994,10 @@ Sub format_See_Appendix(i)
 
     With ActiveDocument
     
-    Selection.find.ClearFormatting
-    Selection.find.Replacement.ClearFormatting
+    Selection.Find.ClearFormatting
+    Selection.Find.Replacement.ClearFormatting
         
-    With Selection.find
+    With Selection.Find
         .Text = "See Appendix."
         .Replacement.Text = ""
         .Forward = True
@@ -1771,8 +2012,8 @@ Sub format_See_Appendix(i)
     
     .Tables(i).Select
     
-    If Selection.find.Execute Then
-        Selection.ParagraphFormat.leftindent = InchesToPoints(0.5)
+    If Selection.Find.Execute Then
+        Selection.ParagraphFormat.LeftIndent = InchesToPoints(0.5)
         Selection.ParagraphFormat.SpaceBefore = 10
     End If
     Selection.Collapse
@@ -1785,10 +2026,10 @@ Sub format_UserNote(i)
 
     With ActiveDocument
     
-    Selection.find.ClearFormatting
-    Selection.find.Replacement.ClearFormatting
+    Selection.Find.ClearFormatting
+    Selection.Find.Replacement.ClearFormatting
         
-    With Selection.find
+    With Selection.Find
         .Text = "User Note: "
         .Replacement.Text = ""
         .Forward = True
@@ -1803,16 +2044,16 @@ Sub format_UserNote(i)
 
     .Tables(i).Select
     
-    Selection.find.Execute
-    If Selection.find.Found = True Then
+    Selection.Find.Execute
+    If Selection.Find.Found = True Then
         Selection.SelectRow
  '       Selection.Expand (wdTableRow)
  '       Selection.Expand (wdParagraph)
         Selection.Font.ColorIndex = wdAuto
         Selection.Font.Italic = True
         Selection.Font.Bold = False
-        Selection.ParagraphFormat.leftindent = InchesToPoints(0.5)
-        Selection.find.Execute Replace:=wdReplaceOne
+        Selection.ParagraphFormat.LeftIndent = InchesToPoints(0.5)
+        Selection.Find.Execute Replace:=wdReplaceOne
     End If
     Selection.Collapse
     
@@ -1823,10 +2064,10 @@ End Sub
 
 Sub RemoveEmptyParagraphs()
 
-    Selection.find.ClearFormatting
-    Selection.find.Replacement.ClearFormatting
-    Selection.find.Replacement.Font.Underline = wdUnderlineSingle
-    With Selection.find
+    Selection.Find.ClearFormatting
+    Selection.Find.Replacement.ClearFormatting
+    Selection.Find.Replacement.Font.Underline = wdUnderlineSingle
+    With Selection.Find
         .Text = "^p^$"
         .Replacement.Text = "^&"
         .Forward = True
@@ -1838,13 +2079,13 @@ Sub RemoveEmptyParagraphs()
         .MatchSoundsLike = False
         .MatchAllWordForms = False
     End With
-    Selection.find.Execute Replace:=wdReplaceAll
+    Selection.Find.Execute Replace:=wdReplaceAll
     
-    Selection.find.ClearFormatting
-    Selection.find.Font.Italic = True
-    Selection.find.Replacement.ClearFormatting
-    Selection.find.Replacement.Font.Underline = wdUnderlineSingle
-    With Selection.find
+    Selection.Find.ClearFormatting
+    Selection.Find.Font.Italic = True
+    Selection.Find.Replacement.ClearFormatting
+    Selection.Find.Replacement.Font.Underline = wdUnderlineSingle
+    With Selection.Find
         .Text = "^p"
         .Replacement.Text = "^&"
         .Forward = True
@@ -1856,16 +2097,16 @@ Sub RemoveEmptyParagraphs()
         .MatchSoundsLike = False
         .MatchAllWordForms = False
     End With
-    Selection.find.Execute Replace:=wdReplaceAll
+    Selection.Find.Execute Replace:=wdReplaceAll
     
-    Selection.find.ClearFormatting
-    Selection.find.Font.Underline = wdUnderlineSingle
-    Selection.find.Replacement.ClearFormatting
-    With Selection.find.Replacement.Font
+    Selection.Find.ClearFormatting
+    Selection.Find.Font.Underline = wdUnderlineSingle
+    Selection.Find.Replacement.ClearFormatting
+    With Selection.Find.Replacement.Font
         .Bold = True
         .Underline = wdUnderlineSingle
     End With
-    With Selection.find
+    With Selection.Find
         .Text = "^p"
         .Replacement.Text = "^&"
         .Forward = True
@@ -1877,12 +2118,12 @@ Sub RemoveEmptyParagraphs()
         .MatchSoundsLike = False
         .MatchAllWordForms = False
     End With
-    Selection.find.Execute Replace:=wdReplaceAll
+    Selection.Find.Execute Replace:=wdReplaceAll
     
-    Selection.find.ClearFormatting
-    Selection.find.Font.Bold = False
-    Selection.find.Replacement.ClearFormatting
-    With Selection.find
+    Selection.Find.ClearFormatting
+    Selection.Find.Font.Bold = False
+    Selection.Find.Replacement.ClearFormatting
+    With Selection.Find
         .Text = "^p"
         .Replacement.Text = ""
         .Forward = True
@@ -1894,13 +2135,13 @@ Sub RemoveEmptyParagraphs()
         .MatchSoundsLike = False
         .MatchAllWordForms = False
     End With
-    Selection.find.Execute Replace:=wdReplaceAll
+    Selection.Find.Execute Replace:=wdReplaceAll
     
-    Selection.find.ClearFormatting
-    Selection.find.Font.Underline = wdUnderlineSingle
-    Selection.find.Replacement.ClearFormatting
-    Selection.find.Replacement.Font.Underline = wdUnderlineNone
-    With Selection.find
+    Selection.Find.ClearFormatting
+    Selection.Find.Font.Underline = wdUnderlineSingle
+    Selection.Find.Replacement.ClearFormatting
+    Selection.Find.Replacement.Font.Underline = wdUnderlineNone
+    With Selection.Find
         .Text = "^p^$"
         .Replacement.Text = "^&"
         .Forward = True
@@ -1912,16 +2153,16 @@ Sub RemoveEmptyParagraphs()
         .MatchSoundsLike = False
         .MatchAllWordForms = False
     End With
-    Selection.find.Execute Replace:=wdReplaceAll
+    Selection.Find.Execute Replace:=wdReplaceAll
     
     
-     Selection.find.ClearFormatting
-    Selection.find.Replacement.ClearFormatting
-    With Selection.find.Replacement.Font
+     Selection.Find.ClearFormatting
+    Selection.Find.Replacement.ClearFormatting
+    With Selection.Find.Replacement.Font
         .Bold = False
         .Italic = False
     End With
-    With Selection.find
+    With Selection.Find
         .Text = "^p"
         .Replacement.Text = "^p"
         .Forward = True
@@ -1933,15 +2174,15 @@ Sub RemoveEmptyParagraphs()
         .MatchSoundsLike = False
         .MatchAllWordForms = False
     End With
-    Selection.find.Execute Replace:=wdReplaceAll
+    Selection.Find.Execute Replace:=wdReplaceAll
         
  
 End Sub
 
 Sub Remove_Export_Tag()
 
-    Selection.find.ClearFormatting
-    With Selection.find
+    Selection.Find.ClearFormatting
+    With Selection.Find
         .Text = "Export Tag: "
         .Replacement.Text = ""
         .Forward = True
@@ -1955,7 +2196,7 @@ Sub Remove_Export_Tag()
     End With
     
     Selection.HomeKey Unit:=wdStory
-    Do While Selection.find.Execute
+    Do While Selection.Find.Execute
         Selection.Rows.Delete
     Loop
     
@@ -1967,7 +2208,7 @@ Sub keepTableWithQuestion(i As Integer)
     Dim questionRange As Range
 
     
-    If ActiveDocument.Tables(i).Columns.count > 1 And i >= 2 Then
+    If ActiveDocument.Tables(i).Columns.Count > 1 And i >= 2 Then
 
         Dim qrng As Range
         Set qrng = ActiveDocument.Tables(i - 1).Range
@@ -1990,18 +2231,18 @@ Sub number_questions_field()
     
     Dim tbl As Table
     
-    Selection.find.ClearFormatting
-    With Selection.find
+    Selection.Find.ClearFormatting
+    With Selection.Find
         .Text = "Export Tag: "
         .MatchCase = True
     End With
     
     For Each tbl In ActiveDocument.Tables
-        If tbl.Columns.count = 1 Then
+        If tbl.Columns.Count = 1 Then
             'identify if the first column says export tag"
             tbl.Select
-            Selection.find.Execute
-            If Selection.find.Found = True Then
+            Selection.Find.Execute
+            If Selection.Find.Found = True Then
                 qrow = 2
             Else: qrow = 1
             End If
@@ -2020,8 +2261,8 @@ End Sub
 
 Sub Remove_Responses_Count()
 
-    Selection.find.ClearFormatting
-    With Selection.find
+    Selection.Find.ClearFormatting
+    With Selection.Find
         .Text = "Responses: "
 '        .Replacement.Text = "Responses"
         .Forward = True
@@ -2036,12 +2277,12 @@ Sub Remove_Responses_Count()
     
     'Move to the top of the document
     Selection.HomeKey Unit:=wdStory
-    Selection.find.Execute
-    Do While Selection.find.Found = True
+    Selection.Find.Execute
+    Do While Selection.Find.Found = True
         Selection.Expand (wdLine)
         Selection.TypeText ("Responses")
         Selection.Collapse (wdCollapseEnd)
-        Selection.find.Execute
+        Selection.Find.Execute
     Loop
     
 End Sub
@@ -2053,22 +2294,22 @@ Sub clearText_sidebyside_displaypanel()
     
     sText1 = "Refer to the Display Logic panel for this question's logic."
     sText2 = "This question was split from a side-by-side question."
-    Selection.find.ClearFormatting
-    With Selection.find
+    Selection.Find.ClearFormatting
+    With Selection.Find
         .Text = sText1
         .Wrap = wdFindContinue
     End With
-    Do While Selection.find.Execute
+    Do While Selection.Find.Execute
         If Selection.Information(wdWithInTable) Then
             Selection.Rows.Delete
         End If
     Loop
     
-    With Selection.find
+    With Selection.Find
         .Text = sText2
         .Wrap = wdFindContinue
     End With
-    Do While Selection.find.Execute
+    Do While Selection.Find.Execute
         If Selection.Information(wdWithInTable) Then
             Selection.Rows.Delete
         End If
@@ -2145,7 +2386,7 @@ Sub AppendixFields_Full()
     Selection.PreviousField
     Selection.NextField
     Selection.Collapse (wdCollapseStart)
-    Selection.MoveRight Unit:=wdCharacter, count:=4
+    Selection.MoveRight Unit:=wdCharacter, Count:=4
 
     
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
@@ -2162,7 +2403,7 @@ Sub AppendixFields_Full()
     Selection.NextField
     Selection.Collapse (wdCollapseEnd)
     
-    Selection.MoveLeft Unit:=wdCharacter, count:=4, Extend:=wdExtend
+    Selection.MoveLeft Unit:=wdCharacter, Count:=4, Extend:=wdExtend
     
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, _
         preserveFormatting:=False
@@ -2194,24 +2435,24 @@ Sub na_table_formatting_separate()
     Dim i As Integer
     Dim t As Integer
     
-    n = ActiveDocument.Tables.count
+    n = ActiveDocument.Tables.Count
     i = 1
     
     Selection.HomeKey Unit:=wdStory
 
-    Selection.find.ClearFormatting
-    With Selection.find
+    Selection.Find.ClearFormatting
+    With Selection.Find
         .Text = "Total N"
         .Font.Italic = True
         .Font.ColorIndex = wdGray50
         .Forward = True
     End With
     
-    Selection.find.Execute
+    Selection.Find.Execute
     
-    Do While Selection.find.Found = True And i <= n
+    Do While Selection.Find.Found = True And i <= n
     
-        t = ActiveDocument.Range(0, Selection.Tables(1).Range.End).Tables.count
+        t = ActiveDocument.Range(0, Selection.Tables(1).Range.End).Tables.Count
         Debug.Print ("Table index: " & t)
 '        na_table = ActiveDocument.Tables(t)
         
@@ -2221,7 +2462,7 @@ Sub na_table_formatting_separate()
         Selection.Collapse (wdCollapseEnd)
         
         i = i + 1
-        Selection.find.Execute
+        Selection.Find.Execute
     Loop
 
 
@@ -2311,7 +2552,7 @@ With ActiveDocument
         .Font.Name = Arial
         .Font.Bold = True
         .Font.Italic = False
-        .ParagraphFormat.leftindent = 0
+        .ParagraphFormat.LeftIndent = 0
     End With
     
     'Second level regular TOC
@@ -2319,7 +2560,7 @@ With ActiveDocument
         .Font.Name = Arial
         .Font.Bold = False
         .Font.Italic = True
-        .ParagraphFormat.leftindent = InchesToPoints(0.15)
+        .ParagraphFormat.LeftIndent = InchesToPoints(0.15)
     End With
     
     'First level appendices
@@ -2328,7 +2569,7 @@ With ActiveDocument
         .Font.Name = Arial
         .Font.Bold = True
         .Font.Italic = False
-        .ParagraphFormat.leftindent = 0
+        .ParagraphFormat.LeftIndent = 0
     End With
     
     'Second level regular TOC
@@ -2336,7 +2577,7 @@ With ActiveDocument
         .Font.Name = Arial
         .Font.Bold = False
         .Font.Italic = True
-        .ParagraphFormat.leftindent = InchesToPoints(0.15)
+        .ParagraphFormat.LeftIndent = InchesToPoints(0.15)
     End With
 End With
 
@@ -2357,22 +2598,22 @@ Dim i As Integer
 
 Dim exportTag_col As String
 
-For i = 1 To ActiveDocument.Sections.count - 1
+For i = 1 To ActiveDocument.Sections.Count - 1
     
 For Each tbl In ActiveDocument.Sections(i).Range.Tables
     hasAppendix = False
     exportTag = ""
     exportTag_col = ""
-    Selection.find.ClearFormatting
-    Selection.find.Text = "See Appendix"
+    Selection.Find.ClearFormatting
+    Selection.Find.Text = "See Appendix"
     tbl.Select
-    Selection.find.Execute
-    If Selection.find.Found = True Then
+    Selection.Find.Execute
+    If Selection.Find.Found = True Then
         hasAppendix = True
     Else: GoTo Next_tbl
     End If
     
-    If hasAppendix = True And tbl.Columns.count = 1 Then
+    If hasAppendix = True And tbl.Columns.Count = 1 Then
         exportTagInfo = identifyExportTag(tbl)
         exportTag = exportTagInfo(0)
         exportRow = exportTagInfo(1)
@@ -2381,9 +2622,9 @@ For Each tbl In ActiveDocument.Sections(i).Range.Tables
         
     If (Not exportTag = "") And (ActiveDocument.Bookmarks.Exists(exportTag) = True) Then
         tbl.Select
-        Selection.find.ClearFormatting
-        Selection.find.Text = "Appendix"
-        Selection.find.Execute
+        Selection.Find.ClearFormatting
+        Selection.Find.Text = "Appendix"
+        Selection.Find.Execute
             Selection.Expand (wdCell)
             Selection.TypeText ("See ")
             Selection.InsertCrossReference ReferenceType:="Bookmark", ReferenceKind:= _
@@ -2413,13 +2654,13 @@ For Each tbl In ActiveDocument.Sections(i).Range.Tables
     ElseIf Not exportTag = "" Then GoTo Next_tbl
         
     Else
-        Selection.find.ClearFormatting
-        Selection.find.Text = "See Appendix "
-        Selection.find.Font.Bold = False
-        Selection.find.Font.Italic = False
+        Selection.Find.ClearFormatting
+        Selection.Find.Text = "See Appendix "
+        Selection.Find.Font.Bold = False
+        Selection.Find.Font.Italic = False
         tbl.Select
-        Selection.find.Execute
-        Do While Selection.find.Found = True
+        Selection.Find.Execute
+        Do While Selection.Find.Found = True
             
             Dim appendRef_row As Integer
             Dim appendRef_col As Integer
@@ -2461,7 +2702,7 @@ For Each tbl In ActiveDocument.Sections(i).Range.Tables
             End If
             
             tbl.Select
-            Selection.find.Execute
+            Selection.Find.Execute
         Loop
 
     End If
