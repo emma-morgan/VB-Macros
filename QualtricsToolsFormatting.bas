@@ -648,7 +648,7 @@ Sub insert_background_table_placeholder()
     Selection.ParagraphFormat.SpaceBefore = 0
     
     .Hyperlinks.Add Anchor:=Selection.Range, Address:= _
-        "Q:\Staff\0 Documentation Collection\QualtricsTools & Survey Reports\Demographics and Response Completeness Tables_Example.docx" _
+        "Q:\Staff\_Reference Documentation\Surveys\QualtricsTools & Survey Reports\Demographics and Response Completeness Tables_Example.docx" _
         , SubAddress:="", ScreenTip:="", TextToDisplay:= _
         "See Example: Demographics and Response Completeness Tables"
     
