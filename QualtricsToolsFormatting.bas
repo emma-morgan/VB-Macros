@@ -1,7 +1,7 @@
 Attribute VB_Name = "QualtricsTools"
 ''Updated 5/26/17
 
-Sub define_table_styles()
+Sub define_styles_summary_report()
 
     'After defining table styles, you MUST  edit table style
         'to uncheck "allow spacing between cells" box!
@@ -11,7 +11,7 @@ Sub define_table_styles()
     Call define_mc_table_style
     Call define_question_style
     Call define_preview_text_styles
-    Call define_infoTable_style
+    Call define_info_table_style
 
 End Sub
 
@@ -27,7 +27,7 @@ End With
 
 End Sub
 
-Sub format_survey_preview()
+Sub format_survey_summary_body()
 
     Application.ScreenUpdating = False
 
@@ -86,7 +86,7 @@ Sub format_survey_preview()
     
 End Sub
 
-Sub format_appendix()
+Sub format_survey_summary_appendix()
 
 Application.ScreenUpdating = False
 '
@@ -107,7 +107,7 @@ Application.ScreenUpdating = False
 
     'Define types for the variables used in this function
     'previously we iterated through by numbering the tables and calling ActiveDocument.tables(i),
-        'but we have no adjusted to looping through the tables in the documnet one by one
+        'but we have no adjusted to looping through the tables in the document one by one
     Dim noRespondents As Boolean
     Dim isCodedComment As Boolean
     Dim responseRow As Integer
@@ -418,7 +418,7 @@ Sub apply_appendix_style(tbl As Table, appendixType As String, responseRow As In
     'Sort tables alphabetically for plain text, by N then alphabetically for coded
     If tbl.Rows.Count > responseRow Then Call alphabetize_table(tbl, responseRow)
     
-    tbl.Style = "Appendix_style_table"
+    tbl.Style = "appendix_table_style"
     
     'Align text vertically to be centered
        'Ideally this would be a part of the table style, but I couldn't find it....
@@ -455,7 +455,7 @@ Sub apply_appendix_style(tbl As Table, appendixType As String, responseRow As In
 
 End Sub
 
-Sub finish_merged_preview()
+Sub finish_merged_summary_report()
 
     Call clearText_sidebyside_displaypanel
     Call Remove_Responses_Count
@@ -566,7 +566,7 @@ Sub number_of_respondents()
             .Text = "Number of Respondents: "
             .Forward = True
             .Wrap = wdFindContinue
-            .format = False
+            .Format = False
             .MatchCase = True
         End With
         
@@ -623,7 +623,7 @@ Sub insert_background_table_placeholder()
             .Text = "Number of Respondents: "
             .Forward = True
             .Wrap = wdFindContinue
-            .format = False
+            .Format = False
             .MatchCase = True
         End With
         
@@ -661,8 +661,8 @@ Sub insert_background_table_placeholder()
     Set demographics_table = .Tables.Add(Selection.Range, 4, 3, _
         AutoFitBehavior:=wdAutoFitContents)
         
-    demographics_table.Style = "infoTable_style"
-    response_completeness.Style = "infoTable_style"
+    demographics_table.Style = "info_table_style"
+    response_completeness.Style = "info_table_style"
     
     demographics_table.ApplyStyleHeadingRows = True
     response_completeness.ApplyStyleHeadingRows = True
@@ -1139,14 +1139,14 @@ Sub define_question_style()
     
 End Sub
 
-Sub define_infoTable_style()
+Sub define_info_table_style()
 
     On Error Resume Next
-    ActiveDocument.Styles("infoTable_style").Delete
+    ActiveDocument.Styles("info_table_style").Delete
     
-    ActiveDocument.Styles.Add Name:="infoTable_style", Type:=wdStyleTypeTable
+    ActiveDocument.Styles.Add Name:="info_table_style", Type:=wdStyleTypeTable
     
-    With ActiveDocument.Styles("infoTable_style")
+    With ActiveDocument.Styles("info_table_style")
         With .Table
 
             .AllowBreakAcrossPage = False
@@ -1583,7 +1583,7 @@ Sub Replace_zeros(i As Integer)
         .Replacement.Text = "--"
         .Forward = True
         .Wrap = wdFindStop
-        .format = False
+        .Format = False
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -1617,7 +1617,7 @@ Sub Replace_NaN(i As Integer)
         .Replacement.Text = "--"
         .Forward = True
         .Wrap = wdFindStop
-        .format = False
+        .Format = False
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -1650,7 +1650,7 @@ Sub remove_denominatorRow()
             .Replacement.Text = ""
             .Forward = True
             .Wrap = wdFindStop
-            .format = False
+            .Format = False
             .MatchCase = True
             .MatchWholeWord = False
             .MatchWildcards = False
@@ -1703,11 +1703,11 @@ Sub define_appendix_table_style()
 
     'If the style exists from a previous run, delete and redefine
     On Error Resume Next
-    ActiveDocument.Styles("Appendix_style_table").Delete
+    ActiveDocument.Styles("appendix_table_style").Delete
 
-    ActiveDocument.Styles.Add Name:="Appendix_style_table", Type:=wdStyleTypeTable
+    ActiveDocument.Styles.Add Name:="appendix_table_style", Type:=wdStyleTypeTable
 
-    With ActiveDocument.Styles("Appendix_style_table")
+    With ActiveDocument.Styles("appendix_table_style")
         With .Font
             .Name = "Arial"
             .Size = 10
@@ -1890,7 +1890,7 @@ With Selection.Find
     .Replacement.Text = ""
     .Forward = True
     .Wrap = wdFindStop
-    .format = True
+    .Format = True
     .MatchCase = True
     .MatchWholeWord = False
     .MatchWildcards = False
@@ -1932,7 +1932,7 @@ Sub remove_blockHeaders()
         .Replacement.Text = ""
         .Forward = True
         .Wrap = wdFindAsk
-        .format = True
+        .Format = True
         .MatchCase = False
         .MatchWholeWord = False
         .MatchByte = False
@@ -2002,7 +2002,7 @@ Sub format_See_Appendix(i)
         .Replacement.Text = ""
         .Forward = True
         .Wrap = wdFindStop
-        .format = False
+        .Format = False
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -2034,7 +2034,7 @@ Sub format_UserNote(i)
         .Replacement.Text = ""
         .Forward = True
         .Wrap = wdFindStop
-        .format = False
+        .Format = False
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -2072,7 +2072,7 @@ Sub RemoveEmptyParagraphs()
         .Replacement.Text = "^&"
         .Forward = True
         .Wrap = wdFindContinue
-        .format = True
+        .Format = True
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -2090,7 +2090,7 @@ Sub RemoveEmptyParagraphs()
         .Replacement.Text = "^&"
         .Forward = True
         .Wrap = wdFindContinue
-        .format = True
+        .Format = True
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -2111,7 +2111,7 @@ Sub RemoveEmptyParagraphs()
         .Replacement.Text = "^&"
         .Forward = True
         .Wrap = wdFindContinue
-        .format = True
+        .Format = True
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -2128,7 +2128,7 @@ Sub RemoveEmptyParagraphs()
         .Replacement.Text = ""
         .Forward = True
         .Wrap = wdFindContinue
-        .format = True
+        .Format = True
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -2146,7 +2146,7 @@ Sub RemoveEmptyParagraphs()
         .Replacement.Text = "^&"
         .Forward = True
         .Wrap = wdFindContinue
-        .format = True
+        .Format = True
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -2167,7 +2167,7 @@ Sub RemoveEmptyParagraphs()
         .Replacement.Text = "^p"
         .Forward = True
         .Wrap = wdFindContinue
-        .format = True
+        .Format = True
         .MatchCase = False
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -2187,7 +2187,7 @@ Sub Remove_Export_Tag()
         .Replacement.Text = ""
         .Forward = True
         .Wrap = wdFindAsk
-        .format = False
+        .Format = False
         .MatchCase = False
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -2267,7 +2267,7 @@ Sub Remove_Responses_Count()
 '        .Replacement.Text = "Responses"
         .Forward = True
         .Wrap = wdFindStop
-        .format = False
+        .Format = False
         .MatchCase = False
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -2521,7 +2521,7 @@ End Sub
 Sub insert_appendix_TOC_at_cursor()
 
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
-                "TOC \n 4-4 \t " & Chr(34) & _
+                "TOC \h \n 4-4 \t " & Chr(34) & _
                 "AppendixQ_style,4,AppendixName_style,3" & Chr(34), _
                 preserveFormatting:=False
 
@@ -2531,12 +2531,12 @@ ActiveDocument.Fields.Update
 End Sub
 
 Sub insert_blocks_TOC_at_cursor()
-
+    
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
-                "TOC \t " & Chr(34) & _
+                "TOC \h \t " & Chr(34) & _
                 "Heading 5,1" & Chr(34), _
                 preserveFormatting:=False
-
+                
     Selection.Collapse
 ActiveDocument.Fields.Update
 
@@ -2562,6 +2562,8 @@ With ActiveDocument
         .Font.Italic = True
         .ParagraphFormat.LeftIndent = InchesToPoints(0.15)
     End With
+    
+    With .TablesOfContents
     
     'First level appendices
     
