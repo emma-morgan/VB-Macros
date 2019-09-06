@@ -634,7 +634,13 @@ Sub insert_background_table_placeholder()
             Selection.Collapse (wdCollapseEnd)
         
          Else
-            Selection.Find.Text = "Size of Respondent Group: "
+            With Selection.Find
+                .Text = "Size of Respondent Group: "
+                .Forward = True
+                .Wrap = wdFindContinue
+                .Format = False
+                .MatchCase = True
+            End With
             Selection.Find.Execute
             If Selection.Find.Found = True Then
                 Selection.Expand wdLine
