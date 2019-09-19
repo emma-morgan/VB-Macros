@@ -2510,6 +2510,7 @@ Sub define_preview_text_styles()
             .Name = "Arial"
             .Size = 10
             .Color = wdColorAutomatic
+            .Bold = True
         End With
         
         With .ParagraphFormat
@@ -2527,7 +2528,8 @@ End Sub
 Sub insert_appendix_TOC_at_cursor()
 
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
-                "TOC \h \n 4-4 \t " & Chr(34) & _
+                "TOC \o " & Chr(34) & "1-3" & Chr(34) & _
+                "\n " & Chr(34) & "4-4" & Chr(34) & "\h \z \t " & Chr(34) & _
                 "AppendixQ_style,4,AppendixName_style,3" & Chr(34), _
                 preserveFormatting:=False
 
