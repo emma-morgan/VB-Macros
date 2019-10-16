@@ -1,5 +1,5 @@
 Attribute VB_Name = "QualtricsTools"
-''Updated 5/26/17
+''Updated 10/16/2019
 
 Sub define_styles_summary_report()
 
@@ -2538,7 +2538,7 @@ ActiveDocument.Fields.Update
 
 End Sub
 
-Sub insert_blocks_TOC_at_cursor()
+Sub insert_body_TOC_at_cursor()
     
     Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
                 "TOC \h \t " & Chr(34) & _
@@ -2551,6 +2551,9 @@ ActiveDocument.Fields.Update
 End Sub
 
 Sub format_TOC_styles()
+
+''This is not yet ready to use; however, if we want to make adjustment, we can.
+''Note added 10/16/2019 by ECM.
 
 With ActiveDocument
     
@@ -2570,8 +2573,6 @@ With ActiveDocument
         .Font.Italic = True
         .ParagraphFormat.LeftIndent = InchesToPoints(0.15)
     End With
-    
-    With .TablesOfContents
     
     'First level appendices
     
