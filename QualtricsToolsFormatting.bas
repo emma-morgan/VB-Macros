@@ -10,6 +10,7 @@ Sub define_styles_summary_report()
     Call define_appendix_table_style
     Call define_mc_table_style
     Call define_question_style
+    Call define_summaryStats_style
     Call define_preview_text_styles
     Call define_info_table_style
 
@@ -29,8 +30,8 @@ End Sub
 
 Sub format_survey_summary_body()
 
-    Application.ScreenUpdating = False
-
+    Application.ScreenUpdating = True
+    
     'This macro should be used BEFORE any manual updates to the survey preview
     
     Dim i As Integer
@@ -990,17 +991,22 @@ End Sub
 
 
 Sub format_preview_tables(i As Integer, ncol As Integer)
+    
     Dim exportTag As String
-
+    
     ActiveDocument.Tables(i).Select
     Selection.ClearFormatting
-'    Selection
     Selection.Collapse
 
     If ncol = 1 Then
         Call format_question_style(i)
     ElseIf ncol = 3 Then
         Call format_mc_singleQ(i)
+    ElseIf ncol = 2 And _
+        ActiveDocument.Tables(i).Cell(1, 1).Range.Text Like "Statistic*" And _
+        ActiveDocument.Tables(i).Cell(1, 2).Range.Text Like "Value*" Then
+        Call format_summaryStats(i)
+    
     ElseIf ncol > 3 Then
         Call format_matrix_table(i)
     
@@ -1571,8 +1577,178 @@ Sub format_NA_table(tbl As Table)
 End Sub
 
 
+Sub define_summaryStats_style()
+
+    'If the style exists from a previous run, delete and redefine
+    
+    On Error Resume Next
+    ActiveDocument.Styles("summaryStats_style").Delete
+    
+    ActiveDocument.Styles.Add Name:="summaryStats_style", Type:=wdStyleTypeTable
+    
+    With ActiveDocument.Styles("summaryStats_style")
+            
+        With .Font
+            .Name = "Arial"
+            .Size = 10
+            .Bold = False
+            .Italic = False
+            .ColorIndex = wdAuto
+        End With
+        
+        With .ParagraphFormat
+            .Alignment = wdAlignParagraphCenter
+            .LeftIndent = InchesToPoints(0.08)
+            .RightIndent = InchesToPoints(0.08)
+            .LineUnitAfter = 0
+            .LineUnitBefore = 0
+            .LineSpacingRule = wdLineSpaceSingle
+
+            .KeepWithNext = True
+        End With
+                
+        With .Table
+            .RowStripe = 1
+            .ColumnStripe = 0
+            .AllowBreakAcrossPage = False
+            
+            .LeftPadding = 0
+            .RightPadding = 0
+            .TopPadding = 0.01
+            .BottomPadding = 0.01
+            
+            With .Condition(wdFirstColumn)
+                .Font.Bold = True
+                .ParagraphFormat.Alignment = wdAlignParagraphLeft
+                .ParagraphFormat.LeftIndent = InchesToPoints(0.08)
+                .ParagraphFormat.RightIndent = InchesToPoints(0.08)
+
+            End With
+            
+            With .Condition(wdFirstRow)
+            
+                .Font.Bold = True
+                .ParagraphFormat.Alignment = wdAlignParagraphCenter
+                
+                With .Borders(wdBorderTop)
+                    .LineStyle = wdLineStyleSingle
+                    .LineWidth = wdLineWidth050pt
+                    .Color = wdColorAutomatic
+                End With
+                
+                With .Borders(wdBorderBottom)
+                    .LineStyle = wdLineStyleSingle
+                    .LineWidth = wdLineWidth050pt
+                    .Color = wdColorAutomatic
+                End With
+                
+                With .Borders(wdBorderRight)
+                    .LineStyle = wdLineStyleSingle
+                    .LineWidth = wdLineWidth050pt
+                    .Color = wdColorAutomatic
+                End With
+                
+                With .Borders(wdBorderVertical)
+                    .LineStyle = wdLineStyleSingle
+                    .LineWidth = wdLineWidth050pt
+                    .Color = wdColorAutomatic
+                End With
+                
+            End With
+                        
+            With .Condition(wdOddRowBanding)
+                With .Shading
+                    .Texture = wdTextureNone
+                    .ForegroundPatternColor = wdColorAutomatic
+                    .BackgroundPatternColor = RGB(220, 230, 250)
+                End With
+                
+                With .Borders(wdBorderVertical)
+                    .LineStyle = wdLineStyleSingle
+                    .LineWidth = wdLineWidth050pt
+                    .Color = wdColorAutomatic
+                End With
+    
+                With .Borders(wdBorderLeft)
+                    .LineStyle = wdLineStyleSingle
+                    .LineWidth = wdLineWidth050pt
+                    .Color = wdColorAutomatic
+                End With
+            
+                With .Borders(wdBorderRight)
+                    .LineStyle = wdLineStyleSingle
+                    .LineWidth = wdLineWidth050pt
+                    .Color = wdColorAutomatic
+                End With
+            
+            End With
+          
+            With .Borders(wdBorderVertical)
+                .LineStyle = wdLineStyleSingle
+                .LineWidth = wdLineWidth050pt
+                .Color = wdColorAutomatic
+            End With
+    
+            With .Borders(wdBorderLeft)
+                .LineStyle = wdLineStyleSingle
+                .LineWidth = wdLineWidth050pt
+                .Color = wdColorAutomatic
+            End With
+            
+            With .Borders(wdBorderRight)
+                .LineStyle = wdLineStyleSingle
+                .LineWidth = wdLineWidth050pt
+                .Color = wdColorAutomatic
+            End With
+            
+            With .Borders(wdBorderBottom)
+                .LineStyle = wdLineStyleSingle
+                .LineWidth = wdLineWidth050pt
+                .Color = wdColorAutomatic
+            End With
+    
+            With .Borders(wdBorderTop)
+                .LineStyle = wdLineStyleSingle
+                .LineWidth = wdLineWidth050pt
+                .Color = wdColorAutomatic
+            End With
+            
+        End With
+        
+    End With
+
+End Sub
+
+
+Sub format_summaryStats(i)
+    
+    ActiveDocument.Tables(i).Select
+        
+    Selection.Cells.VerticalAlignment = wdCellAlignVerticalCenter
+    Selection.ParagraphFormat.LeftIndent = InchesToPoints(0.08)
+    Selection.ParagraphFormat.RightIndent = InchesToPoints(0.08)
+    
+    With ActiveDocument.Tables(i)
+        
+        .Style = "summaryStats_style"
+
+        .ApplyStyleFirstColumn = True
+        .ApplyStyleLastColumn = False
+        .ApplyStyleHeadingRows = True
+        .ApplyStyleLastRow = False
+        .ApplyStyleRowBands = True
+    
+        .Columns(1).PreferredWidth = InchesToPoints(1.5)
+        .Columns(2).PreferredWidth = InchesToPoints(1)
+    
+    End With
+    Selection.Collapse
+    
+End Sub
+
 
 Sub Replace_zeros(i As Integer)
+
 '
 ' Searches for "0.0%" and replaces it with "--"
 ' Created by Adam Kaminsky
