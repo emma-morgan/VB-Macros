@@ -1,5 +1,5 @@
 Attribute VB_Name = "QualtricsTools"
-''Updated 10/16/2019
+''Updated 2020/04/16
 
 Sub define_styles_summary_report()
 
@@ -30,7 +30,7 @@ End Sub
 
 Sub format_survey_summary_body()
 
-    Application.ScreenUpdating = True
+    Application.ScreenUpdating = False
     
     'This macro should be used BEFORE any manual updates to the survey preview
     
