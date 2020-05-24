@@ -1,0 +1,198 @@
+---
+title: "QualtricsTools User Guide and FAQ"
+author: "Emma Morgan"
+date: "5/24/2020"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Thank you for using QualtricsTools! This program has been developed in-house by Tufts OIR to help anlaysts create reports more efficiently. We are constantly trying to improve, but we need your help to do so! Please email Emma and add to the issue log (Q:\Staff\_Reference Documentation\Programs and Applications\Troubleshooting Log_Programs & Reporting Tools.xlsx) if you encounter any of the following: 
+
+  - My question results are not processing correctly (e.g. responses are out of order, data are not correct, n/a or "other" type options are not as I need them)
+  - I ran the formatting macros, but the report is not correct (e.g. text is italicized or bold where it shouldn't be, not italic/bold where it should be, incorrect sizing for text or headers)
+  - QualtricsTools is not processing a question
+  
+    *Note: While QualtricsTools works with many question types, there are some that cannot (yet) be processed automatically. These include drill down, questions with carry forward statements, and questions in a loop and merge. However, you may be able to use a shell survey to get QualtricsTools to process your data correctly.*
+    
+This list is not exhaustive. If something seems off, please talk to Emma about it. It is not possible to improve QualtricsTools and the formatting macros unless problems are identified and sample surveys provided to test enhancements or fixes. The goal of QualtricsTools is to make reporting *easier* for all analysts, but your input is needed to make this happen.
+
+
+## QualtricsTools Data Guidelines
+
+This section contains information about the following:
+
+  1. Setting up your questions to process results correctly.
+  
+  2. Customizing your survey report.
+  
+  2. Exporting data for QualtricsTools reporting.
+  
+If you have questions about any of these sections, please let Emma know. The only we this documentation improves is if you let us know where and how it can be made better.
+
+### Preparing your Qualtrics survey Questions for QualtricsTools
+
+QualtricsTools is a program and can't predict how our final report should look. However, there are many tricks to help get your survey summary report closer to a finished product. Below are a few tips to keep in mind. Question still isn't processing how you would like? Email/call/jabber Emma for ideas. QualtricsTools can't do everything, but we're trying to do as much as possible to make this easier for all OIR analysts.
+
+**Multiple Choice Single Answer (standard multiple choice)**
+
+By default, multiple choice question results produce a table with format three columns: N, %, choice text. 
+The choices will be ordered based on the display order in the survey. 
+
+*Recode values for multiple choice single answer:* Recode values can be used for MCSA question. N/A type options that are recoded with negative values 
+will alert QualtricsTools to reformat a multiple choice question as matrix style. This will table the N/A style options separately 
+out of total responses and other options out of valid responses. The single row matrix will repeat the question text as choice text in the first column.
+
+**Multiple Choice Multiple Answer (check all that apply)**
+
+By default, multiple choice multiple answer (MCMA) questions will sort in descending N order. Results tables have three columns: N, %, choice text. 
+Ties in N selection count are sorted alphabetically by choice text.
+
+*Specify sort for multiple choice multiple answer:* Sometimes we don't want responses to MCMA questions to sort by descending N (e.g. race/ethnicty select all that apply, questions with "Other, please specify" options). Luckily, QualtricsTools has ways to specify sorting. Use recode values above 900 to specify options that should sort to the bottom of the table. This will not impact your survey setup or report in other ways. Recode values do not affect the respondent experience and can be changed before distributing your survey. 
+
+**Matrix Multiple Choice (multiple answer or single answer)**
+
+Matrix questions are designed to format according to OIR standards. Matrix multiple choice with N/A style options should have recode value -1 (or other negative integers that are not -99) to table separately from valid responses.
+
+**Summary Statistics for Numeric Text Entry**
+
+QualtricsTools will create tables of summary statistics for numeric text entry questions. Please remember that your .csv surey data for these questions must be cleaned (e.g. removing outliers or unclear/nonsensical responses) BEFORE you report these questions.  To create a summary statistics table set the question type to "Text Entry" with numeric validation. 
+
+QualtricsTools will only create summary statistic tables when there is a single text entry column for the question. This will NOT WORK for "Form" style questions with multiple components (e.g. "In an average week, how many hours did you spend on each of the following?: homework, class, lab, clubs). To format these questions in your survey, you can do one of the following
+
+  - *Insert the results table manually*: This is the best option if you would like to customize formatting and place these results into a combined table.
+  
+  - *Split the form into separate questions in a shell survey*: In a shell survey, create a separate text entry question with numeric validation for each of the components of the form. In your .csv response data file, make sure that the header rows (first with the variable name, third with QIDs) match the header rows of the shell survey data export. Otherwise, QualtricsTools won't be able to link responses to questions.
+
+**Side by side questions**
+
+side-by-side questions cannot be processed as a single question by QualtricsTools. Instead, side-by-side questions are split into their component questions. In OIR reports, this will most often create two matrix type questions. The component quesitons of a side-by-side will be processed based on the style of the component question.
+
+Formatting your side-by-side question as a side-by-side must be done manually in your report.
+
+### Customizing Your Survey Report
+
+There are many ways to customize your survey report. Doing some of this setup work can help make things easier on the whole. 
+Below are some tips to help make your reporting more efficient.
+
+And remember - please ask Emma if you have any questions or would like a second set of eyes to look over your report. 
+We can all chip in to make this a better project overall.
+
+**1. Add User Notes in Qualtrics to add human readable display logic and other information to your report.**
+
+Qualtrics .qsf files include survey logic, but this is designed for a computer program and not usually useful for your clients.
+Instead, write your own human readable display logic notes. 
+
+  - Select a question
+  - Under "actions" choose "Add Note"
+  - Write your display logic note (or anything else you want added to your survey)
+  - Click "Post" to add the note to your survey
+    
+All user notes will be added to your report. In the raw report form QualtricsTools these will be added under the question text with "User Note: " followed by the note text. The QualtricsTools macros in aa1_survey_summary_report will convert these to be italicized and indented in the formated report.
+
+User Notes will not be visable to respondents, so these can be added to your survey before distribution (or at any point before creating reports).
+
+### Exporting data for QualtricsTools reporting
+
+QualtricsTools is designed to work with the Legacy Exporter, unchecked Legacy View Results. Please use this format when preparing your data. Do not use the Data Table export, as QualtricsTools is not yet available wit hthis download.
+
+## QualtricsTools Shiny App Frequently Asked Questions
+
+1. **How do I run the QualtricsTools reporting app?**  
+
+    Install the QualtricsTools package from GitHub: `devtools::install_packages("emma-morgan/QualtricsTools")`.
+    Once the package is installed, load the QualtricsTools functions by running `library(QualtricsTools)`. 
+    Finally, launch the QualtricSTools app by running `app()` from the R command line.
+
+2. **How do I load my survey project to create reports?**
+
+    Creating reports with the QualtricsTools app requires a Qualtrics Suvey File (.qsf) and data exported from Qualtrics (.csv). 
+    See the QualtricsTools wiki for information about .qsf and .csv usage requirements and guidelines. 
+    Use the File Uploader in the left sidebar to select your survey .qsf and .csv.
+    
+    You can navigate through your file system to choose the .qsf and .csv files using the "Browse" buttons below each selection note.
+    Save yourself some time by entering the path to your project in the text entry box above "Choose QSF Survey File". 
+    This will a starting point to browse for the survey .qsf and .csv.
+    
+3. **What is "Unchecked Legacy View Results (3 header rows & QIDs)"?**
+
+    Qualtrics has many ways to export data. QualtricsTools is configured to work with specific
+    data export formats. For best results, use the Legacy Exporter in Qualtrics and uncheck the
+    box for "Legacy View Results". QualtricsTools is currently not configured to work with 
+    the Data Table export format. 
+    
+4. **Can I preview my downloaded reports in the app?**
+
+    Yes! Navigate to "Processed Results" in the left sidebar. 
+    You should now see five tabs displayed across the top.
+    
+    - **results tables**: This is the main part of your survey summary report. This includes 
+    tabled results to closed-ended questions and the text of open-ended text questions 
+    references to "See Appendix". The survey summary report includes a header with the name 
+    of the Qualtrics Survey and the number of responsesin the .csv data file.
+    
+    - **question dictionary**: The question dictionary provides a summary of question information
+    from Qualtrics including the question text and question type. It can provide a useful 
+    overview of your data. Check the box for "Only Uncodable Questions" to see which survey 
+    questions could not be automatically processed by QualtricsTools.
+    
+    - **verbtim comment appendices**: Verbatim Comment Text Appendices will include full text 
+    (verbatim) comments to open-ended questions. comments are tabled with a header that lists
+    the appendix reference, question text, and a note that comments have not been edited 
+    in any way.
+    
+    - **display logic**: Display logic is summarized based on the recorded logic in Qualtrics. 
+    This is not often useful for readers, but it does provide a summary for analysts. 
+    
+        *Pro tip: Add user notes in Qualtrics with text descriptions of display logic. 
+        These will be added to your report under the question text and will provide better
+        descriptions and context for viewers of your report.*
+        
+    - **coded comment appendices**: Coded comment appendices provide useful summaries of 
+    responses to open-ended questions. QualtricsTools is designed to work with the 
+    qualitative data analysis program NVivo. See the QualtricsTools wiki for more information about setting up your report to include coded comment appendix tables. 
+    
+       Coded comment appendices require additional input to specify a file directory with formatted coded comment export tables. Additionally, analysts have the option to include both verbatim and coded comment tables or create an appendix with only coded comments. To specify options for coded comment appendices, choose "More options" in the left sidebar. Use the box in the third column titled "Comment Coding Options" to specify your coded comment appendices.
+       
+5. **How do I create Coded Comment Appendices?**
+    
+    Choose "More Options" from the left sidebar, then navigate to the box for "Comment Coding Optoins". Use the options as specified.
+    
+    - **Generate Coded Comments?** Select the radio button for "Yes, Generate coded Comment Appendices" to start creating coded comment appendices.
+    - **Code Type?** QualtricsTools will process coded comment exports using the current OIR NVivo format and previously used Filemaker Pro export format. See the QualtircsTools Wiki page about coded comment appendices for more information and instructions for formatting your coded comment export tables.
+    - **Include Verbatim Comments in Coded Appendices?** Select "Yes" if you would like your coded comment appendices to include both coded and verbatim comment tables. Select "No" to create appendices with only coded comment tables that do not include verbatim comments. The App provides options to include all verbatim comments or no verbatim comments. If you would like to include a subset of verbatim comments, please use the command line functions available in R.
+    
+    - **Sheets Folder Selector** Use this to select the folder with your coded comment data export files. Click the "..." button. This will launch launch a file explorer window. Use this as usual to navigate to the coded comment sheets directory.
+    
+6. **My survey has complicated flow and is not processing correctly. What can I do?"**
+
+    QualtricsTools does not play nicely with complicated survey flow. Under "More options" check the box for **Ignore Survey Flow** to process the survey blockss in order. 
+    
+7. **Can I create reports for subgroups of respondents.**
+
+    Yes! Under "More options" navigate to the middle section for **Splitting Respondents**. From here, you can choose one or more columns to create split reports. This will create survey summary tables and verbatim text appendices for each subgroup specified by the split response columns. Click the button "Download All Split Reports and Appendices" to download tables and appendices for all subgroups. If you would like to download a report for one specific subgroup, choose the target group from the **Split Respondents Group** dropdown menu.
+    
+8. **Can I specify a name for my download files?**
+
+    Yes! Under "More Options" the first column for "Downloads" has an option for naming your files. This is recommended as a brief name for your survey. Files downloaded using the download buttons in this section will include the specified file name and appropriate file description. 
+    
+    Example: Specified name "Sample Survey" will yield downloaded files with "Sample Survey_results tables" and "Sample Survey_verbatim_comment_appendices."
+        
+9. **I want to download the tables and verbatim comments and coded comments. How do I do this?**
+
+    In the left sidebar, choose "download zip". This will download results tables, display logic, question dictionary, and verbatim comment appendices.
+    
+10. **My survey has some weird questions that I do not want to include in my report. Is there a way to leave these out?**
+
+    The left sidebar has an option for "Include/Exclude Responses". This will show a list of questions with checkboxes on the left side of each. Uncheck a question's box and click "apply" to excluee this question from reporting. You should see this updated in the results table and appendix previews under "Processed Results." To add the question back into reports, just re-check the box and click apply.
+    
+11. **I have other questions. Who can I ask?**
+
+    If you are interested in further customizing your reports, consider using the R command line. Additional information about QualtricsTools functions is available on the QualtricsTools wiki. 
+    
+       Package maintenance is overseen by Emma Morgan in the Tufts University Office of Institutional Research (emma.morgan@tufts.edu).
+   
+   
