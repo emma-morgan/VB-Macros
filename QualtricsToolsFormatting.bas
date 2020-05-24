@@ -800,7 +800,7 @@ Sub OLD_Insert_logo()
     
 End Sub
 
-Sub Insert_footer()
+Sub aa3_Insert_footer()
 '
 ' Inserts a footer
 'As written, assumes there is only one section; if this changes, we need to uncomment these lines
@@ -836,7 +836,15 @@ Sub Insert_footer()
         Dim analystName As String
         Dim dateText As String
         
+        'Specify here if you would like to customize for your own project and computer
+        'Remove the apostrophe at the head of each line to run this section instead of popup boxes
+        'reportName = "Enter Report Name Here"
+        'specialPopulation = ""
+        'analystName = "Your Name Here"
+        'dateText = "Enter creation date here"
+                
         'Create defeault settings for all user entry
+        
         
         reportName = InputBox("Enter Name of survey, Year, Special Population" & Chr(10) _
             & "Default: NAME OF SURVEY AND YEAR")
