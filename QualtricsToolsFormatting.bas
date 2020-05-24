@@ -28,9 +28,11 @@ End With
 
 End Sub
 
-Sub format_survey_summary_body()
+Sub aa1_format_survey_summary_body()
 
     Application.ScreenUpdating = False
+    
+    Call define_styles_summary_report
     
     'This macro should be used BEFORE any manual updates to the survey preview
     
@@ -87,9 +89,11 @@ Sub format_survey_summary_body()
     
 End Sub
 
-Sub format_survey_summary_appendix()
+Sub aa2_format_survey_summary_appendix()
 
 Application.ScreenUpdating = False
+
+    Call define_styles_summary_report
 '
     'General formatting; changing margins, default font style, setting 0 space before and after paragraphs
     Call Preview_Style_Change
@@ -283,6 +287,10 @@ Application.ScreenUpdating = False
     Next tbl
         
 ActiveDocument.Fields.Update
+
+'Remove block headers
+Call remove_blockHeaders
+
 Application.ScreenUpdating = True
 
 End Sub
@@ -496,60 +504,14 @@ Sub Preview_Style_Change()
         .Paragraphs.SpaceBefore = 0
         .Paragraphs.SpaceAfter = 0
 '        .Paragraphs.format.Alignment = wdAlignParagraphLeft
-        
-                
-        'Change style of title (Heading 4), Block names (Header 5), and regular text (Compact)
-                
-        With .Styles("Heading 4")
-            With .Font
-                .Name = "Arial"
-                .Size = 16
-                .Color = wdColorAutomatic
-            End With
-            .ParagraphFormat.Alignment = wdAlignParagraphCenter
-            .ParagraphFormat.SpaceAfter = 0
-            .ParagraphFormat.SpaceBefore = 0
-            
-        End With
-                
-        With .Styles("Heading 5").Font
-            .Name = "Arial"
-            .Size = 14
-            .Color = wdColorAutomatic
-            .Italic = True
-            .Bold = True
-            .Underline = False
-        End With
-        
-        With .Styles("Heading 5").ParagraphFormat
-            .SpaceAfter = 0
-            .SpaceBefore = 0
-        End With
-        
-        With .Styles("Compact").Font
-            .Name = "Arial"
-            .Size = 10
-            .Color = wdColorAutomatic
-        End With
-        
-        With .Styles("Normal")
-            With .Font
-                .Name = "Arial"
-                .Size = 10
-                .Color = wdColorAutomatic
-            End With
-            .ParagraphFormat.SpaceAfter = 0
-            .ParagraphFormat.SpaceBefore = 0
-        End With
-        
+ 
         With .Sections(1).Footers(wdHeaderFooterPrimary).Range
             .Paragraphs.SpaceBefore = 0
             .Paragraphs.SpaceAfter = 0
             .ParagraphFormat.LineSpacingRule = wdLineSpacingSingle
         End With
-        
-    'Find "Number of Respondents", select line, and change font to 10
-    '.Wrap = wdFindContinue will find this regardless of where the cursor is in the doc
+       
+       
        
     End With
     
@@ -2674,8 +2636,6 @@ Sub define_preview_text_styles()
         
     End With
     
-    
-    
     On Error Resume Next
     ActiveDocument.Styles("AppendixName_style").Delete
     
@@ -2695,6 +2655,63 @@ Sub define_preview_text_styles()
             .SpaceBeforeAuto = False
             .SpaceBefore = 5
         End With
+    End With
+        
+    'Change style of title (Heading 4), Block names (Header 5), and regular text (Compact)
+                
+    With ActiveDocument.Styles("Heading 4")
+            With .Font
+                .Name = "Arial"
+                .Size = 16
+                .Color = wdColorAutomatic
+                .Bold = True
+                .Italic = False
+            End With
+            .ParagraphFormat.Alignment = wdAlignParagraphCenter
+            .ParagraphFormat.SpaceAfter = 0
+            .ParagraphFormat.SpaceBefore = 0
+            
+    End With
+                
+    With ActiveDocument.Styles("Heading 5").Font
+            .Name = "Arial"
+            .Size = 14
+            .Color = wdColorAutomatic
+            .Italic = True
+            .Bold = True
+            .Underline = False
+    End With
+        
+    With ActiveDocument.Styles("Heading 5").ParagraphFormat
+            .SpaceAfter = 0
+            .SpaceBefore = 0
+    End With
+        
+    With ActiveDocument.Styles("Compact")
+        With .Font
+            .Name = "Arial"
+            .Size = 10
+            .Color = wdColorAutomatic
+            .Bold = False
+            .Italic = False
+        End With
+        
+        With .ParagraphFormat
+            .SpaceAfter = 0
+            .SpaceBefore = 0
+        End With
+    End With
+        
+    With ActiveDocument.Styles("Normal")
+            With .Font
+                .Name = "Arial"
+                .Size = 10
+                .Color = wdColorAutomatic
+                .Bold = False
+                .Italic = False
+            End With
+            .ParagraphFormat.SpaceAfter = 0
+            .ParagraphFormat.SpaceBefore = 0
         
     End With
     
