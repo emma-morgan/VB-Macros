@@ -1,0 +1,56 @@
+---
+title: "DocumentationTemplate"
+author: "Emma Morgan"
+date: "5/25/2020"
+output:
+  word_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Header 1
+
+This is the style for heading 1. It will be used for major sections of documentation.
+
+Sometimes I will want to type multiple paragraphs after a header.
+
+## Header 2
+
+This is the style used for heading 2. It will be used for smaller subheadings.
+
+### Header 3
+
+This is Header 3.
+
+#### Header 4
+
+This is Header 4. It's not clear that we would get below this point, but there's always a change.
+
+##### Header 5
+
+Header 5 would be getting us much farther down the chain of headers, but this could still be useful.
+
+###### Header 6
+
+It seems unlikely that this would ever be used, but why not try it anyway.
+
+# Defining list styles
+
+I'm curious to know what will appear when attempting list styles. To this end, let us try lists of bullets and numbers that are both left aligned and indented.
+
+### Numbered list
+
+1. Item 1
+2. Item 2
+3. Item 3
+
+### Bulleted list
+
+- Item 1
+- Item 2
+- Item 3
+

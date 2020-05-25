@@ -4,24 +4,29 @@ author: "Emma Morgan"
 date: "5/24/2020"
 output:
   html_document: default
+  word_document: 
+    reference_docx: DocumentationStyleTemplate.docx
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
+\newline
 Thank you for using QualtricsTools! This program has been developed in-house by Tufts OIR to help anlaysts create reports more efficiently. We are constantly trying to improve, but we need your help to do so! Please email Emma and add to the issue log (Q:\Staff\_Reference Documentation\Programs and Applications\Troubleshooting Log_Programs & Reporting Tools.xlsx) if you encounter any of the following: 
+
 
   - My question results are not processing correctly (e.g. responses are out of order, data are not correct, n/a or "other" type options are not as I need them)
   - I ran the formatting macros, but the report is not correct (e.g. text is italicized or bold where it shouldn't be, not italic/bold where it should be, incorrect sizing for text or headers)
   - QualtricsTools is not processing a question
   
+  \newline
     *Note: While QualtricsTools works with many question types, there are some that cannot (yet) be processed automatically. These include drill down, questions with carry forward statements, and questions in a loop and merge. However, you may be able to use a shell survey to get QualtricsTools to process your data correctly.*
+    
     
 This list is not exhaustive. If something seems off, please talk to Emma about it. It is not possible to improve QualtricsTools and the formatting macros unless problems are identified and sample surveys provided to test enhancements or fixes. The goal of QualtricsTools is to make reporting *easier* for all analysts, but your input is needed to make this happen.
 
 
-## QualtricsTools Data Guidelines
+# QualtricsTools Data Guidelines
 
 This section contains information about the following:
 
@@ -33,11 +38,11 @@ This section contains information about the following:
   
 If you have questions about any of these sections, please let Emma know. The only we this documentation improves is if you let us know where and how it can be made better.
 
-### Preparing your Qualtrics survey Questions for QualtricsTools
+## Preparing your Qualtrics survey Questions for QualtricsTools
 
 QualtricsTools is a program and can't predict how our final report should look. However, there are many tricks to help get your survey summary report closer to a finished product. Below are a few tips to keep in mind. Question still isn't processing how you would like? Email/call/jabber Emma for ideas. QualtricsTools can't do everything, but we're trying to do as much as possible to make this easier for all OIR analysts.
 
-**Multiple Choice Single Answer (standard multiple choice)**
+### Multiple Choice Single Answer (standard multiple choice)
 
 By default, multiple choice question results produce a table with format three columns: N, %, choice text. 
 The choices will be ordered based on the display order in the survey. 
@@ -46,18 +51,20 @@ The choices will be ordered based on the display order in the survey.
 will alert QualtricsTools to reformat a multiple choice question as matrix style. This will table the N/A style options separately 
 out of total responses and other options out of valid responses. The single row matrix will repeat the question text as choice text in the first column.
 
-**Multiple Choice Multiple Answer (check all that apply)**
+Please note: Multiple choice single answer questions with text entry components are designed to include a reference to the appropriate text appendix. However, this will not work if the question is reformatted as a matrix. It is not recommended to use negative recode values in a multiple choice single answer question with text entry components.
+
+### Multiple Choice Multiple Answer (check all that apply)
 
 By default, multiple choice multiple answer (MCMA) questions will sort in descending N order. Results tables have three columns: N, %, choice text. 
 Ties in N selection count are sorted alphabetically by choice text.
 
 *Specify sort for multiple choice multiple answer:* Sometimes we don't want responses to MCMA questions to sort by descending N (e.g. race/ethnicty select all that apply, questions with "Other, please specify" options). Luckily, QualtricsTools has ways to specify sorting. Use recode values above 900 to specify options that should sort to the bottom of the table. This will not impact your survey setup or report in other ways. Recode values do not affect the respondent experience and can be changed before distributing your survey. 
 
-**Matrix Multiple Choice (multiple answer or single answer)**
+### Matrix Multiple Choice (multiple answer or single answer)
 
 Matrix questions are designed to format according to OIR standards. Matrix multiple choice with N/A style options should have recode value -1 (or other negative integers that are not -99) to table separately from valid responses.
 
-**Summary Statistics for Numeric Text Entry**
+### Summary Statistics for Numeric Text Entry
 
 QualtricsTools will create tables of summary statistics for numeric text entry questions. Please remember that your .csv surey data for these questions must be cleaned (e.g. removing outliers or unclear/nonsensical responses) BEFORE you report these questions.  To create a summary statistics table set the question type to "Text Entry" with numeric validation. 
 
@@ -67,13 +74,13 @@ QualtricsTools will only create summary statistic tables when there is a single 
   
   - *Split the form into separate questions in a shell survey*: In a shell survey, create a separate text entry question with numeric validation for each of the components of the form. In your .csv response data file, make sure that the header rows (first with the variable name, third with QIDs) match the header rows of the shell survey data export. Otherwise, QualtricsTools won't be able to link responses to questions.
 
-**Side by side questions**
+### Side by side questions
 
 side-by-side questions cannot be processed as a single question by QualtricsTools. Instead, side-by-side questions are split into their component questions. In OIR reports, this will most often create two matrix type questions. The component quesitons of a side-by-side will be processed based on the style of the component question.
 
 Formatting your side-by-side question as a side-by-side must be done manually in your report.
 
-### Customizing Your Survey Report
+## Customizing Your Survey Report
 
 There are many ways to customize your survey report. Doing some of this setup work can help make things easier on the whole. 
 Below are some tips to help make your reporting more efficient.
@@ -95,11 +102,11 @@ All user notes will be added to your report. In the raw report form QualtricsToo
 
 User Notes will not be visable to respondents, so these can be added to your survey before distribution (or at any point before creating reports).
 
-### Exporting data for QualtricsTools reporting
+## Exporting data for QualtricsTools reporting
 
 QualtricsTools is designed to work with the Legacy Exporter, unchecked Legacy View Results. Please use this format when preparing your data. Do not use the Data Table export, as QualtricsTools is not yet available wit hthis download.
 
-## QualtricsTools Shiny App Frequently Asked Questions
+# QualtricsTools Shiny App Frequently Asked Questions
 
 1. **How do I run the QualtricsTools reporting app?**  
 
