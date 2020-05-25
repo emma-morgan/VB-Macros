@@ -1,5 +1,5 @@
 Attribute VB_Name = "QualtricsTools"
-''Updated 2020/04/16
+''Updated 2020/05/25
 
 Sub define_styles_summary_report()
 
@@ -803,6 +803,38 @@ End Sub
 Sub aa3_Insert_footer()
 '
 ' Inserts a footer
+' this can be customized for a particular analyst/project
+
+    Dim oireFooter As String
+    Dim analystFooter As String
+    Dim internalUse As String
+    Dim reportName As String
+    Dim analystName As String
+    Dim dateText As String
+    
+    'Specify here if you would like to customize for your own project and computer
+    'Remove the apostrophe at the head of each line to run this section instead of popup boxes
+    
+'    reportName = "Enter Report Name Here"
+'    specialPopulation = ""
+'    analystName = "Your Name Here"
+'    dateText = "Enter creation date here"
+             
+    'Create defeault settings for all user entry
+      
+     reportName = InputBox("Enter Name of survey, Year, Special Population" & Chr(10) _
+         & "Default: NAME OF SURVEY AND YEAR")
+     specialPopulation = InputBox("Enter Special Population (if applicable)" _
+         & Chr(10) & "Default:")
+     analystName = InputBox("Analyst Name" & Chr(10) & "Default: ANALYST NAME")
+     dateText = InputBox("Enter Date" & Chr(10) & "Default: INSERT DATE")
+     
+     If reportName = "" Then _
+         reportName = "NAME OF SURVEY AND YEAR"
+     If specialPopulation = "" Then specialPopulation = ""
+     If analystName = "" Then analystName = "ANALYST NAME"
+     If dateText = "" Then dateText = "INSERT DATE"
+
 'As written, assumes there is only one section; if this changes, we need to uncomment these lines
 
 '    Dim i As Long
@@ -828,37 +860,7 @@ Sub aa3_Insert_footer()
     Dim footerTable As Table
     With ActiveDocument
         Set insert_footerTable = .Tables.Add(.Sections(1).Footers(wdHeaderFooterPrimary).Range, 2, 3)
-                
-        Dim oireFooter As String
-        Dim analystFooter As String
-        Dim internalUse As String
-        Dim reportName As String
-        Dim analystName As String
-        Dim dateText As String
-        
-        'Specify here if you would like to customize for your own project and computer
-        'Remove the apostrophe at the head of each line to run this section instead of popup boxes
-        'reportName = "Enter Report Name Here"
-        'specialPopulation = ""
-        'analystName = "Your Name Here"
-        'dateText = "Enter creation date here"
-                
-        'Create defeault settings for all user entry
-        
-        
-        reportName = InputBox("Enter Name of survey, Year, Special Population" & Chr(10) _
-            & "Default: NAME OF SURVEY AND YEAR")
-        specialPopulation = InputBox("Enter Special Population (if applicable)" _
-            & Chr(10) & "Default:")
-        analystName = InputBox("Analyst Name" & Chr(10) & "Default: ANALYST NAME")
-        dateText = InputBox("Enter Date" & Chr(10) & "Default: INSERT DATE")
-        
-        If reportName = "" Then _
-            reportName = "NAME OF SURVEY AND YEAR"
-        If specialPopulation = "" Then specialPopulation = ""
-        If analystName = "" Then analystName = "ANALYST NAME"
-        If dateText = "" Then dateText = "INSERT DATE"
-        
+                      
         Debug.Print ("ReportName: " & reportName)
         Debug.Print ("Special Population: " & specialPopulation)
         Debug.Print ("analystName: " & analystName)
