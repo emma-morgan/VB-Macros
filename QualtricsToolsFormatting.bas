@@ -466,10 +466,14 @@ End Sub
 
 Sub finish_merged_summary_report()
 
-    Call clearText_sidebyside_displaypanel
+    Application.ScreenUpdating = False
+
+    Call clearText_sidebyside_displaypanel_textcomponent
     Call Remove_Responses_Count
     Call remove_denominatorRow
     Call Remove_Export_Tag
+
+    Application.ScreenUpdating = True
 
 End Sub
 Sub Preview_Style_Change()
@@ -2441,13 +2445,15 @@ Sub Remove_Responses_Count()
     
 End Sub
 
-Sub clearText_sidebyside_displaypanel()
+Sub clearText_sidebyside_displaypanel_textcomponent()
     
     Dim sText1 As String
     Dim sText2 As String
+    Dim sText3 As String
     
     sText1 = "Refer to the Display Logic panel for this question's logic."
     sText2 = "This question was split from a side-by-side question."
+    sText3 = "This question has a text entry component. See Appendix."
     Selection.Find.ClearFormatting
     With Selection.Find
         .Text = sText1
@@ -2461,6 +2467,16 @@ Sub clearText_sidebyside_displaypanel()
     
     With Selection.Find
         .Text = sText2
+        .Wrap = wdFindContinue
+    End With
+    Do While Selection.Find.Execute
+        If Selection.Information(wdWithInTable) Then
+            Selection.Rows.Delete
+        End If
+    Loop
+    
+    With Selection.Find
+        .Text = sText3
         .Wrap = wdFindContinue
     End With
     Do While Selection.Find.Execute
