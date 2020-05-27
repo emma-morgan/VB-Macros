@@ -17,7 +17,7 @@ Sub define_styles_summary_report()
 End Sub
 
 
-Sub insert_header_footer()
+Sub aa_2insert_header_footer()
 
 With ActiveDocument
 
@@ -28,7 +28,7 @@ End With
 
 End Sub
 
-Sub aa1_format_survey_summary_body()
+Sub aa_1format_survey_summary_body()
 
     Application.ScreenUpdating = False
     
@@ -89,7 +89,7 @@ Sub aa1_format_survey_summary_body()
     
 End Sub
 
-Sub aa2_format_survey_summary_appendix()
+Sub aa_1format_survey_summary_appendix()
 
 Application.ScreenUpdating = False
 
@@ -464,7 +464,7 @@ Sub apply_appendix_style(tbl As Table, appendixType As String, responseRow As In
 
 End Sub
 
-Sub finish_merged_summary_report()
+Sub aa_3finish_merged_summary_report()
 
     Application.ScreenUpdating = False
 
@@ -804,7 +804,7 @@ Sub OLD_Insert_logo()
     
 End Sub
 
-Sub aa3_Insert_footer()
+Sub aa_Insert_footer()
 '
 ' Inserts a footer
 ' this can be customized for a particular analyst/project
@@ -2814,7 +2814,7 @@ End With
 End Sub
 
 
-Sub add_appendix_ref_to_body()
+Sub aa_2add_appendix_ref_to_body()
 
 Application.ScreenUpdating = True
 
