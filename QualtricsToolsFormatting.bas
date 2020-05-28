@@ -2816,10 +2816,14 @@ End Sub
 
 Sub aa_2add_appendix_ref_to_body()
 
-Application.ScreenUpdating = True
+Application.ScreenUpdating = False
 
 'Use this after combining the documents; the appendix should be inserted
 '   as the last section of the document
+
+'Based on OIR decision, cross references are NO LONGER HYPERLINKED from tables to appendix
+' if you would like to include hyperlinks, change parameters
+' InsertAsHyperlink:=True (current value is set to False)
 
 Dim hasAppendix As Boolean
 Dim exportTag As String
@@ -2858,7 +2862,7 @@ For Each tbl In ActiveDocument.Sections(i).Range.Tables
             Selection.Expand (wdCell)
             Selection.TypeText ("See ")
             Selection.InsertCrossReference ReferenceType:="Bookmark", ReferenceKind:= _
-                wdContentText, ReferenceItem:=exportTag, InsertAsHyperlink:=True, _
+                wdContentText, ReferenceItem:=exportTag, InsertAsHyperlink:=False, _
                 IncludePosition:=False, SeparateNumbers:=False, SeparatorString:=" "
             Selection.Expand (wdCell)
             With Selection.Font
@@ -2918,7 +2922,7 @@ For Each tbl In ActiveDocument.Sections(i).Range.Tables
                 
                 Selection.TypeText ("See ")
                 Selection.InsertCrossReference ReferenceType:="Bookmark", ReferenceKind:= _
-                    wdContentText, ReferenceItem:=appendBookmark, InsertAsHyperlink:=True, _
+                    wdContentText, ReferenceItem:=appendBookmark, InsertAsHyperlink:=False, _
                     IncludePosition:=False, SeparateNumbers:=False, SeparatorString:=" "
                 
                 Selection.Expand (wdCell)
@@ -2942,5 +2946,7 @@ For Each tbl In ActiveDocument.Sections(i).Range.Tables
 Next_tbl:     Next tbl
 
 Next i
-    
+
+Application.ScreenUpdating = True
+
 End Sub
