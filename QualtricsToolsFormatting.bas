@@ -22,7 +22,7 @@ Sub aa_2insert_header_footer()
 With ActiveDocument
 
     Call Insert_header
-    Call Insert_footer
+    Call aa_Insert_footer
     
 End With
 
@@ -533,7 +533,7 @@ Sub number_of_respondents()
             .Text = "Number of Respondents: "
             .Forward = True
             .Wrap = wdFindContinue
-            .format = False
+            .Format = False
             .MatchCase = True
         End With
         
@@ -590,7 +590,7 @@ Sub insert_background_table_placeholder()
             .Text = "Number of Respondents: "
             .Forward = True
             .Wrap = wdFindContinue
-            .format = False
+            .Format = False
             .MatchCase = True
         End With
         
@@ -605,7 +605,7 @@ Sub insert_background_table_placeholder()
                 .Text = "Size of Respondent Group: "
                 .Forward = True
                 .Wrap = wdFindContinue
-                .format = False
+                .Format = False
                 .MatchCase = True
             End With
             Selection.Find.Execute
@@ -1741,7 +1741,7 @@ Sub Replace_zeros(i As Integer)
         .Replacement.Text = "--"
         .Forward = True
         .Wrap = wdFindStop
-        .format = False
+        .Format = False
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -1775,7 +1775,7 @@ Sub Replace_NaN(i As Integer)
         .Replacement.Text = "--"
         .Forward = True
         .Wrap = wdFindStop
-        .format = False
+        .Format = False
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -1808,7 +1808,7 @@ Sub remove_denominatorRow()
             .Replacement.Text = ""
             .Forward = True
             .Wrap = wdFindStop
-            .format = False
+            .Format = False
             .MatchCase = True
             .MatchWholeWord = False
             .MatchWildcards = False
@@ -2048,7 +2048,7 @@ With Selection.Find
     .Replacement.Text = ""
     .Forward = True
     .Wrap = wdFindStop
-    .format = True
+    .Format = True
     .MatchCase = True
     .MatchWholeWord = False
     .MatchWildcards = False
@@ -2090,7 +2090,7 @@ Sub remove_blockHeaders()
         .Replacement.Text = ""
         .Forward = True
         .Wrap = wdFindAsk
-        .format = True
+        .Format = True
         .MatchCase = False
         .MatchWholeWord = False
         .MatchByte = False
@@ -2160,7 +2160,7 @@ Sub format_See_Appendix(i)
         .Replacement.Text = ""
         .Forward = True
         .Wrap = wdFindStop
-        .format = False
+        .Format = False
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -2192,7 +2192,7 @@ Sub format_UserNote(i)
         .Replacement.Text = ""
         .Forward = True
         .Wrap = wdFindStop
-        .format = False
+        .Format = False
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -2230,7 +2230,7 @@ Sub RemoveEmptyParagraphs()
         .Replacement.Text = "^&"
         .Forward = True
         .Wrap = wdFindContinue
-        .format = True
+        .Format = True
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -2248,7 +2248,7 @@ Sub RemoveEmptyParagraphs()
         .Replacement.Text = "^&"
         .Forward = True
         .Wrap = wdFindContinue
-        .format = True
+        .Format = True
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -2269,7 +2269,7 @@ Sub RemoveEmptyParagraphs()
         .Replacement.Text = "^&"
         .Forward = True
         .Wrap = wdFindContinue
-        .format = True
+        .Format = True
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -2286,7 +2286,7 @@ Sub RemoveEmptyParagraphs()
         .Replacement.Text = ""
         .Forward = True
         .Wrap = wdFindContinue
-        .format = True
+        .Format = True
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -2304,7 +2304,7 @@ Sub RemoveEmptyParagraphs()
         .Replacement.Text = "^&"
         .Forward = True
         .Wrap = wdFindContinue
-        .format = True
+        .Format = True
         .MatchCase = True
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -2325,7 +2325,7 @@ Sub RemoveEmptyParagraphs()
         .Replacement.Text = "^p"
         .Forward = True
         .Wrap = wdFindContinue
-        .format = True
+        .Format = True
         .MatchCase = False
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -2345,7 +2345,7 @@ Sub Remove_Export_Tag()
         .Replacement.Text = ""
         .Forward = True
         .Wrap = wdFindAsk
-        .format = False
+        .Format = False
         .MatchCase = False
         .MatchWholeWord = False
         .MatchWildcards = False
@@ -2425,7 +2425,7 @@ Sub Remove_Responses_Count()
 '        .Replacement.Text = "Responses"
         .Forward = True
         .Wrap = wdFindStop
-        .format = False
+        .Format = False
         .MatchCase = False
         .MatchWholeWord = False
         .MatchWildcards = False
