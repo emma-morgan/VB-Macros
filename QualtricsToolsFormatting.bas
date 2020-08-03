@@ -808,6 +808,7 @@ Sub aa_Insert_footer()
 '
 ' Inserts a footer
 ' this can be customized for a particular analyst/project
+'Application.ScreenUpdating = True
 
     Dim oireFooter As String
     Dim analystFooter As String
@@ -960,6 +961,9 @@ Sub aa_Insert_footer()
         .Cell(1, 3).PreferredWidth = 44
         
         .Rows.LeftIndent = InchesToPoints(0)
+        
+        .PreferredWidthType = wdPreferredWidthPercent
+        .PreferredWidth = 100
     End With
 
     
